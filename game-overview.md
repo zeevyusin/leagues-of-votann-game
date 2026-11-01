@@ -292,6 +292,10 @@ data/
   relics.json
   ship_modules.json
   crew.json
+  items.json            # cargo goods; `mission: true` items are never lost on defeat
+  oaths.json            # oath templates: terms, deadline, how to fulfil, keep/break effects
+  grudges.json          # grudge templates
+  lore.json             # Logbook discovery entries
 ```
 
 ### Core engine modules

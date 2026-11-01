@@ -1,0 +1,34 @@
+[
+  {
+    "key": "WARRIOR",
+    "display_name": "Warrior",
+    "theme": "The Hearth's shield. Solves problems with force.",
+    "stat_bonus": { "grit": 1 },
+    "kin_passive": { "key": "HOLD_THE_LINE", "name": "Hold the Line", "description": "Reduce damage taken in personal combat by 1 each round." },
+    "ironkin_passive": { "key": "PLATED_BULWARK", "name": "Plated Bulwark", "description": "Reduce damage taken in personal combat by 2 each round, but each hit adds Wear." }
+  },
+  {
+    "key": "PATHFINDER",
+    "display_name": "Pathfinder",
+    "theme": "The frontier eyes. Solves problems with information and positioning.",
+    "stat_bonus": { "nerve": 1, "wits": 1 },
+    "kin_passive": { "key": "SHARP_SENSES", "name": "Sharp Senses", "description": "Reads enemies more clearly in combat (+2 to the read)." },
+    "ironkin_passive": { "key": "SENSOR_SUITE", "name": "Sensor Suite", "description": "Reads enemies even more clearly in combat (+3 to the read)." }
+  },
+  {
+    "key": "ARTIFICER",
+    "display_name": "Artificer",
+    "theme": "The Ancestors' hands. Solves problems with tech and relics.",
+    "stat_bonus": { "craft": 1, "wits": 1 },
+    "kin_passive": { "key": "TINKERS_EYE", "name": "Tinker's Eye", "description": "Hull repairs cost 1 Ore less per point." },
+    "ironkin_passive": { "key": "SELF_MAINTENANCE", "name": "Self-Maintenance", "description": "Repair 25 of your own Wear for free once per journey." }
+  },
+  {
+    "key": "SPEAKER",
+    "display_name": "Speaker",
+    "theme": "The voice of the Kin. Solves problems with oaths and deals.",
+    "stat_bonus": { "silver_tongue": 1 },
+    "kin_passive": { "key": "OATH_WEIGHT", "name": "Oath-Weight", "description": "NPCs take your promises more seriously." },
+    "ironkin_passive": { "key": "UNBREAKABLE_WORD", "name": "Unbreakable Word", "description": "Kept oaths give extra reputation; broken oaths hurt more." }
+  }
+]

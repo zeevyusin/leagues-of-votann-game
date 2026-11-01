@@ -1,0 +1,104 @@
+[
+  {
+    "key": "HEARTHKYN_WARRIOR",
+    "display_name": "Hearthkyn Warrior",
+    "base_class": "WARRIOR",
+    "focus_stats": ["grit", "nerve"],
+    "console_action": { "name": "Muster the Hearth", "description": "Boosts crew morale and combat rolls for the next encounter." },
+    "trait": { "name": "Shield-Oath", "description": "Reduces damage when defending crew or cargo." },
+    "starting_kit": { "hearthfire": 10 }
+  },
+  {
+    "key": "EINHYR_HEARTHGUARD",
+    "display_name": "Einhyr Hearthguard",
+    "base_class": "WARRIOR",
+    "focus_stats": ["grit", "craft"],
+    "console_action": { "name": "Boarding Lead", "description": "Strong advantage in boarding and ship-to-ship melee." },
+    "trait": { "name": "Old Guard", "description": "Resists morale loss." },
+    "starting_kit": { "modules": { "shields": 2 } }
+  },
+  {
+    "key": "CTHONIAN_BERSERK",
+    "display_name": "Cthonian Berserk",
+    "base_class": "WARRIOR",
+    "focus_stats": ["grit", "nerve"],
+    "console_action": {
+      "name": "Blood-Rage",
+      "description": "Huge combat bonus with a morale or injury cost.",
+      "ironkin_variant": { "description": "Bonus is doubled, but adds a large amount of Wear.", "wear_cost": 25 }
+    },
+    "trait": { "name": "Tunnel-Born", "description": "Excels in cramped derelicts and cave sites." },
+    "starting_kit": { "hull": 5 }
+  },
+  {
+    "key": "HERNKYN_PIONEER",
+    "display_name": "Hernkyn Pioneer",
+    "base_class": "PATHFINDER",
+    "focus_stats": ["nerve", "wits"],
+    "console_action": { "name": "Chart Safe Route", "description": "Reduces travel event risk and fuel cost." },
+    "trait": { "name": "Lay of the Land", "description": "Bonuses on planetary surfaces." },
+    "starting_kit": { "fuel": 4 }
+  },
+  {
+    "key": "HERNKYN_YAEGIR",
+    "display_name": "Hernkyn Yaegir",
+    "base_class": "PATHFINDER",
+    "focus_stats": ["wits", "nerve"],
+    "console_action": { "name": "Long-Range Scan and Strike", "description": "First-strike bonus and spots ambushes early." },
+    "trait": { "name": "Patient Hunter", "description": "Advantage when you choose to wait or observe." },
+    "starting_kit": { "modules": { "scanner": 2 } }
+  },
+  {
+    "key": "BROKHYR_IRONMASTER",
+    "display_name": "Brôkhyr Iron-master",
+    "base_class": "ARTIFICER",
+    "focus_stats": ["craft", "wits"],
+    "console_action": {
+      "name": "Jury-Rig",
+      "description": "Emergency repair on any ship module.",
+      "ironkin_variant": { "description": "Can also repair the Iron-master's own Wear." }
+    },
+    "trait": { "name": "Forge-Wise", "description": "Cheaper upgrades and better salvage." },
+    "starting_kit": { "modules": { "workshop": 2 } }
+  },
+  {
+    "key": "ARKANYST_EVALUATOR",
+    "display_name": "Arkanyst Evaluator",
+    "base_class": "ARTIFICER",
+    "focus_stats": ["wits", "craft"],
+    "console_action": { "name": "Evaluate Relic", "description": "Reveals a relic's true effects and drawbacks before you commit." },
+    "trait": { "name": "Ancestor-Lore", "description": "Unlocks special dialogue and discoveries." },
+    "starting_kit": { "relics": ["LODESTONE_OF_KHAZ"] }
+  },
+  {
+    "key": "THEYN_KAPITAN",
+    "display_name": "Theyn / Kapitan",
+    "base_class": "SPEAKER",
+    "focus_stats": ["silver_tongue", "grit"],
+    "console_action": { "name": "Swear an Oath", "description": "Better job terms, plus a morale bonus when you keep the oath." },
+    "trait": { "name": "Voice of the Hearth", "description": "Bonuses with your own League." },
+    "starting_kit": { "reputation": { "DURN_LEAGUE": 10 } }
+  },
+  {
+    "key": "PROSPECTOR_TRADER",
+    "display_name": "Prospector-Trader",
+    "base_class": "SPEAKER",
+    "focus_stats": ["silver_tongue", "wits"],
+    "console_action": { "name": "Haggle", "description": "Better prices and unlocks black-market contacts." },
+    "trait": { "name": "Eye for Ore", "description": "Spots valuable cargo and contracts." },
+    "starting_kit": { "ore": 60, "cargo_capacity": 5 }
+  },
+  {
+    "key": "MEMNYR_STRATEGIST",
+    "display_name": "Memnyr Strategist",
+    "base_class": "SPEAKER",
+    "focus_stats": ["wits", "silver_tongue"],
+    "console_action": {
+      "name": "Calculate the Odds",
+      "description": "Previews outcome chances before a risky choice.",
+      "ironkin_variant": { "description": "Shows exact percentages instead of descriptive hints." }
+    },
+    "trait": { "name": "Long Memory", "description": "Makes grudges and oaths easier to track and resolve." },
+    "starting_kit": { "supplies": 10, "reveal_systems": ["CINDER_DRIFT", "SNAZRIK_HAVEN"] }
+  }
+]

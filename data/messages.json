@@ -1,0 +1,39 @@
+[
+  {
+    "key": "A1_OPENING",
+    "from": "Fleet-Theyn Hrolla Vask",
+    "subject": "Orders for the vault opening",
+    "body": {
+      "default": "Captain {name}. The cutting crews breach the ancestor vault at shift's end. Before that, every captain in the Durn Prospect Fleet pulls their weight. I have a job for you. Answer when ready.",
+      "variants": {
+        "HEARTHKYN_WARRIOR": "Captain {name}. You hold the fleet's flank, as you have since we left the Hold. The vault opens at shift's end, and I want your guns where they can see it. First, though, there's work. Answer when ready.",
+        "EINHYR_HEARTHGUARD": "Hearthguard {name}. You swore to keep me alive, and I have never once made it easy for you. Today I'll be standing at the vault door when it opens. Keep your escort close. There's a job first. Answer when ready.",
+        "CTHONIAN_BERSERK": "Captain {name}. Your cutting crews did the hard part. The vault door is nearly through. Before the last cut, I need your ship on another job. Try not to break anything you don't have to. Answer when ready.",
+        "HERNKYN_PIONEER": "Pioneer {name}. You found this world. Your charts got us here when the old maps said nothing was out this far. The vault opens today, and it's your name on the survey. There's a job first. Answer when ready.",
+        "HERNKYN_YAEGIR": "Yaegir {name}. Your contract says pirates. The Reach has been quiet, which you tell me is the worrying kind of quiet. Keep your scopes open. There's a job first. Answer when ready.",
+        "BROKHYR_IRONMASTER": "Iron-master {name}. Half the fleet is held together by your tender and your temper. The vault door needs one more cut and the cutting rig is coughing again. Answer when ready.",
+        "ARKANYST_EVALUATOR": "Evaluator {name}. The Hold sent you to judge what's behind this door, and I'll want your eyes on it the moment it opens. Until then, there's fleet work. Answer when ready.",
+        "THEYN_KAPITAN": "Kapitan {name}. If anything goes wrong today, the fleet answers to you. Nothing will go wrong. But be ready. First, a job. Answer when ready.",
+        "PROSPECTOR_TRADER": "Captain {name}. Your share of this prospect is about to become very valuable. Try to look less pleased about it in front of the crews. There's a job first. Answer when ready.",
+        "MEMNYR_STRATEGIST": "Strategist {name}. You've kept the fleet's oaths and ledgers straight since the Hold. Today goes in the records either way. Make it a good entry. There's a job first. Answer when ready."
+      }
+    },
+    "beat": "A1_B1_THE_SURVEY"
+  },
+  {
+    "key": "A1_SET_COURSE",
+    "from": "Old Dorrik",
+    "subject": "Where we go now",
+    "body": {
+      "default": "We're alive. The ship's held together with spit and stubbornness. Karrak Station is two days out, neutral port, nobody asks questions. Set a course on Nav. And captain? Eat something. Ylsa hasn't stopped shaking. She'll take her cue from you."
+    }
+  },
+  {
+    "key": "A1_WAAAGH_NEWS",
+    "from": "Karrak Station Dockmaster",
+    "subject": "Bad news travels fast",
+    "body": {
+      "default": "Traffic out of the Reach is all one story: Orks heading for Skragnak, more every day. Freebooters say his Mek's got something new, something that glows. If you're planning on doing something about it, captain, do it soon. Ork weather's coming."
+    }
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "key": "ORK_RAIDER",
+    "display_name": "Ork Raider 'Da Big Bash'",
+    "hull": 10,
+    "reactor_pips": 6,
+    "allocation_weights": { "weapons": 4, "shields": 1, "engines": 1 },
+    "system_caps": { "weapons": 4, "shields": 3, "engines": 3 },
+    "defense_difficulty": 12
+  }
+]

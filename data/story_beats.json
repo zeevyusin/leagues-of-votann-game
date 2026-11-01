@@ -1,0 +1,169 @@
+[
+  {
+    "key": "A1_B1_THE_SURVEY",
+    "act": 1,
+    "title": "The Survey",
+    "goal": "Finish your fleet job before the vault opens.",
+    "objective": "Read Fleet-Theyn Vask's orders in Comms.",
+    "trigger": "comms",
+    "intro_text": "The dig camp sprawls across the ridge of Kethra's Anvil: drill rigs, cargo sledges, and two hundred Kin who haven't slept properly in a week. Below the ridge, the ancestor vault door glows where the cutting beams have been chewing at it. Hrolla's job list is short and blunt. Pick one.",
+    "kin_notes": {
+      "IRONKIN": "Your frame registers the old machine-spirits behind the vault door: faint, patient, waiting."
+    },
+    "routes": [
+      { "key": "ESCORT", "label": "Escort the supply drop down through the ring debris", "roll": { "stat": "nerve", "difficulty": "NORMAL" }, "class_bonus": { "WARRIOR": 3 } },
+      { "key": "SCAN", "label": "Sweep the vault entrance with your scanners", "roll": { "stat": "wits", "difficulty": "NORMAL" }, "class_bonus": { "PATHFINDER": 3 } },
+      { "key": "FIX_RIG", "label": "Fix the coughing cutting rig before the last cut", "roll": { "stat": "craft", "difficulty": "NORMAL" }, "class_bonus": { "ARTIFICER": 3 } },
+      { "key": "DISPUTE", "label": "Settle the claim dispute between two cutting crews", "roll": { "stat": "silver_tongue", "difficulty": "NORMAL" }, "class_bonus": { "SPEAKER": 3 } },
+      { "key": "CONSOLE", "label": "Use your console action", "console_action": { "difficulty": "NORMAL" } }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "Hrolla's voice crackles over the vox: 'Clean work, Captain. I'll remember it.' The crews raise a cheer when they hear your name.",
+        "effects": [{ "hearthfire": 10, "ore": 20, "reputation": { "HOLD_DURNVAR": 5, "DURN_LEAGUE": 5 } }]
+      },
+      "success": {
+        "text": "The job's done, and done right. Hrolla sends a single word: 'Good.' From her, that's practically a medal.",
+        "effects": [{ "hearthfire": 5, "reputation": { "DURN_LEAGUE": 3 } }]
+      },
+      "partial": {
+        "text": "You get it done, but it costs you: a dented sledge, a few spilled crates, and a long night.",
+        "effects": [{ "supplies": -2 }]
+      },
+      "failure": {
+        "text": "It goes badly. Someone else has to finish the job, and the crews notice. Ylsa won't meet your eye.",
+        "effects": [{ "hearthfire": -5 }]
+      }
+    },
+    "outro_text": {
+      "default": "At shift's end the last cut goes through. The vault door groans open on air that hasn't moved in ten thousand years. Inside, on a plinth of black iron, sits a sphere of light: an Ancestor Core, humming like a hearth. Then the vox picks up something else. Strange signals, coming in fast from the dark side of the moon.",
+      "variants": {
+        "ARKANYST_EVALUATOR": "At shift's end the last cut goes through. You are first through the door, as the Hold intended. On a plinth of black iron sits a sphere of light, and your breath catches: an Ancestor Core, intact, older than the League itself. Then the vox picks up something else. Strange signals, coming in fast from the dark side of the moon."
+      }
+    },
+    "on_complete": [{ "lore": "LORE_ANCESTOR_CORE" }],
+    "next": "A1_B2_FIRE_ON_THE_ANVIL"
+  },
+  {
+    "key": "A1_B2_FIRE_ON_THE_ANVIL",
+    "act": 1,
+    "title": "Fire on the Anvil",
+    "goal": "Get your crew from the dig site back to your ship.",
+    "objective": "Survive the raid.",
+    "trigger": "auto",
+    "intro_text": "The signals were landers. Ork landers, dozens of them, slamming into the ridge like thrown rocks. The dig site is burning. Somewhere in the smoke an Ork voice is bellowing your fleet's name, wrong. Your crew is scattered across the site and your ship is on the far pad.",
+    "kin_notes": {
+      "KIN": "Smoke and drill-coolant fumes burn your throat. You won't last long out here.",
+      "IRONKIN": "An Ork points straight at you and shrieks: 'OI! DAT STUNTY'S MADE OF DA GOOD BITZ!' Several more turn to look."
+    },
+    "routes": [
+      { "key": "FIGHT", "label": "Cut your way through to the pad", "encounter": "A1_DIG_SITE_RAID" },
+      { "key": "SIDE_TUNNEL", "label": "Lead the crew through the old dig shafts", "roll": { "stat": "wits", "difficulty": "HARD" }, "class_bonus": { "PATHFINDER": 3 }, "subclass_bonus": { "CTHONIAN_BERSERK": 3 }, "effects_always": [{ "grizzgut": "ESCAPED" }] },
+      { "key": "BLAST_DOORS", "label": "Seal the blast doors behind you as you go", "roll": { "stat": "craft", "difficulty": "HARD" }, "class_bonus": { "ARTIFICER": 3 }, "effects_always": [{ "grizzgut": "ESCAPED" }] },
+      { "key": "BIGGER_FIGHT", "label": "Convince the Ork Nob the real fight is on the far side of the site", "roll": { "stat": "silver_tongue", "difficulty": "HARD" }, "class_bonus": { "SPEAKER": 3 }, "effects_always": [{ "grizzgut": "TRICKED" }] },
+      { "key": "CONSOLE", "label": "Use your console action", "console_action": { "difficulty": "HARD" }, "effects_always": [{ "grizzgut": "ESCAPED" }] }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You get everyone out, and on the way you pull a cutting crew from a collapsed shaft. They come aboard grateful, and armed with very large drills.",
+        "effects": [{ "hearthfire": 10, "reputation": { "DURN_LEAGUE": 5 } }]
+      },
+      "success": {
+        "text": "Your crew makes it aboard, singed but whole.",
+        "effects": [{ "hearthfire": 3 }]
+      },
+      "partial": {
+        "text": "You make it, barely. You took a bad knock, and a sledge of supplies is left burning on the pad.",
+        "effects": [{ "health": -2, "supplies": -3 }]
+      },
+      "failure": {
+        "text": "It goes wrong. You reach the ship bleeding, with Ork shells chasing you up the ramp.",
+        "effects": [{ "health": -4, "hearthfire": -5, "supplies": -2 }]
+      }
+    },
+    "outro_text": "From the ramp you see it: Big Mek Gitzbolt's grots hauling the Ancestor Core out of the vault on a sledge, cackling. Behind them, Orks drag Fleet-Theyn Hrolla Vask, still fighting, onto a lander. The hatch slams. The lander lifts. Somewhere in the smoke, the Nob is still bellowing. You haven't seen the last of him.",
+    "on_complete": [{ "set_core_status": "STOLEN", "set_hrolla_status": "CAPTIVE" }],
+    "next": "A1_B3_BREAKING_ORBIT"
+  },
+  {
+    "key": "A1_B3_BREAKING_ORBIT",
+    "act": 1,
+    "title": "Breaking Orbit",
+    "goal": "Escape Kethra's Anvil.",
+    "objective": "Escape the Anvil.",
+    "trigger": "auto",
+    "intro_text": "You punch up through the smoke. The Anvil falls away beneath you, burning. Ahead, an Ork raider swings across your path, bristling with guns and leaking smoke from places ships shouldn't leak smoke.",
+    "routes": [
+      { "key": "FIGHT", "label": "Bring the guns to bear", "encounter": "A1_RAIDER_ESCAPE" },
+      { "key": "DEBRIS_RUN", "label": "Dive into the debris field and lose them", "roll": { "stat": "nerve", "difficulty": "HARD" }, "class_bonus": { "PATHFINDER": 3 } },
+      { "key": "FAKE_FAILURE", "label": "Fake a reactor breach so they ignore you", "requirements": [{ "base_class": "ARTIFICER" }], "roll": { "stat": "craft", "difficulty": "NORMAL" } },
+      { "key": "HAIL_SNAZRIK", "label": "Hail the freebooters and pay them to cover you", "requirements": [{ "base_class": "SPEAKER" }], "roll": { "stat": "silver_tongue", "difficulty": "NORMAL" }, "effects_always": [{ "create_oath": "DEBT_SNAZRIK" }] },
+      { "key": "CONSOLE", "label": "Use your console action", "console_action": { "difficulty": "HARD" } }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You slip away clean. The raider never even gets a firing solution.",
+        "effects": [{ "hearthfire": 5 }]
+      },
+      "success": {
+        "text": "You break free with nothing worse than a few scorch marks.",
+        "effects": []
+      },
+      "partial": {
+        "text": "You get out, but the raider's guns rake your hull on the way.",
+        "effects": [{ "hull": -3 }]
+      },
+      "failure": {
+        "text": "You escape, but only just. The hull screams under fire and an engine coil burns out.",
+        "effects": [{ "hull": -6, "supplies": -3 }]
+      }
+    },
+    "outro_text": "Open space. The burning Anvil shrinks to a red spark behind you. Dorrik clanks onto the bridge and sits down heavily. 'Karrak Station. Two days. Nobody there will ask where the scorch marks came from.'",
+    "on_complete": [{ "add_message": "A1_SET_COURSE" }],
+    "next": "A1_B4_KARRAK_STATION"
+  },
+  {
+    "key": "A1_B4_KARRAK_STATION",
+    "act": 1,
+    "title": "Karrak Station",
+    "goal": "Secure a berth and repairs for your ship.",
+    "objective": "Set course for Karrak Station on Nav.",
+    "trigger": "arrival",
+    "location": "KARRAK_STATION",
+    "intro_text": "Karrak Station swallows your ship into a docking bay full of Kin, Hernkyn, freebooters, and things you'd rather not look at closely. The dockmaster looks at your hull, then at you, then back at your hull. 'Repairs aren't cheap, captain. Nothing here is.'",
+    "kin_notes": {
+      "IRONKIN": "The dockmaster's eyes linger on your frame. 'Ironkin, eh? Your lot pay their tabs. Mostly.'"
+    },
+    "routes": [
+      { "key": "HAGGLE", "label": "Talk the dockmaster into a fair price", "roll": { "stat": "silver_tongue", "difficulty": "NORMAL" }, "class_bonus": { "SPEAKER": 3 } },
+      { "key": "WORK_OFF", "label": "Trade your crew's skills to the station workshops", "roll": { "stat": "craft", "difficulty": "NORMAL" }, "class_bonus": { "ARTIFICER": 3 } },
+      { "key": "INTIMIDATE", "label": "Remind the dockmaster who just survived an Ork raid", "roll": { "stat": "grit", "difficulty": "NORMAL" }, "class_bonus": { "WARRIOR": 3 } },
+      { "key": "LEAGUE_CREDIT", "label": "Call on the Durn League's credit", "requirements": [{ "reputation": { "faction": "DURN_LEAGUE", "min": 15 } }], "auto_tier": "success" },
+      { "key": "PAY", "label": "Pay the full price, no arguments", "auto_tier": "partial" },
+      { "key": "CONSOLE", "label": "Use your console action", "console_action": { "difficulty": "NORMAL" } }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You walk out with a berth, full repairs, and the dockmaster's grudging respect.",
+        "effects": [{ "hull": 10, "reputation": { "KARRAK_STATION": 5 } }]
+      },
+      "success": {
+        "text": "A fair deal: a berth and solid repairs.",
+        "effects": [{ "hull": 8, "ore": -10 }]
+      },
+      "partial": {
+        "text": "You get the berth and the repairs, at a painful price.",
+        "effects": [{ "hull": 8, "ore": -30 }]
+      },
+      "failure": {
+        "text": "The dockmaster smells desperation. You pay through the nose for a patch job.",
+        "effects": [{ "hull": 4, "ore": -40 }]
+      }
+    },
+    "outro_text": "With the ship in a berth, the weight of the raid finally lands. In the station's little Kin shrine, with Dorrik and Ylsa beside you, you carve two things into the Logbook. A grudge: Warboss Skragnak, for the raid on Kethra's Anvil. And an oath, sworn to Hold Durnvar over the station vox: recover the Core, avenge the fleet, protect the Hold. Ylsa says the words with you. Her voice doesn't shake.",
+    "on_complete": [{ "create_grudge": "GRUDGE_SKRAGNAK", "create_oath": "OATH_BROKEN_FLEET", "waaagh_start": true, "add_message": "A1_WAAAGH_NEWS", "lore": "LORE_SKRAGNAK", "complete_act": 1 }],
+    "prompt_ship_name": true,
+    "act_end_text": "The grudge is written. The oath is sworn. Somewhere out in the Reach, the Waaagh! is gathering.\n\nAct 2 is not built yet. You can keep flying: visit ports, repair, pay debts, and read your Logbook.",
+    "next": null
+  }
+]

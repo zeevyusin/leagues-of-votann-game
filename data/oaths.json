@@ -1,0 +1,41 @@
+[
+  {
+    "key": "OATH_BROKEN_FLEET",
+    "title": "Oath of the Broken Fleet",
+    "giver": "Hold Durnvar",
+    "terms": "Recover the Ancestor Core, avenge the Durn Prospect Fleet, and protect the Hold.",
+    "reward_text": "The Hold's gratitude, measured in how well the oath is kept.",
+    "penalty_text": "This oath cannot be broken. How well you keep it shapes the ending.",
+    "can_fail": false,
+    "deadline_days": null,
+    "fulfil": null,
+    "on_keep": [],
+    "on_break": []
+  },
+  {
+    "key": "DEBT_SNAZRIK",
+    "title": "Debt to Kaptin Snazrik",
+    "giver": "Kaptin Snazrik",
+    "terms": "Pay 60 Ore for the freebooters' covering fire at Kethra's Anvil.",
+    "reward_text": "Snazrik remembers good customers.",
+    "penalty_text": "Snazrik remembers bad ones better. Reputation loss and a grudge.",
+    "can_fail": true,
+    "deadline_days": 30,
+    "fulfil": { "ore": 60 },
+    "on_keep": [{ "reputation": { "FREEBOOTERS": 15 }, "hearthfire": 5 }],
+    "on_break": [{ "reputation": { "FREEBOOTERS": -20 }, "hearthfire": -10, "create_grudge": "GRUDGE_SNAZRIK" }]
+  },
+  {
+    "key": "DEBT_TOW",
+    "title": "Debt to a Hernkyn tow",
+    "giver": "A passing Hernkyn outrider",
+    "terms": "Repay 30 Ore for the emergency fuel.",
+    "reward_text": "Word gets around that you pay your debts.",
+    "penalty_text": "Word gets around that you don't.",
+    "can_fail": true,
+    "deadline_days": 20,
+    "fulfil": { "ore": 30 },
+    "on_keep": [{ "reputation": { "DURN_LEAGUE": 5 } }],
+    "on_break": [{ "reputation": { "DURN_LEAGUE": -10 }, "hearthfire": -5 }]
+  }
+]

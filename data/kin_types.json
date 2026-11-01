@@ -1,0 +1,30 @@
+[
+  {
+    "key": "KIN",
+    "display_name": "Kin",
+    "summary": "Flesh-and-blood Kin of the Hold.",
+    "perks": [
+      { "name": "Quick Recovery", "description": "Regenerates Health 1.5x faster while travelling." },
+      { "name": "Hearth-Bonded", "description": "Better dialogue, larger reputation gains from social actions, stronger Hearthfire from rest and feasts." }
+    ],
+    "drawbacks": [
+      { "name": "Vulnerable", "description": "Takes the full effect of vacuum, radiation, toxins and extreme temperature." },
+      { "name": "Fatigue", "description": "More than 6 days without docking leaves you Fatigued (-1 to all rolls)." }
+    ]
+  },
+  {
+    "key": "IRONKIN",
+    "display_name": "Ironkin",
+    "summary": "A Kin mind housed in a machine frame.",
+    "perks": [
+      { "name": "Reinforced Frame", "description": "+1 Grit. Shrugs off vacuum, radiation, toxins, heat and cold." },
+      { "name": "Tireless", "description": "Immune to fatigue." },
+      { "name": "Machine Link", "description": "Extra console options with ship systems, old machinery and Votann tech." }
+    ],
+    "drawbacks": [
+      { "name": "Wear", "description": "Damage and console actions add Wear. High Wear penalises Nerve and Craft; 100 Wear incapacitates." },
+      { "name": "Low Hearthfire influence", "description": "Gains morale from kept oaths and crew bonds, not from rest and feasts." },
+      { "name": "Social friction", "description": "Some factions are wary of Ironkin; others respect them." }
+    ]
+  }
+]

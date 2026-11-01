@@ -1,0 +1,43 @@
+[
+  {
+    "key": "A1_DIG_SITE_RAID",
+    "mode": "personal",
+    "intro": "The dig site is chaos. Between you and the landing pad: a mob of Boyz, and behind them, a Nob with a very big choppa.",
+    "enemies": ["ORK_BOYZ_MOB", "NOB_GRIZZGUT_1"],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Grizzgut staggers back, bleeding and furious. 'DIS AIN'T OVER, STUNTY!' He flees into the smoke, and the path to your ship is clear.",
+        "effects": [{ "grizzgut": "BROKEN", "hearthfire": 5 }]
+      },
+      "victory_negotiated": {
+        "text": "Grizzgut squints at you, then at the tunnels. 'Bigger fight dat way? ...Fine. But I'm comin' back for ya.' He stomps off, and his Boyz follow.",
+        "effects": [{ "grizzgut": "NEGOTIATED", "set_flag": { "GRIZZGUT_TALKED_DOWN": true } }]
+      },
+      "defeat": {
+        "text": "The world goes dark. You wake on your own deck, Dorrik's iron hand on your shoulder. 'Dragged you out myself. Don't make a habit of it.'",
+        "effects": [{ "grizzgut": "PLAYER_DEFEATED" }],
+        "overrides_default_costs": false
+      },
+      "withdrew": { "text": "You fall back.", "effects": [] }
+    }
+  },
+  {
+    "key": "A1_RAIDER_ESCAPE",
+    "mode": "ship",
+    "intro": "An Ork raider swings across your bow, guns glowing. It is ugly, slow, and absolutely covered in weapons.",
+    "enemies": ["ORK_RAIDER"],
+    "outcomes": {
+      "victory_broken": {
+        "text": "The raider's engines cough and die in a gout of black smoke. You don't stay to loot it. You burn hard for open space.",
+        "effects": [{ "hearthfire": 5 }]
+      },
+      "victory_negotiated": { "text": "The raider lets you pass.", "effects": [] },
+      "defeat": {
+        "text": "Your ship is crippled, venting air and spinning. The raider loses interest and turns back to the burning world. Dorrik patches the worst of it, at a cost.",
+        "effects": [{ "supplies": -4 }],
+        "overrides_default_costs": false
+      },
+      "withdrew": { "text": "You break away.", "effects": [] }
+    }
+  }
+]

@@ -1,0 +1,166 @@
+[
+  {
+    "key": "KETHRAS_ANVIL",
+    "display_name": "Kethra's Anvil",
+    "description": "A scorched mining world on the rim of the Ashfall Reach. The ancestor vault lies under its northern ridge.",
+    "port": false,
+    "faction": "DURN_LEAGUE",
+    "danger": "MEDIUM",
+    "hidden": false,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
+      { "to": "HOLD_DURNVAR", "days": 4, "fuel": 4 },
+      { "to": "CINDER_DRIFT", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "KARRAK_STATION",
+    "display_name": "Karrak Station",
+    "description": "A neutral trading port built into a hollowed asteroid. Everyone's ore spends the same here.",
+    "port": true,
+    "faction": "KARRAK_STATION",
+    "danger": "LOW",
+    "hidden": false,
+    "connections": [
+      { "to": "KETHRAS_ANVIL", "days": 2, "fuel": 2 },
+      { "to": "HOLD_DURNVAR", "days": 3, "fuel": 3 },
+      { "to": "SNAZRIK_HAVEN", "days": 2, "fuel": 2 },
+      { "to": "KHARR_HOLD", "days": 3, "fuel": 3 },
+      { "to": "GRIMHOLT_BELT", "days": 2, "fuel": 2 },
+      { "to": "CINDER_DRIFT", "days": 1, "fuel": 1 }
+    ]
+  },
+  {
+    "key": "HOLD_DURNVAR",
+    "display_name": "Hold Durnvar",
+    "description": "Your home Hold: deep halls, slow councils, and the warmth of a thousand hearths.",
+    "port": true,
+    "faction": "HOLD_DURNVAR",
+    "danger": "LOW",
+    "hidden": false,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 3, "fuel": 3 },
+      { "to": "KETHRAS_ANVIL", "days": 4, "fuel": 4 },
+      { "to": "KHARR_HOLD", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "KHARR_HOLD",
+    "display_name": "Kharr Hold",
+    "description": "Seat of the Kharr League. Proud, suspicious, and well armed.",
+    "port": true,
+    "faction": "KHARR_LEAGUE",
+    "danger": "LOW",
+    "hidden": true,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 3, "fuel": 3 },
+      { "to": "HOLD_DURNVAR", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "CINDER_DRIFT",
+    "display_name": "Cinder Drift",
+    "description": "A drifting field of ash and ice. Ork raiders leave hot wakes through it.",
+    "port": false,
+    "faction": "NONE",
+    "danger": "MEDIUM",
+    "hidden": true,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 1, "fuel": 1 },
+      { "to": "KETHRAS_ANVIL", "days": 2, "fuel": 2 },
+      { "to": "SKRAPFANG_ROCK", "days": 3, "fuel": 3 }
+    ]
+  },
+  {
+    "key": "SKRAPFANG_ROCK",
+    "display_name": "Skrapfang Rock",
+    "description": "A cratered moon where the Orks gather. Loud, even from orbit.",
+    "port": false,
+    "faction": "ORKS",
+    "danger": "HIGH",
+    "hidden": true,
+    "connections": [
+      { "to": "CINDER_DRIFT", "days": 3, "fuel": 3 },
+      { "to": "DA_PIT", "days": 1, "fuel": 1 }
+    ]
+  },
+  {
+    "key": "GITZBOLT_SCRAPFIELD",
+    "display_name": "The Scrapfield",
+    "description": "Wrecks of Ork contraptions, some still twitching.",
+    "port": false,
+    "faction": "ORKS",
+    "danger": "MEDIUM",
+    "hidden": true,
+    "connections": [
+      { "to": "GRIMHOLT_BELT", "days": 2, "fuel": 2 },
+      { "to": "RUSTMAW", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "GRIMHOLT_BELT",
+    "display_name": "Grimholt Belt",
+    "description": "Kin mining stations strung along an asteroid belt, many under raid.",
+    "port": false,
+    "faction": "DURN_LEAGUE",
+    "danger": "MEDIUM",
+    "hidden": true,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
+      { "to": "GITZBOLT_SCRAPFIELD", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "RUSTMAW",
+    "display_name": "Rustmaw",
+    "description": "An Ork camp built from stolen mining rigs. Captive Kin work its pits.",
+    "port": false,
+    "faction": "ORKS",
+    "danger": "HIGH",
+    "hidden": true,
+    "connections": [
+      { "to": "GITZBOLT_SCRAPFIELD", "days": 2, "fuel": 2 },
+      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "DA_PIT",
+    "display_name": "Da Pit",
+    "description": "An Ork fighting-pit world. The cheering never stops.",
+    "port": false,
+    "faction": "ORKS",
+    "danger": "HIGH",
+    "hidden": true,
+    "connections": [
+      { "to": "SKRAPFANG_ROCK", "days": 1, "fuel": 1 },
+      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "URGROT_CAMP",
+    "display_name": "Urgrot's Camp",
+    "description": "A rival boss's hideout, hidden in a gas giant's shadow.",
+    "port": false,
+    "faction": "ORKS",
+    "danger": "HIGH",
+    "hidden": true,
+    "connections": [
+      { "to": "RUSTMAW", "days": 2, "fuel": 2 },
+      { "to": "DA_PIT", "days": 2, "fuel": 2 },
+      { "to": "SNAZRIK_HAVEN", "days": 2, "fuel": 2 }
+    ]
+  },
+  {
+    "key": "SNAZRIK_HAVEN",
+    "display_name": "Snazrik's Haven",
+    "description": "A freebooter port of welded hulls. Rumors, black markets, and very loud music.",
+    "port": true,
+    "faction": "FREEBOOTERS",
+    "danger": "MEDIUM",
+    "hidden": true,
+    "connections": [
+      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
+      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
+    ]
+  }
+]

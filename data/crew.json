@@ -1,0 +1,24 @@
+[
+  {
+    "key": "DORRIK",
+    "display_name": "Old Dorrik",
+    "kin_type": "IRONKIN",
+    "role": "Engineer",
+    "bio": "Gruff, loyal, and older than most of the fleet's ships. Remembers the last Ork war and does not like to talk about it.",
+    "trait": { "name": "Workshop Veteran", "description": "Hull repairs cost 1 Ore less per point." },
+    "repair_discount": 1,
+    "roll_modifiers": [],
+    "protected": true
+  },
+  {
+    "key": "YLSA",
+    "display_name": "Ylsa",
+    "kin_type": "KIN",
+    "role": "Pilot",
+    "bio": "Young, sharp, and on her first expedition. Flies better than she talks.",
+    "trait": { "name": "Steady Hands", "description": "+1 to Nerve rolls outside personal combat." },
+    "repair_discount": 0,
+    "roll_modifiers": [{ "stat": "nerve", "value": 1 }],
+    "protected": false
+  }
+]

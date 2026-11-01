@@ -1,0 +1,34 @@
+[
+  {
+    "key": "ORK_BOYZ_MOB",
+    "display_name": "Mob of Ork Boyz",
+    "resolve": 4,
+    "defense_difficulty": 10,
+    "damage_bonus": 0,
+    "read_difficulty": 8,
+    "intent_weights": { "aggressive": 6, "guarded": 2, "evasive": 2 },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": ["The Boyz roar and surge forward in a wall of choppas.", "A big one bellows 'WAAAGH!' and the mob charges."],
+      "guarded": ["The Boyz crouch behind a toppled ore cart, shooting wildly."],
+      "evasive": ["The mob scatters between the drill rigs, looking for a better angle."]
+    }
+  },
+  {
+    "key": "NOB_GRIZZGUT_1",
+    "display_name": "Nob Grizzgut",
+    "resolve": 6,
+    "defense_difficulty": 11,
+    "damage_bonus": 0,
+    "read_difficulty": 9,
+    "intent_weights": { "aggressive": 5, "guarded": 3, "evasive": 2 },
+    "negotiable": true,
+    "negotiation_difficulty": 13,
+    "telegraphs": {
+      "aggressive": ["Grizzgut lowers his head and revs his choppa. 'OI! YOU! STAND STILL!'"],
+      "guarded": ["Grizzgut hunkers behind a slab of stolen hull plate, grinning."],
+      "evasive": ["Grizzgut sidles toward the vault tunnels, eyeing the loot behind him."]
+    }
+  }
+]

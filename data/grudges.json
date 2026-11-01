@@ -1,0 +1,20 @@
+[
+  {
+    "key": "GRUDGE_SKRAGNAK",
+    "title": "The raid on Kethra's Anvil",
+    "against": "Warboss Skragnak",
+    "description": "His Orks broke the Durn Prospect Fleet, stole the Ancestor Core, and took Fleet-Theyn Hrolla Vask."
+  },
+  {
+    "key": "GRUDGE_GRIZZGUT",
+    "title": "The Nob who keeps coming back",
+    "against": "Nob Grizzgut",
+    "description": "He led the raid on the dig site. Every time you break him, he returns bigger."
+  },
+  {
+    "key": "GRUDGE_SNAZRIK",
+    "title": "Snazrik's unpaid bill",
+    "against": "Kaptin Snazrik",
+    "description": "You broke your debt to the freebooters. They have long memories and short tempers."
+  }
+]

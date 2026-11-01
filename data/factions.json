@@ -1,0 +1,9 @@
+[
+  { "key": "NONE", "display_name": "Unclaimed", "starting_reputation": 0, "ironkin_modifier": 0, "tracked": false },
+  { "key": "HOLD_DURNVAR", "display_name": "Hold Durnvar", "starting_reputation": 10, "ironkin_modifier": 0, "tracked": true },
+  { "key": "DURN_LEAGUE", "display_name": "The Durn League", "starting_reputation": 10, "ironkin_modifier": 0, "tracked": true },
+  { "key": "KHARR_LEAGUE", "display_name": "The Kharr League", "starting_reputation": 0, "ironkin_modifier": -10, "tracked": true },
+  { "key": "KARRAK_STATION", "display_name": "Karrak Station", "starting_reputation": 0, "ironkin_modifier": 5, "tracked": true },
+  { "key": "FREEBOOTERS", "display_name": "Snazrik's Freebooters", "starting_reputation": -5, "ironkin_modifier": 0, "tracked": true },
+  { "key": "ORKS", "display_name": "Skragnak's Orks", "starting_reputation": -20, "ironkin_modifier": 0, "tracked": false }
+]

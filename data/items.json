@@ -1,0 +1,5 @@
+[
+  { "key": "SURVEY_SAMPLES", "display_name": "Survey core samples", "mission": false },
+  { "key": "ORE_CRATES", "display_name": "Crates of raw ore", "mission": false },
+  { "key": "VAULT_RUBBINGS", "display_name": "Rubbings of the vault runes", "mission": true }
+]

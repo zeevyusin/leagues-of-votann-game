@@ -1,0 +1,9 @@
+[
+  {
+    "key": "LODESTONE_OF_KHAZ",
+    "display_name": "Lodestone of Khaz",
+    "unidentified_name": "Humming stone in a rune-cut cage",
+    "benefit": "Always points toward the nearest Votann machine-spirit. (+1 Wits when scanning ancient tech, once equipping is built.)",
+    "drawback": "It hums louder near Orks. They can hear it too."
+  }
+]

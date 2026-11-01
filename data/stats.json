@@ -1,0 +1,7 @@
+[
+  { "key": "grit", "display_name": "Grit", "governs": "Combat, endurance, resisting damage" },
+  { "key": "craft", "display_name": "Craft", "governs": "Repair, engineering, salvage" },
+  { "key": "wits", "display_name": "Wits", "governs": "Scanning, lore, analysis" },
+  { "key": "silver_tongue", "display_name": "Silver Tongue", "governs": "Trade, diplomacy, oaths" },
+  { "key": "nerve", "display_name": "Nerve", "governs": "Piloting, risk-taking, initiative" }
+]
