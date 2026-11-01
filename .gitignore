@@ -1,0 +1,26 @@
+# Dependencies (reinstalled with npm install)
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Logs and caches
+*.log
+.vite/
+.cache/
+
+# Editor and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local environment files
+.env
+.env.*.local
+
+# Claude Code local settings
+.claude/settings.local.json
