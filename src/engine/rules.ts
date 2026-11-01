@@ -1,12 +1,18 @@
 // Derived values, lookups, and shared modifiers.
 import type { GameData, Config } from './schema';
 import type { Rng } from './rng';
-import type { Modifier } from './roll';
+import { toRollEvent, type Modifier, type RollEvent, type RollResult } from './roll';
 import type { Character, GameState, Ship, StatKey } from './types';
 
 export interface Ctx {
   data: GameData;
   rng: Rng;
+  /** Player-facing rolls made during this choice, in order (for the UI's dice animation). */
+  rolls?: RollEvent[];
+}
+
+export function recordRoll(ctx: Ctx, r: RollResult, context: string): void {
+  ctx.rolls?.push(toRollEvent(r, context, r.stat ? statLabel(ctx.data, r.stat) : null));
 }
 
 type Keyed = { key: string };

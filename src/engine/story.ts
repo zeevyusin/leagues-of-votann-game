@@ -8,6 +8,7 @@ import {
   consoleActionFor,
   encounterOf,
   generalModifiers,
+  recordRoll,
   resolveText,
   statLabel,
   type Ctx,
@@ -90,6 +91,7 @@ export function chooseRoute(state: GameState, ctx: Ctx, beatKey: string, routeKe
     if (plan.wearCost && state.character.wear !== null)
       lines.push(...applyEffects(state, ctx, [{ wear: plan.wearCost }], { nonLethal: true }));
     result = roll(ctx.rng, ctx.data.config, plan.stat, plan.statValue, plan.modifiers, plan.difficulty!);
+    recordRoll(ctx, result, lines[0].text);
     tier = result.tier;
     lines.push({ text: describeRoll(result, plan.stat ? statLabel(ctx.data, plan.stat) : null), tone: tierTone(tier) });
   }

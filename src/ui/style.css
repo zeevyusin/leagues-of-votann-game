@@ -398,6 +398,186 @@ button {
   color: var(--accent);
 }
 
+/* ---------- Dice roll overlay ---------- */
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  /* Opaque enough that the result text underneath can't be read before the die lands. */
+  background: rgba(5, 10, 14, 0.9);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.dice-card {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px 16px;
+  border: 1px solid var(--frame);
+  border-radius: 8px;
+  background: linear-gradient(to bottom, var(--panel-raised), var(--panel));
+  box-shadow: 0 0 30px rgba(63, 193, 201, 0.15);
+  text-align: center;
+  animation: dice-fade-in 120ms ease-out;
+}
+
+.dice-context {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.dice-die {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.dice-die svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.die-body {
+  fill: var(--panel);
+  stroke: var(--teal);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.die-face {
+  fill: var(--panel-raised);
+  stroke: var(--teal);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.die-edge {
+  stroke: var(--frame);
+  stroke-width: 2;
+  fill: none;
+}
+
+.dice-number {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46%;
+  transform: translateY(-50%);
+  font-family: var(--font-head);
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+.dice-die.rolling svg {
+  animation: dice-tumble 260ms linear infinite;
+}
+
+.dice-die.rolling .dice-number {
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.dice-die.landed {
+  animation: dice-land 320ms cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+.dice-die.landed.tier-critical .die-body,
+.dice-die.landed.tier-critical .die-face {
+  stroke: var(--accent);
+}
+
+.dice-die.landed.tier-critical {
+  filter: drop-shadow(0 0 14px rgba(240, 138, 36, 0.7));
+}
+
+.dice-die.landed.tier-success {
+  filter: drop-shadow(0 0 10px rgba(111, 211, 160, 0.5));
+}
+
+.dice-die.landed.tier-failure .die-body,
+.dice-die.landed.tier-failure .die-face {
+  stroke: var(--bad);
+}
+
+.dice-die.landed.tier-failure .dice-number {
+  color: var(--bad);
+}
+
+.dice-math {
+  min-height: 1.5em;
+  color: var(--text);
+  font-size: 0.9rem;
+  white-space: pre;
+}
+
+.dice-tier {
+  min-height: 1.6em;
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+}
+
+.dice-tier.tier-critical {
+  color: var(--accent);
+}
+
+.dice-tier.tier-success {
+  color: var(--good);
+}
+
+.dice-tier.tier-partial {
+  color: var(--accent);
+}
+
+.dice-tier.tier-failure {
+  color: var(--bad);
+}
+
+.dice-hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+@keyframes dice-tumble {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(0.9) translateY(-4px); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  75% { transform: rotate(270deg) scale(0.92) translateY(3px); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes dice-land {
+  0% { transform: scale(0.8); }
+  100% { transform: scale(1); }
+}
+
+@keyframes dice-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-card,
+  .dice-die.landed,
+  .dice-die.rolling svg {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .dice-math {
+    white-space: normal;
+  }
+}
+
 .fatal {
   margin: 16px;
   padding: 16px;

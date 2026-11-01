@@ -22,6 +22,38 @@ export interface RollResult {
   natural: 'crit' | 'fumble' | null;
 }
 
+/** A player-facing roll, reported to the UI so it can animate the die. */
+export interface RollEvent {
+  /** What the roll was for, e.g. a route label or a combat stance. */
+  context: string;
+  statLabel: string | null;
+  statValue: number;
+  modifierTotal: number;
+  die: number;
+  sides: number;
+  total: number;
+  difficulty: number;
+  difficultyName: string | null;
+  tier: Tier;
+  natural: 'crit' | 'fumble' | null;
+}
+
+export function toRollEvent(r: RollResult, context: string, statLabel: string | null): RollEvent {
+  return {
+    context,
+    statLabel,
+    statValue: r.statValue,
+    modifierTotal: r.modifiers.reduce((s, m) => s + m.value, 0),
+    die: r.die,
+    sides: r.sides,
+    total: r.total,
+    difficulty: r.difficulty,
+    difficultyName: r.difficultyName,
+    tier: r.tier,
+    natural: r.natural,
+  };
+}
+
 export const TIER_LABEL: Record<Tier, string> = {
   critical: 'Critical success',
   success: 'Success',

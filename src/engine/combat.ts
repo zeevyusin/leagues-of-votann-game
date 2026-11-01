@@ -9,6 +9,7 @@ import {
   hasPassive,
   moduleCap,
   reactorPips,
+  recordRoll,
   statLabel,
   type Ctx,
 } from './rules';
@@ -142,6 +143,7 @@ export function personalRound(state: GameState, ctx: Ctx, combat: PersonalCombat
   combat.enemy_bonus = 0;
 
   const r = roll(ctx.rng, cfg, stat, c.stats[stat], mods, dc);
+  recordRoll(ctx, r, `${stance.charAt(0).toUpperCase()}${stance.slice(1)} vs ${enemy.display_name}`);
   let [dealt, taken] = cfg.COMBAT_DAMAGE_TABLE[r.tier];
   const good = r.tier === 'critical' || r.tier === 'success';
   const lines: Line[] = [{ text: describeRoll(r, statLabel(ctx.data, stat)), tone: good ? 'good' : r.tier === 'partial' ? 'accent' : 'bad' }];
@@ -285,6 +287,7 @@ export function shipRound(state: GameState, ctx: Ctx, combat: ShipCombat, alloc:
   const mods = generalModifiers(state, ctx.data, 'nerve', 'ship');
   if (alloc.engines) mods.push({ label: 'Engines', value: alloc.engines });
   const r = roll(ctx.rng, cfg, 'nerve', state.character.stats.nerve, mods, enemyShip.defense_difficulty);
+  recordRoll(ctx, r, `Exchange of fire vs ${enemyShip.display_name}`);
   const incoming = combat.enemy_alloc.weapons;
   let dealt = 0;
   let taken = 0;

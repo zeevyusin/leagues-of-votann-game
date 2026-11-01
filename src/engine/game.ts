@@ -23,6 +23,7 @@ import {
   oathOf,
   passiveFor,
   reactorPips,
+  recordRoll,
   relicOf,
   resolveText,
   statLabel,
@@ -33,7 +34,7 @@ import {
   xpToNext,
   type Ctx,
 } from './rules';
-import { describeRoll, formatModifiers, resolveDifficulty, roll, tierChances, titleCase, TIER_LABEL } from './roll';
+import { describeRoll, formatModifiers, resolveDifficulty, roll, tierChances, titleCase, TIER_LABEL, type RollEvent } from './roll';
 import { applyEffects, resolveOath } from './effects';
 import { availableRoutes, distressCall, isStranded, travel } from './travel';
 import { arrivalBeat, chooseRoute, currentObjective, finishEncounter, planRoute, routeLock, startBeat, tierTone } from './story';
@@ -71,9 +72,20 @@ function topScene(state: GameState): Scene {
 // ======================= applyChoice =======================
 
 export function applyChoice(prev: GameState, data: GameData, id: string, text?: string, rngOverride?: Rng): GameState {
+  return applyChoiceWithRolls(prev, data, id, text, rngOverride).state;
+}
+
+/** Same as applyChoice, but also returns the player-facing rolls made, in order, for the dice animation. */
+export function applyChoiceWithRolls(
+  prev: GameState,
+  data: GameData,
+  id: string,
+  text?: string,
+  rngOverride?: Rng,
+): { state: GameState; rolls: RollEvent[] } {
   const state: GameState = structuredClone(prev);
   const rng = rngOverride ?? new SeededRng(state.rng);
-  const ctx: Ctx = { data, rng };
+  const ctx: Ctx = { data, rng, rolls: [] };
   const scene = topScene(state);
 
   switch (scene.type) {
@@ -120,7 +132,7 @@ export function applyChoice(prev: GameState, data: GameData, id: string, text?: 
 
   if (!rngOverride) state.rng = rng.state;
   afterChoice(state, ctx);
-  return state;
+  return { state, rolls: ctx.rolls ?? [] };
 }
 
 /** Checks that run whenever the player lands back on the hub. */
@@ -240,6 +252,7 @@ function maintenance(state: GameState, ctx: Ctx, kind: string): void {
     state.self_maintenance_used = true;
     const mods = generalModifiers(state, ctx.data, 'craft', 'story');
     const r = roll(ctx.rng, cfg, 'craft', c.stats.craft, mods, cfg.WEAR_MAINTENANCE_DIFFICULTY);
+    recordRoll(ctx, r, 'Maintenance');
     lines.push({ text: describeRoll(r, statLabel(ctx.data, 'craft')), tone: tierTone(r.tier) });
     const amount = r.tier === 'critical' || r.tier === 'success' ? cfg.WEAR_MAINTENANCE_AMOUNT : r.tier === 'partial' ? Math.floor(cfg.WEAR_MAINTENANCE_AMOUNT / 2) : 0;
     if (amount) lines.push(...applyEffects(state, ctx, [{ wear: -amount }]));
@@ -268,6 +281,7 @@ function mutinyChoice(state: GameState, ctx: Ctx, id: string): void {
   } else if (id === 'rally') {
     const mods = generalModifiers(state, ctx.data, 'silver_tongue', 'story').filter((m) => !m.label.startsWith('Hearthfire'));
     const r = roll(ctx.rng, cfg, 'silver_tongue', state.character.stats.silver_tongue, mods, cfg.MUTINY_DIFFICULTY);
+    recordRoll(ctx, r, 'Rally the crew');
     lines.push({ text: describeRoll(r, statLabel(ctx.data, 'silver_tongue')), tone: tierTone(r.tier) });
     if (r.tier === 'critical' || r.tier === 'success') lines.push({ text: 'Your words land. The crew grumbles, but stays.' });
     else if (r.tier === 'partial') {

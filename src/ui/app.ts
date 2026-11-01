@@ -1,6 +1,8 @@
 // The browser console. Renders a View from the engine and turns key presses and clicks into choices.
 import type { GameData } from '../engine/schema';
-import { applyChoice, buildView } from '../engine/game';
+import { applyChoiceWithRolls, buildView } from '../engine/game';
+import type { RollEvent } from '../engine/roll';
+import { DiceOverlay, diceEnabled, setDiceEnabled } from './dice';
 import { creationChoose, creationView, newDraft, newGame, type CreationDraft } from '../engine/creation';
 import { newSeed } from '../engine/rng';
 import type { GameState, HubTab, Line, Option, View } from '../engine/types';
@@ -17,6 +19,9 @@ const TAB_ORDER: HubTab[] = ['comms', 'nav', 'ship', 'logbook'];
 export class App {
   private mode: Mode = { kind: 'title' };
   private lastScreenKey = '';
+  private dice = new DiceOverlay();
+  /** Rolls from the last choice, animated after the next render. */
+  private pendingRolls: RollEvent[] = [];
 
   constructor(
     private root: HTMLElement,
@@ -63,6 +68,7 @@ export class App {
       options.push({ id: `sys:save:${i}`, label: `Save to slot ${i}`, detail: s ? `Overwrites: ${s.summary}` : 'Empty' });
     }
     options.push({ id: 'sys:export', label: 'Export save to a file' });
+    options.push({ id: 'sys:dice', label: `Dice animation: ${diceEnabled() ? 'On' : 'Off'}`, detail: 'Press to switch' });
     options.push({ id: 'sys:quit', label: 'Quit to title', detail: 'Your progress is autosaved.', tone: 'muted' });
     return {
       kind: 'system',
@@ -94,6 +100,9 @@ export class App {
       if (this.mode.kind === 'game') this.mode.message = `Something went wrong: ${e instanceof Error ? e.message : String(e)}`;
     }
     this.render();
+    const rolls = this.pendingRolls;
+    this.pendingRolls = [];
+    if (rolls.length && diceEnabled()) void this.dice.play(rolls);
   }
 
   private handle(id: string, text?: string): void {
@@ -134,7 +143,9 @@ export class App {
       this.systemChoice(mode, id);
       return;
     }
-    mode.state = applyChoice(mode.state, this.data, id, text);
+    const result = applyChoiceWithRolls(mode.state, this.data, id, text);
+    mode.state = result.state;
+    this.pendingRolls = result.rolls;
     writeSave(AUTOSAVE, mode.state, this.data);
   }
 
@@ -146,6 +157,9 @@ export class App {
     } else if (id === 'sys:export') {
       exportSave(mode.state, this.data);
       mode.message = 'Save file exported.';
+    } else if (id === 'sys:dice') {
+      setDiceEnabled(!diceEnabled());
+      mode.message = `Dice animation ${diceEnabled() ? 'on' : 'off'}.`;
     } else if (id === 'sys:quit') this.mode = { kind: 'title' };
   }
 
@@ -157,6 +171,12 @@ export class App {
   // ---------- Input ----------
 
   private onKey(e: KeyboardEvent): void {
+    // While dice are rolling, any key skips the animation and does nothing else.
+    if (this.dice.busy) {
+      e.preventDefault();
+      this.dice.skip();
+      return;
+    }
     const target = e.target as HTMLElement | null;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
       if (e.key === 'Escape') target.blur();
