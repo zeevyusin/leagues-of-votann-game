@@ -5,5 +5,12 @@
     "unidentified_name": "Humming stone in a rune-cut cage",
     "benefit": "Always points toward the nearest Votann machine-spirit. (+1 Wits when scanning ancient tech, once equipping is built.)",
     "drawback": "It hums louder near Orks. They can hear it too."
+  },
+  {
+    "key": "ANCESTOR_CORE",
+    "display_name": "The Ancestor Core",
+    "unidentified_name": "The Ancestor Core",
+    "benefit": "An ancestor machine-spirit of terrible power, and it seems to like you. (Its effects arrive with relic equipping.)",
+    "drawback": "Every League in the Reach wants it, and some of them will ask nicely."
   }
 ]

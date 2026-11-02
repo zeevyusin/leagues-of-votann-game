@@ -5,7 +5,9 @@ import { applyEffects, cargoSpace, moduleLabel } from './effects';
 import { passDay } from './travel';
 import {
   consoleActionFor,
+  injuryName,
   itemOf,
+  liveWaaagh,
   marketOf,
   portOpen,
   subclassOf,
@@ -30,7 +32,8 @@ export function buyMultiplier(state: GameState, ctx: Ctx, market: Market, essent
   const rep = state.reputation[systemOf(ctx.data, market.port).faction] ?? 0;
   if (rep >= cfg.REPUTATION_DISCOUNT_AT) m *= 1 - cfg.REPUTATION_DISCOUNT;
   else if (rep < cfg.REPUTATION_SURCHARGE_BELOW) m *= 1 + cfg.REPUTATION_SURCHARGE;
-  if (essentials && state.story.waaagh_meter !== null) m *= waaaghBand(cfg, state.story.waaagh_meter).price_multiplier;
+  const meter = liveWaaagh(state);
+  if (essentials && meter !== null) m *= waaaghBand(cfg, meter).price_multiplier;
   if (state.haggle_active) m *= 1 - haggleRate(state, ctx);
   return m;
 }
@@ -85,7 +88,7 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
     { text: `You have ${r.ore} Ore. Cargo space ${cargoSpace(state)}/${state.ship.cargo_capacity}.`, tone: 'muted' },
   ];
   if (state.haggle_active) body.push({ text: 'Haggle is in effect for this visit.', tone: 'good' });
-  if (state.story.waaagh_meter !== null && waaaghBand(cfg, state.story.waaagh_meter).price_multiplier > 1)
+  if (liveWaaagh(state) !== null && waaaghBand(cfg, liveWaaagh(state)).price_multiplier > 1)
     body.push({ text: 'The Waaagh! has pushed up the price of Fuel and Supplies.', tone: 'bad' });
 
   const options: Option[] = [];
@@ -157,6 +160,21 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
       tone: 'accent',
       locked: lockedReason(state, ctx.data, rumor.requirements) ?? canAfford(cost),
     });
+  }
+
+  // Injuries (combat-system.md 3.8): Kin rest them off, Ironkin pay for repairs.
+  const injury = state.character.injuries[0];
+  if (injury) {
+    const name = injuryName(ctx.data, state.character, injury);
+    if (state.character.kin_type === 'KIN')
+      options.push({ id: 'rest', label: `Rest and heal: ${name} (${cfg.INJURY_REST_DAYS} days)`, detail: 'Days pass as usual.', tone: 'good' });
+    else
+      options.push({
+        id: 'repair_injury',
+        label: `Maintenance: repair ${name} (${cfg.INJURY_REPAIR_ORE} Ore)`,
+        locked: canAfford(cfg.INJURY_REPAIR_ORE),
+        tone: 'good',
+      });
   }
 
   // Always available, so a captain with no Ore can still earn enough to fly on.
@@ -272,6 +290,24 @@ export function marketChoice(state: GameState, ctx: Ctx, id: string): Line[] | n
       r.ore += cfg.DOCK_WORK_ORE;
       lines.push({ text: `+${cfg.DOCK_WORK_ORE} Ore`, tone: 'good' });
       return lines;
+    }
+    case 'rest': {
+      const injury = state.character.injuries[0];
+      if (!injury || state.character.kin_type !== 'KIN') return null;
+      const lines: Line[] = [];
+      for (let i = 0; i < cfg.INJURY_REST_DAYS; i++) lines.push(...passDay(state, ctx));
+      state.character.injuries.shift();
+      lines.push({ text: `Quiet days in port. ${injuryName(ctx.data, state.character, injury)} has healed.`, tone: 'good' });
+      return lines;
+    }
+    case 'repair_injury': {
+      const injury = state.character.injuries[0];
+      if (!injury || state.character.kin_type !== 'IRONKIN' || !pay(cfg.INJURY_REPAIR_ORE)) return null;
+      state.character.injuries.shift();
+      return [
+        { text: `-${cfg.INJURY_REPAIR_ORE} Ore`, tone: 'bad' },
+        { text: `The dock techs swap out the damaged parts. ${injuryName(ctx.data, state.character, injury)} is repaired.`, tone: 'good' },
+      ];
     }
     case 'haggle': {
       const rate = haggleRate(state, ctx);

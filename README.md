@@ -20,7 +20,7 @@ Then open http://localhost:5173.
 
 | Command | What it does |
 |---|---|
-| `npm test` | Runs the engine tests, including automated Act 1 and Act 2 playthroughs for every class and kin type |
+| `npm test` | Runs the engine tests, including automated playthroughs of all three acts, the epilogue and free roam for every class and kin type |
 | `npm run build` | Type-checks and builds a static site into `dist/` |
 | `npm run typecheck` | Type-checks only |
 

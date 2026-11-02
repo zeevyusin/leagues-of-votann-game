@@ -305,7 +305,7 @@ The Waaagh! launches toward Hold Durnvar. Act 3 has three fixed beats, but each 
 The rally happens at **Hold Durnvar**, wherever the muster was sounded. It plays out like this:
 
 - **Allies arrive**, if earned. Each Act 2 reward the player holds gets a short arrival scene. If Hrolla was rescued, she gives the speech.
-- **Last port visit.** One final market visit, with repairs, buying and recruiting, at Hold Durnvar's prices. After this beat the market is closed for the rest of Act 3.
+- **Last port visit.** The Hold's shipwrights repair every ship in the fleet for free (Hull back to full), and the Hold's stores add 8 Supplies, so even a broke captain starts the battle whole. Then comes one final market visit for upgrades, feasts and Supplies at Hold Durnvar's prices. When the player chooses **Lead the fleet out** on Nav, the market closes for the rest of Act 3.
 - **Dorrik's oath.** Dorrik names the oath he swore in the last Ork war: "I will not leave a Kin behind to the greenskins again." The player can swear to honour it with him, which creates `OATH_DORRIK_VOW`:
   - Kept if nobody on the crew is lost in Act 3.
   - While sworn, Dorrik gives +2 to the boarding fight in beat 3.3.
@@ -326,9 +326,9 @@ The battle is fought in **three waves**, each one a ship fight. Hull carries ove
 | 2 | Gitzbolt's gunship | Carries the super-weapon and the Ancestor Core. |
 | 3 | The flagship's guard | Skragnak's Kill Kroozer and its escort. Beating this wave leads straight into the boarding of beat 3.3. |
 
-**Between waves, the player gets one breather choice** `[TUNABLE]`:
-- **Patch the hull:** Dorrik restores `ACT3_BREATHER_HULL` Hull, costing Supplies.
-- **Rally the crew:** `ACT3_BREATHER_HEARTHFIRE` Hearthfire.
+**Between waves, the player gets one breather choice** `[TUNABLE]` (the values live in the breather beats in `story_beats_act3.json`):
+- **Patch the hull:** Dorrik restores 6 Hull for 2 Supplies.
+- **Rally the crew:** +10 Hearthfire.
 - **Press on:** +2 to the first roll of the next wave.
 
 If the meter launched early (section 6.6), there is no breather between waves 1 and 2.
@@ -338,13 +338,13 @@ If the meter launched early (section 6.6), there is no breather between waves 1 
 | Condition | Effect |
 |---|---|
 | `ALLIES_LEAGUE` | League ships take wave 1. It is narrated, not fought. |
-| `INTEL_MUSTER` and Strike the muster | First strike: each wave's enemy starts with `ACT3_FIRST_STRIKE_DAMAGE` Hull damage. |
+| `INTEL_MUSTER` and Strike the muster | First strike: each wave's enemy starts with 3 Hull damage. |
 | `ALLIES_URGROT` | Urgrot's ships turn on Skragnak in wave 3, so the wave 3 enemy starts at half Hull. |
 | Waaagh! meter below 30 | Enemy Hull -25%. |
 | Waaagh! meter 60 or higher | Enemy Hull +25%. |
 | Meter launched early | Enemy Hull +50%, and no first breather. |
 
-**The super-weapon.** In waves 2 and 3, Gitzbolt's weapon fires at the end of every round and deals `SUPERWEAPON_DAMAGE` Hull damage, ignoring shields. There are two ways to stop it:
+**The super-weapon.** In wave 2, Gitzbolt's weapon fires at the end of every round and deals `SUPERWEAPON_DAMAGE` Hull damage, ignoring shields. Wave 3 can only be reached by beating wave 2, which always silences it. There are two ways to stop it:
 - **Use the counter-key.** This needs `TECH_COUNTERKEY` and takes the round's choice, with no roll. It shuts the weapon down for the rest of the battle and keeps the Core intact.
 - **Disable the gunship in wave 2.** The weapon falls silent, and the player then chooses:
   - **Board the gunship** (a boarding fight, `combat-system.md` Phase 3). Winning recovers the Core.
@@ -506,6 +506,7 @@ Both react to the player's choices, which gives a class-neutral "voice" in every
   - The player loses to Skragnak while Hearthfire is Low (section 6.7.4).
 
   If Hull reaches 0 at Mid or High Hearthfire, she is hurt but survives.
+- Before Act 3, Ylsa is safe from every other loss: defeat costs and a failed mutiny rally skip her (crew field `act3_risk`).
 - **Warnings.** From Act 2 on, Ylsa sends a worried Comms line each time Hearthfire enters the Low band, so the risk is never a surprise. The rally beat (6.7.2) gives a last chance to send her to safety.
 - **Dorrik never dies.** His vow (`OATH_DORRIK_VOW`, section 6.7.2) is kept if no crew member is lost in Act 3, and broken otherwise. Either way it gets an epilogue line.
 - **Recruited crew**, such as the freed miners and Brokka, get one epilogue line each. A crew member lost in Act 3 is named in the epilogue.
@@ -588,14 +589,16 @@ hrolla_status         CAPTIVE | RESCUED | LOST
 grizzgut_encounters   list of { beat, outcome }
 core_status           STOLEN | RECOVERED | DESTROYED | LOST
 ship_name             string
-act3_site             HOLD_DURNVAR | SKRAPFANG_ROCK          # Milestone 3
-void_battle           { wave: 1..3, result: WON | LOST }     # Milestone 3
-warboss_resolution    DUEL | USURPER | UNPLUGGING | AMBUSH | LAST_STAND
-skragnak_fate         EXECUTED | EXILED | HUMILIATED
-grudge_settlement     BLOOD | CUNNING | ORK_HANDS | GREAT_COST
-hold_fate             UNBROKEN | SCARRED | EVACUATED
-crew_lost             list of crew keys lost in Act 3
-post_game             boolean
+crew_lost             list of crew keys lost in Act 3          # Milestone 3
+post_game             boolean: free-roam after the epilogue
+ending                { warboss, skragnak_fate, grudge, hold, core, grizzgut }, built when the epilogue starts
+
+Act 3 decisions are story flags, set by the Act 3 beats and read by the ending builder:
+ACT3_STARTED, ACT3_FORCED, ACT3_PHASE (RALLY | BATTLE | DONE), ACT3_SITE, ACT3_STRIKE_MUSTER,
+DORRIK_VOW, YLSA_SENT_AWAY, SUPERWEAPON_DOWN, COUNTERKEY_USED, CORE_RECOVERABLE, ACT3_BATTLE_LOST,
+ACT3_DESPERATE, HOLD_FATE_DROP (a number), GRIZZGUT_FINAL (ASIDE | BEATEN | WON),
+RESOLUTION (DUEL | USURPER | UNPLUGGING | AMBUSH | LAST_STAND), SKRAGNAK_LOST,
+SKRAGNAK_FATE (EXECUTED | EXILED | HUMILIATED), CORE_CHOICE (RETURNED | KEPT | DESTROYED), CREW_LOST.
 ```
 
 ### 10.3 New config values
@@ -614,13 +617,16 @@ ORK_TONE = "GRIM_FUNNY"     # [DECIDED] flag
 ALLOW_SHIP_NAMING = true    # [DECIDED] flag
 CAMPAIGN_LENGTH = "MEDIUM"  # [DECIDED] flag
 ALLOW_POST_GAME = true      # [DECIDED] flag
-ACT3_BREATHER_HULL = 6          # Milestone 3
-ACT3_BREATHER_SUPPLIES = 2
-ACT3_BREATHER_HEARTHFIRE = 10
-ACT3_FIRST_STRIKE_DAMAGE = 3
+ACT3_MUSTER_PORTS = [KARRAK_STATION, HOLD_DURNVAR]   # Milestone 3
+ACT3_RALLY_SYSTEM = HOLD_DURNVAR
+ACT3_FIRST_BEAT = A3_RALLY
+ACT3_LAUNCH_BEAT = A3_DORRIK_VOW
 ACT3_WAVE_HULL_SCALE = { scattered: 0.75, gathering: 1.0, rising: 1.25, launched: 1.5 }
-SUPERWEAPON_DAMAGE = 3
-ACT3_DESPERATE_PENALTY = -2     # boarding after a lost battle, or after losing a 3.3 fight
+SUPERWEAPON_DAMAGE = 2
+HOLD_SCARRED_AT = 60
+POST_GAME_START = { UNBROKEN: HOLD_DURNVAR, SCARRED: HOLD_DURNVAR, EVACUATED: KARRAK_STATION }
+# Breather values, first strike (3), Urgrot (half Hull) and the -2 desperate penalty
+# live on the Act 3 beats and encounters in data, not in config.
 ```
 
 ---

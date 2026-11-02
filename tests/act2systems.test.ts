@@ -1,5 +1,6 @@
 // Milestone 2 systems: market, travel events, jobs, withdraw, console actions, traits, deferring, migration.
 import { describe, expect, it } from 'vitest';
+import { SAVE_VERSION } from '../src/engine/types';
 import { applyChoice, buildView } from '../src/engine/game';
 import { personalWithdraw, startCombat, useCombatAction, personalRound, shipWithdraw } from '../src/engine/combat';
 import { marketChoice, fuelPrice, upgradePrice, sellPrice, currentMarket } from '../src/engine/market';
@@ -54,7 +55,7 @@ describe('Act 2 start', () => {
     legacy.story.current_beat = 'A1_B1_THE_SURVEY';
     delete legacy.story.active_beats;
     const migrated = migrateState(legacy as unknown as GameState);
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(SAVE_VERSION);
     expect(migrated.story.active_beats).toEqual(['A1_B1_THE_SURVEY']);
     expect(migrated.story.deferred_beats).toEqual([]);
   });

@@ -7,6 +7,7 @@ import {
   beatOf,
   consoleActionFor,
   crewOf,
+  crewSafe,
   encounterOf,
   enemyOf,
   enemyShipOf,
@@ -15,7 +16,10 @@ import {
   grudgeOf,
   hasPassive,
   hearthfireBand,
+  inAct3,
+  injuryName,
   itemOf,
+  liveWaaagh,
   kinTypeOf,
   loreOf,
   maxHealth,
@@ -41,7 +45,9 @@ import { applyEffects, resolveOath } from './effects';
 import { availableRoutes, distressCall, isStranded, routeFuel, travel } from './travel';
 import {
   arrivalBeat,
+  boardShip,
   canDefer,
+  leaveShip,
   chooseRoute,
   currentObjectives,
   deferBeat,
@@ -53,10 +59,29 @@ import {
   tierTone,
 } from './story';
 import {
+  canLaunch,
+  canMusterHere,
+  epiloguePages,
+  launchFleet,
+  musterScreen,
+  rallyLines,
+  soundMuster,
+  startFreeRoam,
+  ylsaWarning,
+} from './act3';
+import {
+  RANGES,
   STANCE_STAT,
+  TARGETS,
+  apparentIntent,
   buffModifiers,
   combatActionLock,
+  counterKeyLock,
+  leverageModifiers,
   matchupModifier,
+  negotiateLock,
+  negotiationDifficulty,
+  useCounterKey,
   personalRound,
   personalWithdraw,
   readBonus,
@@ -148,6 +173,23 @@ export function applyChoiceWithRolls(
     case 'mutiny':
       mutinyChoice(state, ctx, id);
       break;
+    case 'muster':
+      if (id === 'confirm') soundMuster(state, ctx);
+      else if (id === 'back') state.scenes.pop();
+      break;
+    case 'board':
+      if (id === 'board') boardShip(state, ctx);
+      else if (id === 'leave') leaveShip(state, ctx);
+      break;
+    case 'epilogue': {
+      if (id !== 'continue') break;
+      if (scene.page + 1 < epiloguePages(state, ctx).length) scene.page++;
+      else {
+        state.scenes.pop();
+        startFreeRoam(state, ctx);
+      }
+      break;
+    }
   }
 
   if (!rngOverride) state.rng = rng.state;
@@ -164,6 +206,7 @@ function afterChoice(state: GameState, ctx: Ctx): void {
   if (state.character.stat_points > 0) state.scenes.push({ type: 'level_up' });
   else if (state.resources.hearthfire <= 0) state.scenes.push({ type: 'mutiny' });
   else if (progressChecks(state, ctx)) return;
+  else if (ylsaWarning(state, ctx)) return;
   else {
     const beat = arrivalBeat(state, ctx);
     if (beat) startBeat(state, ctx, beat);
@@ -171,7 +214,7 @@ function afterChoice(state: GameState, ctx: Ctx): void {
 }
 
 function canAnswer(state: GameState, ctx: Ctx, beatKey: string): boolean {
-  return state.story.active_beats.includes(beatKey) && beatOf(ctx.data, beatKey).trigger === 'comms';
+  return !inAct3(state) && state.story.active_beats.includes(beatKey) && beatOf(ctx.data, beatKey).trigger === 'comms';
 }
 
 const jobFlag = (key: string) => `JOB_${key}`;
@@ -183,7 +226,7 @@ function messageChoice(state: GameState, ctx: Ctx, key: string, id: string): voi
   } else if (id === 'answer' && msg.beat && canAnswer(state, ctx, msg.beat)) {
     state.scenes.pop();
     startBeat(state, ctx, msg.beat);
-  } else if ((id === 'accept' || id === 'decline') && msg.job && !state.story.flags[jobFlag(key)]) {
+  } else if ((id === 'accept' || id === 'decline') && msg.job && !state.story.flags[jobFlag(key)] && !inAct3(state)) {
     state.story.flags[jobFlag(key)] = id === 'accept' ? 'ACCEPTED' : 'DECLINED';
     state.scenes.pop();
     if (id === 'accept') {
@@ -229,6 +272,12 @@ function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hu
     }
     case 'distress':
       if (isStranded(state, ctx)) state.scenes.push({ type: 'notice', title: 'Distress call', lines: distressCall(state, ctx) });
+      return;
+    case 'muster':
+      if (canMusterHere(state, ctx)) state.scenes.push({ type: 'muster' });
+      return;
+    case 'launch':
+      launchFleet(state, ctx);
       return;
     case 'repair': {
       const plan = repairPlan(state, ctx);
@@ -348,7 +397,7 @@ function mutinyChoice(state: GameState, ctx: Ctx, id: string): void {
       lines.push({ text: 'They stay, but only after you promise back pay.' });
       lines.push(...applyEffects(state, ctx, [{ ore: -20 }]));
     } else {
-      const atRisk = state.crew.filter((k) => !crewOf(ctx.data, k).protected);
+      const atRisk = state.crew.filter((k) => !crewSafe(ctx.data, state, k));
       if (atRisk.length) lines.push(...applyEffects(state, ctx, [{ remove_crew: atRisk[atRisk.length - 1] }]));
       else lines.push({ text: 'Nobody leaves, but nobody is happy either.' });
     }
@@ -376,7 +425,21 @@ function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipC
   }
   if (combat.mode === 'personal') {
     if (kind !== 'stance' || !STANCES.includes(arg as Stance)) return;
+    if (arg === 'negotiate' && negotiateLock(ctx, combat)) return;
     settle(personalRound(state, ctx, combat, arg as Stance));
+    return;
+  }
+  // Range and target are standing orders: changing them does not use the round.
+  if (kind === 'range') {
+    combat.range_pref = RANGES[(RANGES.indexOf(combat.range_pref) + 1) % RANGES.length];
+    return;
+  }
+  if (kind === 'target') {
+    combat.target = TARGETS[(TARGETS.indexOf(combat.target) + 1) % TARGETS.length];
+    return;
+  }
+  if (kind === 'counterkey') {
+    if (!counterKeyLock(state, ctx, combat)) settle(useCounterKey(state, ctx, combat));
     return;
   }
   if (kind === 'weapons' && combat.pending_weapons === null) {
@@ -431,6 +494,35 @@ export function buildView(state: GameState, data: GameData): View {
       return levelUpView(state, ctx, status);
     case 'mutiny':
       return mutinyView(state, ctx, status);
+    case 'muster':
+      return { kind: 'muster', title: 'Sound the muster', subtitle: 'Act 3: The Waaagh!', status, ...musterScreen(state, ctx) };
+    case 'board': {
+      const enemy = enemyShipOf(data, scene.combat.enemy.key);
+      const boarding = encounterOf(data, encounterOf(data, scene.combat.encounter).boarding!);
+      return {
+        kind: 'board',
+        title: `${enemy.display_name} is disabled`,
+        subtitle: 'Ship combat',
+        status,
+        body: [...scene.lines, { text: '' }, { text: 'She is drifting, dark and open. You could put a boarding party aboard.', tone: 'accent' }],
+        options: [
+          { id: 'board', label: 'Board her', detail: `Personal combat: ${boarding.enemies.map((e) => enemyOf(data, e).display_name).join(', then ')}`, tone: 'accent' },
+          { id: 'leave', label: 'Leave her', tone: 'muted' },
+        ],
+      };
+    }
+    case 'epilogue': {
+      const pages = epiloguePages(state, ctx);
+      const page = pages[Math.min(scene.page, pages.length - 1)];
+      const last = scene.page >= pages.length - 1;
+      return {
+        kind: 'epilogue',
+        title: page.title,
+        subtitle: `Epilogue, ${scene.page + 1} of ${pages.length}`,
+        body: page.lines,
+        options: [{ id: 'continue', label: last ? 'Begin free roam' : 'Continue', tone: 'accent' }],
+      };
+    }
   }
 }
 
@@ -452,8 +544,10 @@ function statusBar(state: GameState, ctx: Ctx): StatusItem[] {
     const w = wearBand(cfg, c.wear);
     items.push({ label: 'Wear', value: `${c.wear} ${titleCase(w.state)}`, tone: w.penalty < 0 ? 'bad' : undefined });
   }
-  if (state.story.waaagh_meter !== null) items.push({ label: 'Waaagh!', value: `${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}`, tone: 'accent' });
+  const meter = liveWaaagh(state);
+  if (meter !== null) items.push({ label: 'Waaagh!', value: `${meter}/${cfg.WAAAGH_LAUNCH}`, tone: 'accent' });
   if (c.fatigued) items.push({ label: 'Fatigued', value: String(cfg.FATIGUE_PENALTY), tone: 'bad' });
+  if (c.injuries.length) items.push({ label: 'Injuries', value: String(c.injuries.length), tone: 'bad' });
   return items;
 }
 
@@ -527,7 +621,13 @@ function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): Vi
       tone: waiting.has(r.to) ? 'accent' : undefined,
     };
   });
-  if (state.character.subclass === ctx.data.config.SAFE_ROUTE_SUBCLASS) {
+  if (canMusterHere(state, ctx))
+    options.push({ id: 'muster', label: 'Sound the muster', detail: 'Start Act 3. There is no coming back.', tone: 'accent' });
+  if (canLaunch(state)) {
+    body.push({ text: '' }, { text: 'The fleet is gathered. No more travel: when you are ready, lead them out.', tone: 'accent' });
+    options.push({ id: 'launch', label: 'Lead the fleet out', detail: 'The battle begins. The market closes.', tone: 'accent' });
+  }
+  if (state.character.subclass === ctx.data.config.SAFE_ROUTE_SUBCLASS && !inAct3(state)) {
     const action = consoleActionFor(ctx.data, state.character);
     options.push({
       id: 'safe_route',
@@ -562,6 +662,13 @@ function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: stri
     for (const r of state.relics) {
       const info = relicOf(ctx.data, r.key);
       body.push({ text: `  ${r.identified ? info.display_name : info.unidentified_name}${r.identified ? '' : ' (unidentified)'}`, tone: 'accent' });
+    }
+  }
+  if (c.injuries.length) {
+    body.push({ text: '' }, { text: 'Injuries (treat them at a port market):', tone: 'muted' });
+    for (const key of c.injuries) {
+      const i = ctx.data.injuries.find((x) => x.key === key)!;
+      body.push({ text: `  ${injuryName(ctx.data, c, key)}: ${i.value} ${statLabel(ctx.data, i.stat)}`, tone: 'bad' });
     }
   }
   body.push({ text: '' }, { text: 'Crew:', tone: 'muted' });
@@ -635,10 +742,16 @@ function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string)
     body.push({ text: `  ${info.description}`, tone: 'muted' });
   }
 
-  if (state.story.waaagh_meter !== null) {
+  const meter = liveWaaagh(state);
+  if (meter !== null) {
     body.push({ text: '' }, { text: 'THE WAAAGH!', tone: 'heading' });
-    const band = waaaghBand(cfg, state.story.waaagh_meter);
-    body.push({ text: `${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}: ${titleCase(band.band)}. It grows with every journey.`, tone: 'accent' });
+    const band = waaaghBand(cfg, meter);
+    body.push({ text: `${meter}/${cfg.WAAAGH_LAUNCH}: ${titleCase(band.band)}. It grows with every journey.`, tone: 'accent' });
+  }
+  const end = state.story.ending;
+  if (end && state.story.post_game) {
+    body.push({ text: '' }, { text: 'THE SAGA', tone: 'heading' });
+    body.push({ text: `Skragnak: ${titleCase(end.warboss)}, ${titleCase(end.skragnak_fate)}. Hold Durnvar: ${titleCase(end.hold)}. The Core: ${titleCase(end.core)}.`, tone: 'accent' });
   }
 
   if (state.story.flags.ACT2_STARTED) {
@@ -686,7 +799,12 @@ function messageView(state: GameState, ctx: Ctx, key: string): View {
     const decided = state.story.flags[jobFlag(key)];
     if (decided) body.push({ text: decided === 'ACCEPTED' ? 'You accepted this contract.' : 'You turned this job down.', tone: 'muted' });
     else {
-      options.push({ id: 'accept', label: 'Accept the contract', tone: 'accent', locked: lockedReason(state, ctx.data, msg.job.requirements) });
+      options.push({
+        id: 'accept',
+        label: 'Accept the contract',
+        tone: 'accent',
+        locked: inAct3(state) ? 'No time: the Waaagh! is here' : lockedReason(state, ctx.data, msg.job.requirements),
+      });
       options.push({ id: 'decline', label: 'Turn it down' });
     }
   }
@@ -698,6 +816,10 @@ function beatView(state: GameState, ctx: Ctx, key: string): View {
   const beat = beatOf(ctx.data, key);
   const c = state.character;
   const body: Line[] = [{ text: resolveText(beat.intro_text, state) }];
+  if (key === ctx.data.config.ACT3_FIRST_BEAT) {
+    const allies = rallyLines(state, ctx);
+    if (allies.length) body.push({ text: '' }, ...allies);
+  }
   const note = beat.kin_notes?.[c.kin_type];
   if (note) body.push({ text: '' }, { text: note, tone: 'teal' });
   body.push({ text: '' }, { text: `Goal: ${beat.goal}`, tone: 'accent' });
@@ -725,7 +847,14 @@ function beatView(state: GameState, ctx: Ctx, key: string): View {
     return { id: `route:${route.key}`, label, detail, locked: lock };
   });
   if (canDefer(ctx, key)) options.push({ id: 'defer', label: 'Not now', detail: 'Come back on a later visit.', tone: 'muted' });
-  const subtitle = beat.trigger === 'event' ? 'Travel event' : beat.thread ? `Act ${beat.act}: ${threadOf(ctx.data, beat.thread).title}` : `Act ${beat.act}`;
+  const subtitle =
+    beat.trigger === 'event'
+      ? 'Travel event'
+      : beat.thread
+        ? `Act ${beat.act}: ${threadOf(ctx.data, beat.thread).title}`
+        : beat.act === 3
+          ? 'Act 3: The Waaagh!'
+          : `Act ${beat.act}`;
   return { kind: 'beat', title: beat.title, subtitle, body, options };
 }
 
@@ -752,8 +881,11 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
     text: `ROUND ${combat.round}    Your Health ${c.health}/${maxHealth(cfg, c)}${c.wear !== null ? `    Wear ${c.wear}` : ''}    ${enemy.display_name} Resolve ${combat.enemy.resolve}/${combat.enemy.resolve_max}`,
     tone: 'heading',
   });
-  if (combat.read === 'clear') body.push({ text: `${combat.telegraph}   [Read: Clear, ${titleCase(combat.intent)}]`, tone: 'teal' });
+  // A misleading read looks exactly like a clear one (combat-system.md 3.2).
+  const seen = apparentIntent(combat);
+  if (combat.read !== 'vague') body.push({ text: `${combat.telegraph}   [Read: Clear, ${titleCase(seen)}]`, tone: 'teal' });
   else body.push({ text: `Hard to read. ${enemy.display_name} looks either ${combat.vague_pair[0]} or ${combat.vague_pair[1]}.   [Read: Vague]`, tone: 'muted' });
+  if (encounterOf(ctx.data, combat.encounter).duel) body.push({ text: 'A witnessed duel. They know how you fight, and they adapt.', tone: 'muted' });
 
   const active = generalModifiers(state, ctx.data, null, 'personal').map((m) => `${m.label} ${m.value > 0 ? '+' : ''}${m.value}`);
   const passive = passiveFor(ctx.data, c);
@@ -771,22 +903,22 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
     const stat = STANCE_STAT[stance];
     let detail = `${statLabel(ctx.data, stat)} ${c.stats[stat]}`;
     const base = c.stats[stat] + sumMods(generalModifiers(state, ctx.data, stat, 'personal')) + sumMods(buffs) + (combat.advantage ? cfg.COMBAT_ADVANTAGE_BONUS : 0);
+    const talkLock = stance === 'negotiate' ? negotiateLock(ctx, combat) : undefined;
     if (stance === 'negotiate') {
-      if (enemy.negotiable) {
-        detail += ` vs ${enemy.negotiation_difficulty + combat.enemy_bonus}. No damage taken.`;
-        if (showOdds) detail += ` ${oddsText(ctx, base + combat.buffs.negotiate_bonus, enemy.negotiation_difficulty + combat.enemy_bonus, true)}`;
+      if (!talkLock) {
+        const dc = negotiationDifficulty(state, ctx, combat);
+        const leverage = leverageModifiers(state, ctx, combat);
+        const lev = sumMods(leverage);
+        detail += `${lev ? ` +${lev} leverage` : ''} vs ${dc}. No damage taken.`;
+        if (enemy.hardened && !leverage.length) detail += ' Hardened: no leverage, so it is harder.';
+        if (showOdds) detail += ` ${oddsText(ctx, base + combat.buffs.negotiate_bonus + lev, dc, true)}`;
       }
     } else {
-      const m = matchupModifier(ctx, stance, combat.intent)!;
-      detail += ` vs ${enemy.defense_difficulty + combat.enemy_bonus}. ${combat.read === 'clear' ? `${m.label}${m.value ? ` ${m.value > 0 ? '+' : ''}${m.value}` : ''}` : 'Matchup unclear'}`;
+      const m = matchupModifier(ctx, stance, seen)!;
+      detail += ` vs ${enemy.defense_difficulty + combat.enemy_bonus}. ${combat.read !== 'vague' ? `${m.label}${m.value ? ` ${m.value > 0 ? '+' : ''}${m.value}` : ''}` : 'Matchup unclear'}`;
       if (showOdds) detail += `. ${oddsText(ctx, base + m.value, enemy.defense_difficulty + combat.enemy_bonus, true)}`;
     }
-    return {
-      id: `stance:${stance}`,
-      label: titleCase(stance),
-      detail,
-      locked: stance === 'negotiate' && !enemy.negotiable ? 'Will not talk' : undefined,
-    };
+    return { id: `stance:${stance}`, label: titleCase(stance), detail, locked: talkLock };
   });
   options.push(...combatExtraOptions(state, ctx, combat));
   return { kind: 'combat', title: `Combat: ${enemy.display_name}`, subtitle: encounterOf(ctx.data, combat.encounter).mode === 'personal' ? 'Personal combat' : 'Ship combat', body, options };
@@ -803,6 +935,14 @@ function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
   body.push({ text: `Reactor: ${pips} pips to spend. Caps: Weapons ${caps.weapons}, Shields ${caps.shields}, Engines ${caps.engines}.`, tone: 'muted' });
   body.push({ text: 'Weapons set the damage you deal. Shields absorb damage. Engines add to your roll.', tone: 'muted' });
   body.push({ text: 'Their shields soak your damage; their engines make them harder to hit.', tone: 'muted' });
+  body.push({
+    text: `Range: ${titleCase(combat.range)}. You want ${combat.range_pref}; more engine pips than them gets you there. Close: +${cfg.RANGE_CLOSE_DAMAGE} damage both ways. Long: -${cfg.RANGE_LONG_DAMAGE} both ways, easier to Withdraw.`,
+    tone: 'muted',
+  });
+  if (combat.target !== 'hull') body.push({ text: `Target: their ${combat.target} (+${cfg.TARGET_DIFFICULTY} difficulty; a hit knocks out pips there next round).`, tone: 'muted' });
+  const enc = encounterOf(ctx.data, combat.encounter);
+  if (enc.superweapon && !state.story.flags.SUPERWEAPON_DOWN)
+    body.push({ text: `Gitzbolt's super-weapon is charged: ${cfg.SUPERWEAPON_DAMAGE} Hull damage to you every round, through shields.`, tone: 'bad' });
   const mods = formatModifiers([...generalModifiers(state, ctx.data, 'nerve', 'ship'), ...buffModifiers(state, ctx, combat, true)]);
   if (mods) body.push({ text: `Active modifiers: ${mods}`, tone: 'muted' });
 
@@ -810,15 +950,26 @@ function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
   if (combat.pending_weapons === null) {
     body.push({ text: '', tone: 'normal' }, { text: 'Step 1 of 2: set Weapons power.', tone: 'accent' });
     options = validWeaponChoices(state, ctx).map((w) => ({ id: `weapons:${w}`, label: `Weapons ${w}`, detail: `${w} damage on a hit` }));
+    if (enc.superweapon)
+      options.push({
+        id: 'counterkey',
+        label: 'Use the counter-key',
+        detail: 'Shuts down the super-weapon for the rest of the battle. Uses this round, no roll.',
+        locked: counterKeyLock(state, ctx, combat),
+        tone: 'accent',
+      });
     options.push(...combatExtraOptions(state, ctx, combat));
   } else {
     const w = combat.pending_weapons;
+    const extraDc = combat.target !== 'hull' ? cfg.TARGET_DIFFICULTY : 0;
     body.push({ text: '' }, { text: `Weapons ${w}. Step 2 of 2: set Shields power. Engines get the rest.`, tone: 'accent' });
     options = validShieldChoices(state, ctx, w).map((s) => ({
       id: `shields:${s}`,
       label: `Shields ${s}, Engines ${pips - w - s}`,
-      detail: `Nerve ${state.character.stats.nerve} + ${pips - w - s} engines vs ${enemy.defense_difficulty} + their engines`,
+      detail: `Nerve ${state.character.stats.nerve} + ${pips - w - s} engines vs ${enemy.defense_difficulty + extraDc} + their engines`,
     }));
+    options.push({ id: 'range', label: `Preferred range: ${titleCase(combat.range_pref)}`, detail: 'Press to change. Does not use the round.', tone: 'muted' });
+    options.push({ id: 'target', label: `Target: ${titleCase(combat.target)}`, detail: 'Press to change. Does not use the round.', tone: 'muted' });
     options.push({ id: 'back', label: 'Change weapons', tone: 'muted' });
   }
   return { kind: 'combat', title: `Ship combat: ${enemy.display_name}`, subtitle: 'Ship combat', body, options };

@@ -1,14 +1,18 @@
 // The story engine: beats, routes, and how fights feed back into the story. story.md section 10.
 import { applyDefeat } from './defeat';
 import { activateBeat, applyEffects, grantXp, receiveMessage } from './effects';
-import { lockedReason } from './conditions';
+import { allMet, lockedReason } from './conditions';
 import { describeRoll, roll, titleCase, type Modifier, type RollResult } from './roll';
 import {
   actEventOf,
   beatOf,
   consoleActionFor,
+  crewOf,
+  crewSafe,
   encounterOf,
   generalModifiers,
+  hearthfireBand,
+  inAct3,
   recordRoll,
   resolveText,
   statLabel,
@@ -16,9 +20,10 @@ import {
   threadOf,
   type Ctx,
 } from './rules';
-import type { Route } from './schema';
+import type { Effect, Route } from './schema';
 import type { CombatResult } from './combat';
-import { startCombat } from './combat';
+import { gainInjury, startCombat } from './combat';
+import { act3Objective, beginEpilogue, musterHint, startAct3 } from './act3';
 import type { BeatResult, CombatState, GameState, Line, Scene, StatKey, Tier } from './types';
 
 export interface RoutePlan {
@@ -130,8 +135,37 @@ export function tierTone(tier: Tier) {
 
 /** Runs after a fight ends: encounter outcome, defeat recovery, XP, then the beat it belonged to. */
 export function finishEncounter(state: GameState, ctx: Ctx, combat: CombatState, result: CombatResult, roundLines: Line[]): void {
-  const cfg = ctx.data.config;
   popScene(state, 'combat');
+  const enc = encounterOf(ctx.data, combat.encounter);
+  // A disabled ship that can be boarded waits for the player's choice (combat-system.md Phase 3).
+  if (result === 'victory_broken' && combat.mode === 'ship' && enc.boarding) {
+    state.scenes.push({ type: 'board', combat, lines: roundLines });
+    return;
+  }
+  settleEncounter(state, ctx, combat, result, roundLines);
+}
+
+/** "Board her": the boarding fight replaces the ship fight's victory outcome. */
+export function boardShip(state: GameState, ctx: Ctx): void {
+  const scene = state.scenes.pop();
+  if (scene?.type !== 'board') throw new Error('Nothing to board');
+  const ship = encounterOf(ctx.data, scene.combat.encounter);
+  const lines = grantXp(state, ctx, ctx.data.config.XP_FIGHT_BROKEN);
+  const boarding = startCombat(state, ctx, ship.boarding!, scene.combat.then);
+  boarding.buffs.action_used = scene.combat.buffs.action_used;
+  boarding.last = [...lines, ...boarding.last];
+  state.scenes.push({ type: 'combat', combat: boarding });
+}
+
+/** "Leave her": the ship fight ends with its normal victory outcome. */
+export function leaveShip(state: GameState, ctx: Ctx): void {
+  const scene = state.scenes.pop();
+  if (scene?.type !== 'board') throw new Error('Nothing to leave');
+  settleEncounter(state, ctx, scene.combat, 'victory_broken', scene.lines);
+}
+
+function settleEncounter(state: GameState, ctx: Ctx, combat: CombatState, result: CombatResult, roundLines: Line[]): void {
+  const cfg = ctx.data.config;
   const enc = encounterOf(ctx.data, combat.encounter);
   const outcome =
     result === 'victory_negotiated'
@@ -154,9 +188,17 @@ export function finishEncounter(state: GameState, ctx: Ctx, combat: CombatState,
       }),
     );
     if (combat.buffs.defeat_hearthfire) lines.push(...applyEffects(state, ctx, [{ hearthfire: combat.buffs.defeat_hearthfire }]));
+    if (combat.mode === 'personal') gainInjury(state, ctx, lines);
+    if (enc.duel) lines.push({ text: 'The witnesses saw you fall.', tone: 'bad' }, ...applyEffects(state, ctx, [{ hearthfire: -cfg.DUEL_WITNESS_HEARTHFIRE }]));
+    if (enc.crew_risk) lines.push(...crewAtRisk(state, ctx, enc.crew_risk));
   } else if (result !== 'withdrew') {
     lines.push(...grantXp(state, ctx, result === 'victory_negotiated' ? cfg.XP_FIGHT_NEGOTIATED : cfg.XP_FIGHT_BROKEN));
     if (combat.buffs.victory_hearthfire) lines.push(...applyEffects(state, ctx, [{ hearthfire: combat.buffs.victory_hearthfire }]));
+    if (enc.duel) {
+      const witnessed: Effect = { hearthfire: cfg.DUEL_WITNESS_HEARTHFIRE };
+      if (enc.witness_faction) witnessed.reputation = { [enc.witness_faction]: cfg.DUEL_WITNESS_REPUTATION };
+      lines.push({ text: 'The witnesses roar. Everyone saw it.', tone: 'good' }, ...applyEffects(state, ctx, [witnessed]));
+    }
   }
   // Eye for Ore: victory Ore rewards are worth more.
   const effects = structuredClone(outcome.effects);
@@ -189,15 +231,19 @@ function completeBeat(state: GameState, ctx: Ctx, beatKey: string, routeKey: str
   state.story.completed_beats.push({ key: beatKey, route: routeKey, tier });
   const actsBefore = state.story.acts_completed.length;
   lines.push(...applyEffects(state, ctx, beat.on_complete, { nonLethal: true }));
-  lines.push(...grantXp(state, ctx, cfg.XP_BEAT));
+  lines.push(...grantXp(state, ctx, beat.xp ?? cfg.XP_BEAT));
   state.story.playing_beat = null;
 
-  const next = beat.next ? beatOf(ctx.data, beat.next) : null;
+  const route = beat.routes.find((r) => r.key === routeKey);
+  const nextKey = resolveNext(state, ctx, route?.next ?? beat.next);
+  const next = nextKey ? beatOf(ctx.data, nextKey) : null;
   if (next) activateBeat(state, next.key);
 
   // Pushed in reverse display order: the last push is shown first.
   // Arrival beats at the current system start from afterChoice once the player is back at the console.
   if (next?.trigger === 'auto') state.scenes.push({ type: 'beat', key: next.key });
+  // The end of the Act 3 chain starts the epilogue.
+  if (!next && beat.act === 3 && inAct3(state) && state.story.flags.ACT3_PHASE === 'BATTLE') beginEpilogue(state, ctx);
   const newAct = state.story.acts_completed.length > actsBefore ? state.story.acts_completed[state.story.acts_completed.length - 1] : null;
   if (newAct !== null) {
     state.story.act = newAct + 1;
@@ -209,8 +255,32 @@ function completeBeat(state: GameState, ctx: Ctx, beatKey: string, routeKey: str
   state.scenes.push({ type: 'notice', title: beat.title, lines });
 }
 
+/** Follows `next` past beats whose only_if is not met. Null when the chain ends. */
+export function resolveNext(state: GameState, ctx: Ctx, key: string | null | undefined): string | null {
+  let k = key ?? null;
+  for (let guard = 0; k && guard < 100; guard++) {
+    const beat = beatOf(ctx.data, k);
+    if (allMet(state, beat.only_if)) return k;
+    k = beat.next;
+  }
+  return k;
+}
+
+/** On defeat at Low Hearthfire, a crew member is lost (story.md 9.1). */
+function crewAtRisk(state: GameState, ctx: Ctx, who: string): Line[] {
+  if (hearthfireBand(ctx.data.config, state.resources.hearthfire).modifier >= 0) return [];
+  const candidates = who === 'ANY' ? state.crew.filter((k) => !crewSafe(ctx.data, state, k)) : state.crew.filter((k) => k === who);
+  const lost = candidates.includes('YLSA') ? 'YLSA' : candidates[0];
+  if (!lost) return [];
+  state.story.crew_lost.push(lost);
+  state.story.flags.CREW_LOST = true;
+  state.crew = state.crew.filter((k) => k !== lost);
+  return [{ text: `${crewOf(ctx.data, lost).display_name} does not make it back.`, tone: 'bad' }];
+}
+
 /** The first active beat waiting at the current location, if any (for arrival triggers). */
 export function arrivalBeat(state: GameState, ctx: Ctx): string | null {
+  if (inAct3(state)) return null;
   for (const key of state.story.active_beats) {
     if (state.story.deferred_beats.includes(key)) continue;
     const beat = beatOf(ctx.data, key);
@@ -221,12 +291,16 @@ export function arrivalBeat(state: GameState, ctx: Ctx): string | null {
 
 /** One line per active beat. Thread beats are prefixed with the thread title. */
 export function currentObjectives(state: GameState, ctx: Ctx): string[] {
+  const act3 = act3Objective(state, ctx);
+  if (act3) return [act3];
   const out: string[] = [];
   for (const key of state.story.active_beats) {
     const beat = beatOf(ctx.data, key);
     const thread = beat.thread ? threadOf(ctx.data, beat.thread).title : null;
     out.push(thread ? `${thread}: ${beat.objective}` : beat.objective);
   }
+  const hint = musterHint(state, ctx);
+  if (hint) out.push(hint);
   if (!out.length && state.story.acts_completed.length) out.push('Free play. Fly where you like.');
   return out;
 }
@@ -241,10 +315,14 @@ export function progressChecks(state: GameState, ctx: Ctx): boolean {
     for (const m of cfg.ACT2_THREAD_MESSAGES) lines.push(...receiveMessage(state, ctx, m));
     return showActEvent(state, ctx, 'ACT2_STARTED', lines);
   }
+  if (s.post_game || s.flags.ACT3_STARTED) return false;
+  // The meter reaching 100 starts Act 3 at once, ready or not (story.md 6.6).
+  if ((s.waaagh_meter ?? 0) >= cfg.WAAAGH_LAUNCH) {
+    startAct3(state, ctx, true);
+    return showActEvent(state, ctx, 'WAAAGH_LAUNCHED');
+  }
   if (s.threads_completed.length >= cfg.THREADS_REQUIRED && !s.act_events_shown.includes('ACT3_UNLOCKED'))
     return showActEvent(state, ctx, 'ACT3_UNLOCKED');
-  if ((s.waaagh_meter ?? 0) >= cfg.WAAAGH_LAUNCH && !s.act_events_shown.includes('WAAAGH_LAUNCHED'))
-    return showActEvent(state, ctx, 'WAAAGH_LAUNCHED');
   return false;
 }
 

@@ -1,0 +1,1233 @@
+[
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [
+      {
+        "hull": 100,
+        "supplies": 8
+      }
+    ],
+    "only_if": [],
+    "key": "A3_RALLY",
+    "title": "The Gathering Storm",
+    "goal": "Gather the fleet and make ready.",
+    "objective": "Rally at Hold Durnvar.",
+    "intro_text": "Hold Durnvar fills the viewport, its great gates open and every dock lit. Ship after ship drops out of the void around you: prospectors, haulers, a few old warships nobody thought would fly again. They came because you called.",
+    "routes": [
+      {
+        "key": "MAKE_READY",
+        "label": "Take stock of the fleet",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "next": null,
+    "outcomes": {
+      "critical": {
+        "text": "The Hold's shipwrights work through the night on every ship in the fleet, yours included, and the Hold's stores are thrown open. This is the last chance to restock and upgrade before the Waaagh! arrives. When you are ready, lead the fleet out.",
+        "effects": []
+      },
+      "success": {
+        "text": "The Hold's shipwrights work through the night on every ship in the fleet, yours included, and the Hold's stores are thrown open. This is the last chance to restock and upgrade before the Waaagh! arrives. When you are ready, lead the fleet out.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The Hold's shipwrights work through the night on every ship in the fleet, yours included, and the Hold's stores are thrown open. This is the last chance to restock and upgrade before the Waaagh! arrives. When you are ready, lead the fleet out.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The Hold's shipwrights work through the night on every ship in the fleet, yours included, and the Hold's stores are thrown open. This is the last chance to restock and upgrade before the Waaagh! arrives. When you are ready, lead the fleet out.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [],
+    "key": "A3_DORRIK_VOW",
+    "title": "Dorrik's Vow",
+    "goal": "Hear what Dorrik has to say.",
+    "objective": "Speak with Dorrik before the battle.",
+    "intro_text": "Dorrik finds you on the bridge as the engines warm. He does not look at you. \"Last time the greenskins came, I left Kin behind. Good Kin. Swore I never would again.\" He finally meets your eyes. \"I'd like to swear it again. With you.\"",
+    "routes": [
+      {
+        "key": "SWEAR",
+        "label": "Swear it with him: nobody gets left behind",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "create_oath": "OATH_DORRIK_VOW",
+            "set_flag": {
+              "DORRIK_VOW": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "NO_PROMISE",
+        "label": "Tell him you cannot promise that",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "xp": 0,
+    "next": "A3_YLSA",
+    "outcomes": {
+      "critical": {
+        "text": "Dorrik nods once and goes back to his engines.",
+        "effects": []
+      },
+      "success": {
+        "text": "Dorrik nods once and goes back to his engines.",
+        "effects": []
+      },
+      "partial": {
+        "text": "Dorrik nods once and goes back to his engines.",
+        "effects": []
+      },
+      "failure": {
+        "text": "Dorrik nods once and goes back to his engines.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "crew": "YLSA"
+      },
+      {
+        "hearthfire_max": 29
+      }
+    ],
+    "key": "A3_YLSA",
+    "title": "Ylsa's Choice",
+    "goal": "Decide whether Ylsa flies.",
+    "objective": "Talk to Ylsa.",
+    "intro_text": "Ylsa's hands are shaking on the helm controls. \"I can fly this,\" she says. \"I can. I just... I keep thinking about the Anvil.\" The evacuation ships are leaving the Hold now. There is room on them.",
+    "routes": [
+      {
+        "key": "SEND",
+        "label": "Send her to safety on the evacuation ships",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "remove_crew": "YLSA",
+            "set_flag": {
+              "YLSA_SENT_AWAY": true
+            }
+          }
+        ]
+      },
+      {
+        "key": "KEEP",
+        "label": "Keep her at the helm. You need her.",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "YLSA_STAYED": true
+            }
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_WHERE_TO_STRIKE",
+    "outcomes": {
+      "critical": {
+        "text": "Whatever she feels about it, she does not argue.",
+        "effects": []
+      },
+      "success": {
+        "text": "Whatever she feels about it, she does not argue.",
+        "effects": []
+      },
+      "partial": {
+        "text": "Whatever she feels about it, she does not argue.",
+        "effects": []
+      },
+      "failure": {
+        "text": "Whatever she feels about it, she does not argue.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "story_reward": "INTEL_MUSTER"
+      }
+    ],
+    "key": "A3_WHERE_TO_STRIKE",
+    "title": "Where to Strike",
+    "goal": "Choose where the battle is fought.",
+    "objective": "Choose your battlefield.",
+    "intro_text": "Your intelligence on the muster is still good. Skragnak's fleet has not left Skrapfang Rock yet. You could wait for it at the Hold, with the Hold's guns behind you, or hit it on the ground before it ever launches.",
+    "routes": [
+      {
+        "key": "DEFEND",
+        "label": "Defend the Hold",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "ACT3_SITE": "HOLD_DURNVAR"
+            }
+          }
+        ]
+      },
+      {
+        "key": "STRIKE",
+        "label": "Strike the muster at Skrapfang Rock",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "ACT3_STRIKE_MUSTER": true,
+              "ACT3_SITE": "SKRAPFANG_ROCK"
+            },
+            "move_to": "SKRAPFANG_ROCK"
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_WAVE_1_LEAGUE",
+    "outcomes": {
+      "critical": {
+        "text": "The fleet turns as one.",
+        "effects": []
+      },
+      "success": {
+        "text": "The fleet turns as one.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The fleet turns as one.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The fleet turns as one.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "story_reward": "ALLIES_LEAGUE"
+      }
+    ],
+    "key": "A3_WAVE_1_LEAGUE",
+    "title": "The First Wave",
+    "goal": "Hold the line.",
+    "objective": "Meet the first wave.",
+    "intro_text": "The first wave of Ork escorts comes screaming in, and the League answers. Durn and Kharr ships, side by side for the first time in a century, meet them head on.",
+    "routes": [
+      {
+        "key": "WATCH",
+        "label": "Hold your ship back for what comes next",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "next": "A3_WAVE_1",
+    "outcomes": {
+      "critical": {
+        "text": "The escort pack breaks against the League line and burns. Your ship has not fired a shot yet.",
+        "effects": []
+      },
+      "success": {
+        "text": "The escort pack breaks against the League line and burns. Your ship has not fired a shot yet.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The escort pack breaks against the League line and burns. Your ship has not fired a shot yet.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The escort pack breaks against the League line and burns. Your ship has not fired a shot yet.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_story_reward": "ALLIES_LEAGUE"
+      }
+    ],
+    "key": "A3_WAVE_1",
+    "title": "The First Wave",
+    "goal": "Break the escort pack.",
+    "objective": "Meet the first wave.",
+    "intro_text": "The first wave of Ork escorts comes screaming in, and there is nobody else to meet it.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Engage the escorts",
+        "encounter": "A3_WAVE_ESCORTS"
+      }
+    ],
+    "next": "A3_BREATHER_1",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "ACT3_FORCED"
+      },
+      {
+        "not_flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_BREATHER_1",
+    "title": "A Breath Between Waves",
+    "goal": "Make the most of a moment.",
+    "objective": "Get ready for the next wave.",
+    "intro_text": "For a moment the void is quiet. The next wave is already forming up. There is time for one thing, and only one.",
+    "routes": [
+      {
+        "key": "PATCH",
+        "label": "Patch the hull (Dorrik, 2 Supplies)",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "supplies": -2,
+            "hull": 6
+          }
+        ],
+        "requirements": [
+          {
+            "supplies": 2
+          }
+        ]
+      },
+      {
+        "key": "RALLY",
+        "label": "Rally the crew",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "hearthfire": 10
+          }
+        ]
+      },
+      {
+        "key": "PRESS",
+        "label": "Press on while they are still forming up",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "next_fight": {
+              "label": "Pressing on",
+              "value": 2,
+              "rolls": 1
+            }
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_WAVE_2",
+    "outcomes": {
+      "critical": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "success": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The next wave is coming.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_WAVE_2",
+    "title": "The Second Wave",
+    "goal": "Stop Gitzbolt's gunship.",
+    "objective": "Stop Gitzbolt's gunship.",
+    "intro_text": "The gunship comes on. Its great gun fires once, and a Kin hauler three ships down the line simply stops existing. Somewhere inside that gun is the Ancestor Core.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Go for the gunship",
+        "encounter": "A3_WAVE_GUNSHIP"
+      }
+    ],
+    "next": "A3_BREATHER_2",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_BREATHER_2",
+    "title": "A Breath Between Waves",
+    "goal": "Make the most of a moment.",
+    "objective": "Get ready for the next wave.",
+    "intro_text": "For a moment the void is quiet. The next wave is already forming up. There is time for one thing, and only one.",
+    "routes": [
+      {
+        "key": "PATCH",
+        "label": "Patch the hull (Dorrik, 2 Supplies)",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "supplies": -2,
+            "hull": 6
+          }
+        ],
+        "requirements": [
+          {
+            "supplies": 2
+          }
+        ]
+      },
+      {
+        "key": "RALLY",
+        "label": "Rally the crew",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "hearthfire": 10
+          }
+        ]
+      },
+      {
+        "key": "PRESS",
+        "label": "Press on while they are still forming up",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "next_fight": {
+              "label": "Pressing on",
+              "value": 2,
+              "rolls": 1
+            }
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_WAVE_3",
+    "outcomes": {
+      "critical": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "success": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The next wave is coming.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The next wave is coming.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_WAVE_3",
+    "title": "The Third Wave",
+    "goal": "Break the flagship's guard.",
+    "objective": "Break the flagship's guard.",
+    "intro_text": "Skragnak's Kill Kroozer turns toward the Kin line, its guard ship riding close beside it.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Break the guard",
+        "encounter": "A3_WAVE_FLAGSHIP_GUARD"
+      }
+    ],
+    "next": "A3_BATTLE_WON",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_BATTLE_WON",
+    "title": "The Line Holds",
+    "goal": "Board the flagship.",
+    "objective": "Board the flagship.",
+    "intro_text": "The Ork fleet is broken. Wrecks tumble past the viewport, and the Kin line is still there. Only the flagship is left, and it is wide open.",
+    "routes": [
+      {
+        "key": "BOARD",
+        "label": "Lock on and board",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "xp": 0,
+    "next": "A3_BATTLE_LOST",
+    "outcomes": {
+      "critical": {
+        "text": "The boarding tube fires.",
+        "effects": []
+      },
+      "success": {
+        "text": "The boarding tube fires.",
+        "effects": []
+      },
+      "partial": {
+        "text": "The boarding tube fires.",
+        "effects": []
+      },
+      "failure": {
+        "text": "The boarding tube fires.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "flag": "ACT3_BATTLE_LOST"
+      }
+    ],
+    "key": "A3_BATTLE_LOST",
+    "title": "The Line Breaks",
+    "goal": "Strike at the flagship while there is still time.",
+    "objective": "Board the flagship.",
+    "intro_text": "The Kin line breaks. Through the smoke you watch the Orks pour toward Hold Durnvar, and the evacuation ships run for the void. The battle is lost. But Skragnak's flagship is close, and nobody is watching you.",
+    "routes": [
+      {
+        "key": "BOARD",
+        "label": "One last strike: board the flagship",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "xp": 0,
+    "next": "A3_BOARDING",
+    "outcomes": {
+      "critical": {
+        "text": "It is a desperate plan. It is the only one left.",
+        "effects": []
+      },
+      "success": {
+        "text": "It is a desperate plan. It is the only one left.",
+        "effects": []
+      },
+      "partial": {
+        "text": "It is a desperate plan. It is the only one left.",
+        "effects": []
+      },
+      "failure": {
+        "text": "It is a desperate plan. It is the only one left.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [],
+    "key": "A3_BOARDING",
+    "title": "The Warboss",
+    "goal": "Fight your way to Skragnak's throne room.",
+    "objective": "Reach the throne room.",
+    "intro_text": "The flagship is a cathedral of scrap, loud with drums and engines. Somewhere at its heart, Skragnak waits.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Cut your way through",
+        "encounter": "A3_FLAGSHIP_BOARDING"
+      },
+      {
+        "key": "CHARGE",
+        "label": "Lead the charge down the main corridor",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "SNEAK",
+        "label": "Slip through the gun decks unseen",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "BREACH",
+        "label": "Cut through the hull where no Ork is looking",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "BLUFF",
+        "label": "Walk in under a dead Nob's banner",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You reach the throne room without a scratch. The Orks will be telling stories about this.",
+        "effects": []
+      },
+      "success": {
+        "text": "You reach the throne room.",
+        "effects": []
+      },
+      "partial": {
+        "text": "You reach the throne room, but not cleanly.",
+        "effects": [
+          {
+            "health": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "You get there in the end, hurt and late. While you fought through the ship, the Orks kept burning the outer settlements.",
+        "effects": [
+          {
+            "health": -3,
+            "set_flag": {
+              "ACT3_DESPERATE": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ]
+      }
+    },
+    "next": "A3_GRIZZGUT"
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [],
+    "key": "A3_GRIZZGUT",
+    "title": "One Last Time",
+    "goal": "Get past Grizzgut.",
+    "objective": "Get past Grizzgut.",
+    "intro_text": "The throne room doors are guarded by a familiar shape. Grizzgut, now wearing half your fleet as armour, steps out to meet you. \"YOU,\" he says, with something like joy.",
+    "routes": [
+      {
+        "key": "TALK",
+        "label": "Talk him aside, the way you did on the Anvil",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "GRIZZGUT_FINAL": "ASIDE"
+            },
+            "grizzgut": "FINAL_ASIDE"
+          }
+        ],
+        "requirements": [
+          {
+            "flag": "GRIZZGUT_TALKED_DOWN"
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "Grizzgut looks at you for a long time. Then he steps aside. \"Not 'cos I'm scared,\" he says. \"Just... you an' me, we got history.\" He waves you through.",
+            "effects": []
+          }
+        }
+      },
+      {
+        "key": "DUEL",
+        "label": "Face him: one last fight",
+        "encounter": "A3_GRIZZGUT_DUEL"
+      }
+    ],
+    "next": "A3_HROLLA",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "hrolla_status": "CAPTIVE"
+      }
+    ],
+    "key": "A3_HROLLA",
+    "title": "The Fleet-Theyn",
+    "goal": "Free Hrolla Vask.",
+    "objective": "Free Hrolla.",
+    "intro_text": "Chained to the wall of the throne room, like a trophy, is Fleet-Theyn Hrolla Vask. She is thinner and angrier than you remember. \"Took you long enough,\" she says.",
+    "routes": [
+      {
+        "key": "FREE",
+        "label": "Break her chains",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_hrolla_status": "RESCUED",
+            "add_crew": "HROLLA_VASK"
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_RESOLUTION",
+    "outcomes": {
+      "critical": {
+        "text": "Hrolla picks up a fallen Ork's cleaver and stands beside you.",
+        "effects": []
+      },
+      "success": {
+        "text": "Hrolla picks up a fallen Ork's cleaver and stands beside you.",
+        "effects": []
+      },
+      "partial": {
+        "text": "Hrolla picks up a fallen Ork's cleaver and stands beside you.",
+        "effects": []
+      },
+      "failure": {
+        "text": "Hrolla picks up a fallen Ork's cleaver and stands beside you.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [],
+    "key": "A3_RESOLUTION",
+    "title": "Skragnak",
+    "goal": "End the Waaagh!.",
+    "objective": "Face Warboss Skragnak.",
+    "intro_text": "Warboss Skragnak rises from a throne built out of Kin ships. He is enormous. He is delighted. \"DA STUNTY WHAT STARTED ALL DIS,\" he booms. \"LET'S 'AVE IT, DEN.\"",
+    "routes": [
+      {
+        "key": "DUEL",
+        "label": "The Duel: challenge him in front of his warband",
+        "requirements": [
+          {
+            "story_reward": "STRENGTH_RENOWN"
+          }
+        ],
+        "encounter": "A3_SKRAGNAK_DUEL",
+        "effects_always": [
+          {
+            "set_flag": {
+              "RESOLUTION": "DUEL"
+            }
+          }
+        ]
+      },
+      {
+        "key": "USURPER",
+        "label": "The Usurper: give Urgrot his moment",
+        "requirements": [
+          {
+            "story_reward": "ALLIES_URGROT"
+          }
+        ],
+        "encounter": "A3_SKRAGNAK_USURPER",
+        "effects_always": [
+          {
+            "set_flag": {
+              "RESOLUTION": "USURPER"
+            }
+          }
+        ]
+      },
+      {
+        "key": "UNPLUG",
+        "label": "The Unplugging: shut down the Core with the counter-key",
+        "requirements": [
+          {
+            "story_reward": "TECH_COUNTERKEY"
+          }
+        ],
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        },
+        "effects_always": [
+          {
+            "set_flag": {
+              "RESOLUTION": "UNPLUGGING",
+              "CORE_RECOVERABLE": true,
+              "SUPERWEAPON_DOWN": true
+            }
+          }
+        ],
+        "next": "A3_UNPLUGGED_FIGHT",
+        "outcomes": {
+          "critical": {
+            "text": "The counter-key bites. Every light on the flagship dies at once, and so does Skragnak's armour.",
+            "effects": []
+          },
+          "success": {
+            "text": "The counter-key works. The Core goes dark, and Skragnak's armour with it.",
+            "effects": []
+          },
+          "partial": {
+            "text": "The counter-key works, but the backlash throws you across the room.",
+            "effects": [
+              {
+                "health": -3
+              }
+            ]
+          },
+          "failure": {
+            "text": "You have to rip the Core's feed lines out by hand. It works. It also hurts a great deal.",
+            "effects": [
+              {
+                "health": -4
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "AMBUSH",
+        "label": "The Ambush: hit him before he is ready",
+        "requirements": [
+          {
+            "flag": "ACT3_STRIKE_MUSTER"
+          }
+        ],
+        "encounter": "A3_SKRAGNAK_AMBUSH",
+        "effects_always": [
+          {
+            "set_flag": {
+              "RESOLUTION": "AMBUSH"
+            }
+          }
+        ]
+      },
+      {
+        "key": "LAST_STAND",
+        "label": "Last Stand: just fight him",
+        "encounter": "A3_SKRAGNAK_LAST",
+        "effects_always": [
+          {
+            "set_flag": {
+              "RESOLUTION": "LAST_STAND"
+            }
+          }
+        ]
+      }
+    ],
+    "next": "A3_FATE",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [],
+    "key": "A3_UNPLUGGED_FIGHT",
+    "title": "Skragnak, Unplugged",
+    "goal": "Break the powerless Warboss.",
+    "objective": "Face Warboss Skragnak.",
+    "intro_text": "In the red emergency light, Skragnak stands in his dead armour, breathing hard. His Boyz are muttering. He needs to win this, and win it now.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Finish it",
+        "encounter": "A3_SKRAGNAK_UNPLUGGED"
+      }
+    ],
+    "xp": 0,
+    "next": "A3_FATE",
+    "outcomes": {
+      "critical": {
+        "text": "",
+        "effects": []
+      },
+      "success": {
+        "text": "",
+        "effects": []
+      },
+      "partial": {
+        "text": "",
+        "effects": []
+      },
+      "failure": {
+        "text": "",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "not_flag": "SKRAGNAK_LOST"
+      }
+    ],
+    "key": "A3_FATE",
+    "title": "The Warboss's Fate",
+    "goal": "Decide what happens to Skragnak.",
+    "objective": "Decide his fate.",
+    "intro_text": "Skragnak lies broken on the deck of his own throne room. His Boyz are watching from the doorways. Whatever you do now, every Ork in the Reach will hear about it.",
+    "routes": [
+      {
+        "key": "EXECUTE",
+        "label": "Execute him",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "SKRAGNAK_FATE": "EXECUTED"
+            }
+          }
+        ]
+      },
+      {
+        "key": "EXILE",
+        "label": "Exile him: put him in a pod and point it at nothing",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "SKRAGNAK_FATE": "EXILED"
+            }
+          }
+        ]
+      },
+      {
+        "key": "HUMILIATE",
+        "label": "Humiliate him in front of his warband and let him go",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "SKRAGNAK_FATE": "HUMILIATED"
+            }
+          }
+        ]
+      }
+    ],
+    "xp": 0,
+    "next": "A3_FALLEN",
+    "outcomes": {
+      "critical": {
+        "text": "It is done.",
+        "effects": []
+      },
+      "success": {
+        "text": "It is done.",
+        "effects": []
+      },
+      "partial": {
+        "text": "It is done.",
+        "effects": []
+      },
+      "failure": {
+        "text": "It is done.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "flag": "SKRAGNAK_LOST"
+      }
+    ],
+    "key": "A3_FALLEN",
+    "title": "Someone Else Finishes It",
+    "goal": "Live.",
+    "objective": "Survive.",
+    "intro_text": "You come round on the deck. Skragnak is down, and over him stands Hrolla Vask with a borrowed cleaver and the boarding party behind her. \"Rest,\" she says. \"We have him.\" They bundle the Warboss into a pod and fire it into the dark.",
+    "routes": [
+      {
+        "key": "ACCEPT",
+        "label": "Let them finish it",
+        "auto_tier": "success",
+        "effects_always": []
+      }
+    ],
+    "xp": 0,
+    "next": "A3_CORE",
+    "outcomes": {
+      "critical": {
+        "text": "It is not how you wanted it to end. But it is over.",
+        "effects": []
+      },
+      "success": {
+        "text": "It is not how you wanted it to end. But it is over.",
+        "effects": []
+      },
+      "partial": {
+        "text": "It is not how you wanted it to end. But it is over.",
+        "effects": []
+      },
+      "failure": {
+        "text": "It is not how you wanted it to end. But it is over.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "act": 3,
+    "trigger": "auto",
+    "on_complete": [],
+    "only_if": [
+      {
+        "flag": "CORE_RECOVERABLE"
+      }
+    ],
+    "key": "A3_CORE",
+    "title": "The Ancestor Core",
+    "goal": "Decide what to do with the Core.",
+    "objective": "Decide the fate of the Core.",
+    "intro_text": "The Ancestor Core is in your hands at last: dormant, humming faintly, older than Hold Durnvar itself. It was the start of all this. What happens to it now is up to you.",
+    "routes": [
+      {
+        "key": "RETURN",
+        "label": "Return it to Hold Durnvar",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "CORE_CHOICE": "RETURNED"
+            },
+            "reputation": {
+              "HOLD_DURNVAR": 20
+            }
+          }
+        ]
+      },
+      {
+        "key": "KEEP",
+        "label": "Keep it aboard as a relic",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "CORE_CHOICE": "KEPT"
+            },
+            "add_relic": "ANCESTOR_CORE"
+          }
+        ]
+      },
+      {
+        "key": "DESTROY",
+        "label": "Destroy it, so nobody can ever use it again",
+        "auto_tier": "success",
+        "effects_always": [
+          {
+            "set_flag": {
+              "CORE_CHOICE": "DESTROYED"
+            }
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": {
+              "default": "The Core flares once and goes dark forever.",
+              "variants": {
+                "ARKANYST_EVALUATOR": "You know exactly what you are destroying: a mind older than any Hold, and maybe the last of its kind. Your hands do not shake. Afterward, alone, they do."
+              }
+            },
+            "effects": []
+          }
+        }
+      }
+    ],
+    "xp": 0,
+    "next": null,
+    "outcomes": {
+      "critical": {
+        "text": "It is decided.",
+        "effects": []
+      },
+      "success": {
+        "text": "It is decided.",
+        "effects": []
+      },
+      "partial": {
+        "text": "It is decided.",
+        "effects": []
+      },
+      "failure": {
+        "text": "It is decided.",
+        "effects": []
+      }
+    }
+  }
+]

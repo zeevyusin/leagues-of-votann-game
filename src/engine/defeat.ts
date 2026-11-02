@@ -1,5 +1,5 @@
 // Defeat and incapacitation (combat-system.md section 7). The player never dies.
-import { crewOf, itemOf, maxHealth, systemOf, type Ctx } from './rules';
+import { crewOf, crewSafe, itemOf, maxHealth, systemOf, type Ctx } from './rules';
 import type { GameState, Line } from './types';
 
 export interface DefeatOptions {
@@ -53,7 +53,7 @@ export function applyDefeat(state: GameState, ctx: Ctx, opts: DefeatOptions): Li
       state.cargo = state.cargo.filter((c) => c.qty > 0);
 
       // Crew: a small chance that one unprotected crew member leaves.
-      const atRisk = state.crew.filter((k) => !crewOf(ctx.data, k).protected);
+      const atRisk = state.crew.filter((k) => !crewSafe(ctx.data, state, k));
       if (atRisk.length && ctx.rng.next() < cfg.DEFEAT_CREW_LOSS_CHANCE) {
         const gone = atRisk[ctx.rng.int(0, atRisk.length - 1)];
         state.crew = state.crew.filter((k) => k !== gone);

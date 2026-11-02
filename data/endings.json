@@ -1,0 +1,161 @@
+{
+  "warboss": {
+    "DUEL": "You challenged Skragnak in front of his whole warband, and you beat him. Orks follow the strongest, and that was suddenly not him. The Waaagh! did not end in fire. It ended with ten thousand Orks quietly wondering who to follow now.",
+    "USURPER": "Urgrot's challenge came at the worst possible moment for Skragnak, and you made sure it landed. The Waaagh! tore itself in half. By the time the shooting stopped, Urgrot was boss of what was left, which was a lot less than before.",
+    "UNPLUGGING": "You shut down the Core, and with it Gitzbolt's weapon and half the Ork fleet's power. Without his big gun, Skragnak was just a very large, very angry Ork, and his Boyz could see it. When he fell, nobody stepped up to take his place.",
+    "AMBUSH": "You hit the muster before the Waaagh! ever left the ground. Skragnak never got his great battle. His fleet scattered across the Reach in a hundred directions, and it never came together again.",
+    "LAST_STAND": "No tricks and no allies to tip the balance: just a straight fight against the biggest Ork in the Reach. You won. It cost more than anyone wanted to pay, and the skalds will argue for years over whether it was worth it.",
+    "LOST": "You did not land the final blow. Others did, while you lay on the deck. The saga will say the Kin of the Durn won together. You will remember it differently."
+  },
+  "skragnak_fate": {
+    "EXECUTED": "Skragnak died on the deck of his own flagship, and his Boyz saw it. No Ork in the Reach will ever doubt that the Kin of Durnvar mean what they say.",
+    "EXILED": "Skragnak was sealed in a pod and fired into the empty dark between the stars. Maybe he is still out there, roaring at nothing. Maybe one day he will come back. Orks usually do.",
+    "HUMILIATED": "You let Skragnak live, beaten and shamed in front of everyone who ever feared him. No Ork will ever follow him again. Somewhere out there, a very big Ork is very quietly scraping a living off scrap.",
+    "EXILED_BY_OTHERS": "Hrolla's boarders put Skragnak in a pod and fired him into the dark. It was not your choice to make in the end."
+  },
+  "grudge": {
+    "BLOOD": "The grudge of Kethra's Anvil is struck from the book, settled in blood. The Hold's hearth-keepers carve your name beside it.",
+    "CUNNING": "The grudge of Kethra's Anvil is struck from the book, settled in cunning. The Kin respect a clever victory almost as much as a bloody one.",
+    "ORK_HANDS": "The grudge of Kethra's Anvil is struck from the book, settled by Ork hands. Not every Kin likes that. All of them like being alive.",
+    "GREAT_COST": "The grudge of Kethra's Anvil is struck from the book, settled at great cost. The ink is darker on that page than any other."
+  },
+  "hold": {
+    "UNBROKEN": "Hold Durnvar stands untouched. The great hall fills for a feast that lasts three days, and on the third, the council offers you a seat among them.",
+    "SCARRED": "Hold Durnvar is saved, but the outer settlements burned before the Waaagh! broke. The feast is quieter than it should be. Every toast is half a lament.",
+    "EVACUATED": "Hold Durnvar fell. But its people did not: they fled in the evacuation ships, and the fleet you gathered carries them now. A Hold is its people, the old saying goes. The grudge for the halls they left behind passes to their children."
+  },
+  "core": {
+    "RETURNED": "The Ancestor Core goes back to Hold Durnvar, where it belongs. The Hold's Grimnyr say its machine-spirit seemed glad to be home.",
+    "KEPT": "The Ancestor Core stays aboard your ship. It hums at night. Some of the crew swear it hums in tune with your engines.",
+    "DESTROYED": "The Ancestor Core is gone, burned out so no Ork or anyone else can ever use it again. It is the safest choice. It is also a loss that the Kin will never get back.",
+    "LOST": "Gitzbolt escaped with the Ancestor Core. Somewhere out in the Reach, a very pleased Mek is building something terrible with it. That is a problem for another day."
+  },
+  "grizzgut": {
+    "ASIDE": "He stood aside when it mattered. Last anyone heard, he was running his own little warband out past Rustmaw and telling everyone he \"let the stunty win\".",
+    "BEATEN": "Broken for the last time. Grizzgut has a new scar and a new story, and he tells it to anyone who will listen. You are bigger in every version.",
+    "WON": "He beat you on the flagship, and he will never, ever let anyone forget it. Somewhere out there, Grizzgut is still bragging."
+  },
+  "crew": {
+    "DORRIK": {
+      "aboard": {
+        "default": "Old Dorrik went back to his engines the day after the battle, as if nothing had happened. Sometimes, late on the night watch, he hums an old marching song from the last Ork war.",
+        "variants": {
+          "IRONKIN": "Old Dorrik went back to his engines the day after the battle. He told you, one Ironkin to another, that he had finally run out of things to regret."
+        }
+      }
+    },
+    "YLSA": {
+      "aboard": "Ylsa flew through the whole battle without a single wrong move. She is not scared any more. She is already talking about her own ship.",
+      "lost": "Ylsa did not come back from the battle. Her name is carved on the Hold's memorial wall, the youngest one there.",
+      "sent_away": "Ylsa sat out the battle on an evacuation ship. She is alive. She is also furious with you, and she will be for a long time."
+    },
+    "HROLLA_VASK": {
+      "aboard": "Fleet-Theyn Hrolla Vask is rebuilding the Durn Prospect Fleet from whatever is left. She has already asked you to command a wing of it."
+    },
+    "BROKKA": {
+      "aboard": "Brokka went back to mining. He keeps his hammer close, and he does not talk about the pit any more.",
+      "lost": "Brokka fell on the flagship. He went down swinging his hammer, which is how he always said he wanted it."
+    }
+  },
+  "stakes": {
+    "HEARTHKYN_WARRIOR": "You led from the front, the way a Hearthkyn should. Every Kin who came home that day came home behind you.",
+    "EINHYR_HEARTHGUARD": "Your oath to guard the Fleet-Theyn was broken on the Anvil. Now it is mended: she lives, and she knows who came for her.",
+    "CTHONIAN_BERSERK": "You went into the dark places of that flagship like a Cthonian goes into a mine: head first, and all the way down. The Orks who saw it still talk about it.",
+    "HERNKYN_PIONEER": "You found the ways through the Reach that nobody else could. The routes you charted are already on every Kin navigator's map.",
+    "HERNKYN_YAEGIR": "You hunted the Waaagh! the way a Yaegir hunts anything: patiently, quietly, and all the way to the end.",
+    "BROKHYR_IRONMASTER": "The Kin machines that won this war carry your marks on them. The forges of Durnvar will be telling apprentices about your work for years.",
+    "ARKANYST_EVALUATOR": "You understood the Ancestor Core better than anyone alive. Whatever you decided about it, you decided knowing exactly what it was.",
+    "THEYN_KAPITAN": "The fleet answered your call. After this, it will answer it again, and the Kin will speak of you as a Kâhl in the making.",
+    "PROSPECTOR_TRADER": "You talked Leagues into alliances and Orks into bargains. When the Reach opens for trade again, every port in it already knows your name, and your prices.",
+    "MEMNYR_STRATEGIST": "Every move of this war was in your notes before it happened. The Memnyr archives already have a new chapter, and it is long."
+  },
+  "oaths": [
+    {
+      "oath": "OATH_BROKEN_FLEET",
+      "keep_if": []
+    },
+    {
+      "oath": "OATH_KHARR_DEFENCE",
+      "keep_if": []
+    },
+    {
+      "oath": "PACT_URGROT",
+      "keep_if": [
+        {
+          "flag_is": {
+            "key": "RESOLUTION",
+            "value": "USURPER"
+          }
+        }
+      ]
+    },
+    {
+      "oath": "OATH_DORRIK_VOW",
+      "keep_if": [
+        {
+          "not_flag": "CREW_LOST"
+        }
+      ]
+    }
+  ],
+  "rally_lines": [
+    {
+      "requirements": [
+        {
+          "story_reward": "ALLIES_LEAGUE"
+        }
+      ],
+      "text": "Durn League warships take up station beside you, and with them, flying a different banner, the ships of the Kharr League. A century of grudges, set aside for one day."
+    },
+    {
+      "requirements": [
+        {
+          "story_reward": "ALLIES_URGROT"
+        }
+      ],
+      "text": "A coded signal arrives from Boss Urgrot: \"When da fightin' starts, I'm switchin' sides. Don't shoot me.\""
+    },
+    {
+      "requirements": [
+        {
+          "story_reward": "TECH_COUNTERKEY"
+        }
+      ],
+      "text": "The counter-key sits on your console, wired into the ship's comms array. One signal, and Gitzbolt's weapon goes dark."
+    },
+    {
+      "requirements": [
+        {
+          "story_reward": "INTEL_MUSTER"
+        }
+      ],
+      "text": "Your scouts report that Skragnak's fleet is still on the ground at Skrapfang Rock. You could strike first."
+    },
+    {
+      "requirements": [
+        {
+          "story_reward": "STRENGTH_RENOWN"
+        }
+      ],
+      "text": "Word comes from the Ork lines: Skragnak has heard about the fighting pit. He wants to meet you himself."
+    },
+    {
+      "requirements": [
+        {
+          "hrolla_status": "RESCUED"
+        }
+      ],
+      "text": "Fleet-Theyn Hrolla Vask stands on the Hold's great dock and speaks to the gathered crews. By the end, they are cheering."
+    },
+    {
+      "requirements": [
+        {
+          "flag": "ACT3_FORCED"
+        }
+      ],
+      "text": "There was no time to plan. The Waaagh! is already on its way, and the ships that answered the call are the ships you have."
+    }
+  ],
+  "ylsa_warning": "A message from the helm, on a private channel: \"Captain? The crew's in a bad way. I'm... I'm not sure I'm doing well either. Just thought you should know.\" It is Ylsa.",
+  "free_roam": "The Waaagh! is over. The lanes of the Ashfall Reach are open again, quieter and emptier than before. There is still work for a captain with a good ship: unfinished business, trade, and the scattered remnants of Skragnak's warbands. Fly where you like."
+}

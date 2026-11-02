@@ -1,6 +1,6 @@
 // The condition evaluator: gates on routes, replies, and options.
 import type { GameData, Requirement } from './schema';
-import { baseClassOf, crewOf, factionOf, itemOf, statLabel, subclassOf, systemOf } from './rules';
+import { baseClassOf, crewOf, factionOf, grudgeOf, itemOf, loreOf, statLabel, subclassOf, systemOf } from './rules';
 import type { GameState } from './types';
 
 export function requirementMet(state: GameState, req: Requirement): boolean {
@@ -20,6 +20,11 @@ export function requirementMet(state: GameState, req: Requirement): boolean {
   if (req.story_reward && !state.story.story_rewards.includes(req.story_reward)) return false;
   if (req.hrolla_status && state.story.hrolla_status !== req.hrolla_status) return false;
   if (req.waaagh_min !== undefined && (state.story.waaagh_meter ?? 0) < req.waaagh_min) return false;
+  if (req.not_story_reward && state.story.story_rewards.includes(req.not_story_reward)) return false;
+  if (req.flag_is && state.story.flags[req.flag_is.key] !== req.flag_is.value) return false;
+  if (req.hearthfire_max !== undefined && state.resources.hearthfire > req.hearthfire_max) return false;
+  if (req.grudge && !state.grudges.some((g) => g.key === req.grudge)) return false;
+  if (req.lore && !state.lore.includes(req.lore)) return false;
   return true;
 }
 
@@ -40,6 +45,11 @@ export function requirementText(data: GameData, req: Requirement): string {
   if (req.story_reward) parts.push(req.story_reward);
   if (req.hrolla_status) parts.push(`Hrolla ${req.hrolla_status.toLowerCase()}`);
   if (req.waaagh_min !== undefined) parts.push(`Waaagh! ${req.waaagh_min}+`);
+  if (req.not_story_reward) parts.push(`not ${req.not_story_reward}`);
+  if (req.flag_is) parts.push(`${req.flag_is.key} = ${String(req.flag_is.value)}`);
+  if (req.hearthfire_max !== undefined) parts.push(`Hearthfire ${req.hearthfire_max} or less`);
+  if (req.grudge) parts.push(grudgeOf(data, req.grudge).title);
+  if (req.lore) parts.push(loreOf(data, req.lore).title);
   return parts.join(', ');
 }
 

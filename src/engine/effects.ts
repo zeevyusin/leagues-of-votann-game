@@ -80,7 +80,7 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
     if (change !== 0) note(`${signed(change)} Wear`, change < 0);
   }
 
-  if (e.waaagh && state.story.waaagh_meter !== null) {
+  if (e.waaagh && state.story.waaagh_meter !== null && !state.story.post_game) {
     state.story.waaagh_meter = clamp(state.story.waaagh_meter + e.waaagh, 0, cfg.WAAAGH_LAUNCH);
     note(`Waaagh! meter ${signed(e.waaagh)}`, e.waaagh < 0);
   }
@@ -198,6 +198,21 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
   }
 
   if (e.story_reward && !state.story.story_rewards.includes(e.story_reward)) state.story.story_rewards.push(e.story_reward);
+
+  for (const [key, n] of Object.entries(e.inc_flag ?? {})) {
+    const before = state.story.flags[key];
+    state.story.flags[key] = (typeof before === 'number' ? before : 0) + n;
+  }
+  if (e.next_fight) {
+    state.pending_fight_mods.push({ label: e.next_fight.label, value: e.next_fight.value, rolls: e.next_fight.rolls ?? null });
+    out.push({ text: `${e.next_fight.label}: ${signed(e.next_fight.value)} in the next fight.`, tone: 'teal' });
+  }
+  if (e.move_to) {
+    state.location = e.move_to;
+    state.docked = false;
+    if (!state.discovered_systems.includes(e.move_to)) state.discovered_systems.push(e.move_to);
+    if (!state.visited_systems.includes(e.move_to)) state.visited_systems.push(e.move_to);
+  }
 
   if (e.xp) out.push(...grantXp(state, ctx, e.xp));
   return out;

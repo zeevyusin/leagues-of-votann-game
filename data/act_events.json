@@ -7,11 +7,11 @@
   {
     "key": "ACT3_UNLOCKED",
     "title": "Act 3 unlocked",
-    "text": "You have done enough. The alliance, the intelligence, the weapons, the fear: whatever you have built, it is ready.\n\nAct 3 is not built yet. You can keep playing: finish the other threads, take jobs, trade, and grow stronger for when it is."
+    "text": "You have done enough. The alliance, the intelligence, the weapons, the fear: whatever you have built, it is ready.\n\nWhen you are ready, sound the muster at Karrak Station or Hold Durnvar (Nav). Until then you can finish other threads, take jobs and trade, but every journey feeds the Waaagh!, and if it launches first, it will not wait for you."
   },
   {
     "key": "WAAAGH_LAUNCHED",
     "title": "The Waaagh! has launched",
-    "text": "Skragnak's fleet is moving. The Waaagh! is coming for Hold Durnvar, ready or not.\n\nAct 3 is not built yet. You can keep playing, but the Reach is now at its most dangerous."
+    "text": "Skragnak's fleet is moving. The Waaagh! is coming for Hold Durnvar, ready or not.\n\nAn emergency call goes out on every Kin channel: all ships to the Hold. You burn for home at once."
   }
 ]

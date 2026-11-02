@@ -30,7 +30,8 @@
         "value": 1
       }
     ],
-    "protected": false
+    "protected": false,
+    "act3_risk": true
   },
   {
     "key": "HROLLA_VASK",

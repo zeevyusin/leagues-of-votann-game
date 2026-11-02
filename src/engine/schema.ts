@@ -58,6 +58,12 @@ export const effectSchema = z.strictObject({
   story_reward: z.string().optional(),
   /** Upgrades a ship module by one level (capped). */
   upgrade_module: moduleKey.optional(),
+  /** Adds to numeric story flags (missing flags count as 0). */
+  inc_flag: numRecord.optional(),
+  /** A roll modifier for the next fight: for its first `rolls` rolls, or the whole fight if omitted. */
+  next_fight: z.strictObject({ label: z.string(), value: z.number(), rolls: z.number().optional() }).optional(),
+  /** Moves the ship to a system at once, with no travel time or Fuel (Act 3 only). */
+  move_to: z.string().optional(),
 });
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -77,6 +83,13 @@ export const requirementSchema = z.strictObject({
   story_reward: z.string().optional(),
   hrolla_status: z.enum(['FREE', 'CAPTIVE', 'RESCUED', 'LOST']).optional(),
   waaagh_min: z.number().optional(),
+  not_story_reward: z.string().optional(),
+  /** A story flag with an exact value. */
+  flag_is: z.strictObject({ key: z.string(), value: z.union([z.string(), z.number(), z.boolean()]) }).optional(),
+  hearthfire_max: z.number().optional(),
+  /** A grudge in the Logbook (active or settled). */
+  grudge: z.string().optional(),
+  lore: z.string().optional(),
 });
 export type Requirement = z.infer<typeof requirementSchema>;
 
@@ -97,6 +110,8 @@ const routeSchema = z
     encounter: z.string().optional(),
     console_action: z.strictObject({ difficulty }).optional(),
     auto_tier: tierSchema.optional(),
+    /** Overrides the beat's `next` when this route is taken. */
+    next: z.string().optional(),
     class_bonus: numRecord.optional(),
     subclass_bonus: numRecord.optional(),
     effects_always: z.array(effectSchema).default([]),
@@ -142,6 +157,10 @@ const beatSchema = z.strictObject({
   deferrable: z.boolean().optional(),
   /** Shown on its own screen when this beat completes an act (via a complete_act effect). */
   act_end_text: textVariant.optional(),
+  /** The beat is skipped (the story moves to its `next`) unless these are met. */
+  only_if: z.array(requirementSchema).default([]),
+  /** XP for completing the beat; defaults to XP_BEAT. */
+  xp: z.number().optional(),
   next: z.string().nullable(),
 });
 export type Beat = z.infer<typeof beatSchema>;
@@ -343,6 +362,32 @@ export const configSchema = z.strictObject({
   FEAST_HEARTHFIRE: z.number(),
   FEAST_HEARTHFIRE_IRONKIN: z.number(),
   WITHDRAW_ENABLED: z.boolean(),
+  MISLEAD_CHANCE: z.number(),
+  LEVERAGE_BONUS: z.number(),
+  LEVERAGE_MAX: z.number(),
+  HARDENED_NEGOTIATION_PENALTY: z.number(),
+  INJURY_HIT_THRESHOLD: z.number(),
+  INJURY_MAX: z.number(),
+  INJURY_REST_DAYS: z.number(),
+  INJURY_REPAIR_ORE: z.number(),
+  RANGE_CLOSE_DAMAGE: z.number(),
+  RANGE_LONG_DAMAGE: z.number(),
+  RANGE_LONG_WITHDRAW: z.number(),
+  TARGET_DIFFICULTY: z.number(),
+  TARGET_PIPS_SUCCESS: z.number(),
+  TARGET_PIPS_CRIT: z.number(),
+  DUEL_HABIT_WEIGHT: z.number(),
+  DUEL_ADAPT_AFTER: z.number(),
+  DUEL_WITNESS_HEARTHFIRE: z.number(),
+  DUEL_WITNESS_REPUTATION: z.number(),
+  HOLD_SCARRED_AT: z.number(),
+  ACT3_MUSTER_PORTS: z.array(z.string()).min(1),
+  ACT3_RALLY_SYSTEM: z.string(),
+  ACT3_FIRST_BEAT: z.string(),
+  ACT3_LAUNCH_BEAT: z.string(),
+  ACT3_WAVE_HULL_SCALE: z.strictObject({ scattered: z.number(), gathering: z.number(), rising: z.number(), launched: z.number() }),
+  SUPERWEAPON_DAMAGE: z.number(),
+  POST_GAME_START: z.strictObject({ UNBROKEN: z.string(), SCARRED: z.string(), EVACUATED: z.string() }),
   DOCK_WORK_DAYS: z.number(),
   DOCK_WORK_ORE: z.number(),
   ACT2_THREAD_MESSAGES: z.array(z.string()),
@@ -358,6 +403,27 @@ const encounterOutcome = z.strictObject({
 });
 
 const priceList = z.record(z.string(), z.number());
+const rangeBand = z.enum(['close', 'medium', 'long']);
+
+/** Ending pieces (story.md section 7): one text per result, picked by the ending builder. */
+const endingsSchema = z.strictObject({
+  warboss: z.record(z.string(), textVariant),
+  skragnak_fate: z.record(z.string(), textVariant),
+  grudge: z.record(z.string(), textVariant),
+  hold: z.record(z.string(), textVariant),
+  core: z.record(z.string(), textVariant),
+  grizzgut: z.record(z.string(), textVariant),
+  /** Per crew member: text when they are aboard, lost in Act 3, or sent away. */
+  crew: z.record(z.string(), z.strictObject({ aboard: textVariant, lost: textVariant.optional(), sent_away: textVariant.optional() })),
+  /** One line per subclass. */
+  stakes: z.record(z.string(), textVariant),
+  /** Story oaths settled by the epilogue: kept when the requirements are met, broken otherwise. */
+  oaths: z.array(z.strictObject({ oath: z.string(), keep_if: z.array(requirementSchema).default([]) })),
+  rally_lines: z.array(z.strictObject({ requirements: z.array(requirementSchema), text: textVariant })),
+  ylsa_warning: textVariant,
+  free_roam: textVariant,
+});
+export type Endings = z.infer<typeof endingsSchema>;
 
 export const gameDataSchema = z.strictObject({
   config: configSchema,
@@ -441,6 +507,8 @@ export const gameDataSchema = z.strictObject({
       repair_discount: z.number(),
       roll_modifiers: z.array(z.strictObject({ stat: statKey, value: z.number() })),
       protected: z.boolean(),
+      /** Safe from every loss until Act 3 (Ylsa, story.md 9.1). */
+      act3_risk: z.boolean().default(false),
     }),
   ),
   items: z.array(
@@ -511,6 +579,13 @@ export const gameDataSchema = z.strictObject({
       intent_weights: intents,
       negotiable: z.boolean(),
       negotiation_difficulty: z.number(),
+      /** Can show a false intent on a vague read (combat-system.md 3.2). */
+      deceptive: z.boolean().default(false),
+      /** Harder to negotiate with unless the player has leverage (combat-system.md 3.6). */
+      hardened: z.boolean().default(false),
+      leverage: z
+        .array(z.strictObject({ text: z.string(), requirements: z.array(requirementSchema).default([]), scan: z.boolean().optional() }))
+        .default([]),
       telegraphs: z.strictObject({
         aggressive: z.array(z.string()).min(1),
         guarded: z.array(z.string()).min(1),
@@ -527,6 +602,7 @@ export const gameDataSchema = z.strictObject({
       allocation_weights: systemsAlloc,
       system_caps: systemsAlloc,
       defense_difficulty: z.number(),
+      preferred_range: rangeBand.default('medium'),
     }),
   ),
   combat_encounters: z.array(
@@ -538,6 +614,32 @@ export const gameDataSchema = z.strictObject({
       /** e.g. 'cramped', 'surface', 'boarding': trait bonuses key off these. */
       tags: z.array(z.string()).default([]),
       allow_withdraw: z.boolean().default(false),
+      /** No escape at all, not even a charted one (Act 3, duels). */
+      inescapable: z.boolean().default(false),
+      /** A witnessed one-on-one duel (combat-system.md Phase 3). */
+      duel: z.boolean().default(false),
+      witness_faction: z.string().optional(),
+      /** Ship fights: a personal encounter offered as "Board her" once the enemy is disabled. */
+      boarding: z.string().optional(),
+      /** Gitzbolt's weapon fires every round until disabled. */
+      superweapon: z.boolean().default(false),
+      /** Enemy Hull scales with the Waaagh! band (ACT3_WAVE_HULL_SCALE). */
+      waaagh_scaling: z.boolean().default(false),
+      start_range: rangeBand.optional(),
+      /** On defeat at Low Hearthfire, this crew member (or any unprotected one, for "ANY") is lost. */
+      crew_risk: z.string().optional(),
+      /** Applied at the start of the fight when their requirements are met. */
+      modifiers: z
+        .array(
+          z.strictObject({
+            requirements: z.array(requirementSchema),
+            text: z.string(),
+            roll_bonus: z.number().optional(),
+            enemy_damage: z.number().optional(),
+            enemy_scale: z.number().optional(),
+          }),
+        )
+        .default([]),
       outcomes: z.strictObject({
         victory_broken: encounterOutcome,
         victory_negotiated: encounterOutcome.optional(),
@@ -558,6 +660,10 @@ export const gameDataSchema = z.strictObject({
   ),
   /** One-off story screens such as "Act 3 unlocked". */
   act_events: z.array(z.strictObject({ key: z.string(), title: z.string(), text: textVariant })),
+  injuries: z.array(
+    z.strictObject({ key: z.string(), name: z.string(), ironkin_name: z.string(), stat: statKey, value: z.number() }),
+  ),
+  endings: endingsSchema,
   markets: z.array(
     z.strictObject({
       port: z.string(),
@@ -645,6 +751,7 @@ export function crossReferenceErrors(d: GameData): string[] {
       need(sets.beat, e.deactivate_beat, where, 'beat');
       need(sets.item, e.remove_cargo?.key, where, 'item');
       need(sets.thread, e.complete_thread, where, 'thread');
+      need(sets.system, e.move_to, where, 'system');
     }
   };
   const checkReqs = (reqs: Requirement[], where: string) => {
@@ -654,6 +761,8 @@ export function crossReferenceErrors(d: GameData): string[] {
       need(sets.system, req.location, where, 'system');
       need(sets.item, req.has_cargo, where, 'item');
       need(sets.crew, req.crew, where, 'crew');
+      need(sets.grudge, req.grudge, where, 'grudge');
+      need(sets.lore, req.lore, where, 'lore');
     }
   };
 
@@ -670,6 +779,20 @@ export function crossReferenceErrors(d: GameData): string[] {
   need(sets.grudge, d.config.GRIZZGUT_GRUDGE, 'config.GRIZZGUT_GRUDGE', 'grudge');
   need(sets.subclass, d.config.SAFE_ROUTE_SUBCLASS, 'config.SAFE_ROUTE_SUBCLASS', 'subclass');
   for (const m of d.config.ACT2_THREAD_MESSAGES) need(sets.message, m, 'config.ACT2_THREAD_MESSAGES', 'message');
+  for (const p of d.config.ACT3_MUSTER_PORTS) need(sets.system, p, 'config.ACT3_MUSTER_PORTS', 'system');
+  need(sets.system, d.config.ACT3_RALLY_SYSTEM, 'config.ACT3_RALLY_SYSTEM', 'system');
+  need(sets.beat, d.config.ACT3_FIRST_BEAT, 'config.ACT3_FIRST_BEAT', 'beat');
+  need(sets.beat, d.config.ACT3_LAUNCH_BEAT, 'config.ACT3_LAUNCH_BEAT', 'beat');
+  for (const p of Object.values(d.config.POST_GAME_START)) need(sets.system, p, 'config.POST_GAME_START', 'system');
+  for (const o of d.endings.oaths) {
+    need(sets.oath, o.oath, 'endings.oaths', 'oath');
+    checkReqs(o.keep_if, `endings.oaths ${o.oath}`);
+  }
+  for (const r of d.endings.rally_lines) checkReqs(r.requirements, 'endings.rally_lines');
+  for (const k of Object.keys(d.endings.crew)) need(sets.crew, k, 'endings.crew', 'crew');
+  for (const k of Object.keys(d.endings.stakes)) need(sets.subclass, k, 'endings.stakes', 'subclass');
+  for (const s of d.subclasses) if (!d.endings.stakes[s.key]) errors.push(`endings.stakes: missing ${s.key}`);
+  for (const e of d.enemies) for (const l of e.leverage) checkReqs(l.requirements, `enemy ${e.key}.leverage`);
   for (const lvl of ['2', '3'])
     if (d.config.MODULE_UPGRADE_COST[lvl] === undefined) errors.push(`config.MODULE_UPGRADE_COST: missing level ${lvl}`);
   for (const key of ['ACT2_STARTED', 'ACT3_UNLOCKED', 'WAAAGH_LAUNCHED'])
@@ -742,6 +865,12 @@ export function crossReferenceErrors(d: GameData): string[] {
 
   for (const enc of d.combat_encounters) {
     for (const e of enc.enemies) need(enc.mode === 'personal' ? sets.enemy : sets.ship, e, `encounter ${enc.key}`, 'enemy');
+    need(sets.encounter, enc.boarding, `encounter ${enc.key}.boarding`, 'encounter');
+    if (enc.boarding && (enc.mode !== 'ship' || d.combat_encounters.find((x) => x.key === enc.boarding)?.mode !== 'personal'))
+      errors.push(`encounter ${enc.key}: boarding goes from a ship fight to a personal fight`);
+    need(sets.faction, enc.witness_faction, `encounter ${enc.key}`, 'faction');
+    if (enc.crew_risk && enc.crew_risk !== 'ANY') need(sets.crew, enc.crew_risk, `encounter ${enc.key}`, 'crew');
+    for (const m of enc.modifiers) checkReqs(m.requirements, `encounter ${enc.key}.modifiers`);
     for (const [name, o] of Object.entries(enc.outcomes)) if (o) checkEffects(o.effects, `encounter ${enc.key}.${name}`);
     const negotiable = enc.mode === 'personal' && enc.enemies.some((e) => d.enemies.find((x) => x.key === e)?.negotiable);
     if (negotiable && !enc.outcomes.victory_negotiated)
@@ -758,6 +887,7 @@ export function crossReferenceErrors(d: GameData): string[] {
     if ((b.trigger === 'event') !== (b.event !== undefined)) errors.push(`${where}: event settings go only on trigger "event" beats`);
     if (b.thread) need(sets.thread, b.thread, where, 'thread');
     if (b.event) checkReqs(b.event.requirements, where);
+    checkReqs(b.only_if, `${where}.only_if`);
     if (!b.routes.some((r) => r.requirements.length === 0))
       errors.push(`${where}: needs at least one route with no requirements (the fallback)`);
     checkEffects(b.on_complete, `${where}.on_complete`);
@@ -765,6 +895,7 @@ export function crossReferenceErrors(d: GameData): string[] {
     for (const r of b.routes) {
       const rw = `${where}.${r.key}`;
       need(sets.encounter, r.encounter, rw, 'encounter');
+      need(sets.beat, r.next, rw, 'beat');
       if (r.roll) diff(r.roll.difficulty, rw);
       if (r.console_action) diff(r.console_action.difficulty, rw);
       checkEffects(r.effects_always, rw);

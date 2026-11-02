@@ -14,7 +14,8 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 11
+    "defense_difficulty": 11,
+    "preferred_range": "close"
   },
   {
     "key": "ORK_SCOUT",
@@ -31,7 +32,8 @@
       "shields": 2,
       "engines": 4
     },
-    "defense_difficulty": 10
+    "defense_difficulty": 10,
+    "preferred_range": "long"
   },
   {
     "key": "PIRATE_CUTTER",
@@ -48,7 +50,8 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 11
+    "defense_difficulty": 11,
+    "preferred_range": "medium"
   },
   {
     "key": "ORK_LOOTA_SHIP",
@@ -65,6 +68,61 @@
       "shields": 3,
       "engines": 2
     },
-    "defense_difficulty": 11
+    "defense_difficulty": 11,
+    "preferred_range": "long"
+  },
+  {
+    "key": "ORK_ESCORT_PACK",
+    "display_name": "Ork escort pack",
+    "hull": 9,
+    "reactor_pips": 6,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 1,
+      "engines": 2
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 3,
+      "engines": 3
+    },
+    "defense_difficulty": 11,
+    "preferred_range": "close"
+  },
+  {
+    "key": "GITZBOLT_GUNSHIP",
+    "display_name": "Gitzbolt's gunship 'Da Big Zappa'",
+    "hull": 9,
+    "reactor_pips": 6,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 1
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 3,
+      "engines": 3
+    },
+    "defense_difficulty": 12,
+    "preferred_range": "long"
+  },
+  {
+    "key": "KROOZER_GUARD",
+    "display_name": "Skragnak's Kill Kroozer guard",
+    "hull": 11,
+    "reactor_pips": 7,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 2
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 4,
+      "engines": 3
+    },
+    "defense_difficulty": 12,
+    "preferred_range": "close"
   }
 ]

@@ -3,7 +3,7 @@ import { applyDefeat } from './defeat';
 import { allMet } from './conditions';
 import { checkOathDeadlines, createOath, grantXp, receiveMessage, resolveOath } from './effects';
 import { weightedPick } from './rng';
-import { clamp, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
+import { clamp, inAct3, liveWaaagh, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
 import type { GameState, Line } from './types';
 
 export function routeTo(state: GameState, ctx: Ctx, to: string) {
@@ -12,6 +12,8 @@ export function routeTo(state: GameState, ctx: Ctx, to: string) {
 
 /** Systems the player can see a route to from here. */
 export function availableRoutes(state: GameState, ctx: Ctx) {
+  // Act 3 is one long fight: no travel until the epilogue is over.
+  if (inAct3(state)) return [];
   return systemOf(ctx.data, state.location).connections.filter((c) => state.discovered_systems.includes(c.to));
 }
 
@@ -55,8 +57,9 @@ export function travel(state: GameState, ctx: Ctx, to: string): TravelResult {
     lines.push(...grantXp(state, ctx, cfg.XP_DISCOVERY));
   }
 
-  if (state.story.waaagh_meter !== null) {
-    state.story.waaagh_meter = clamp(state.story.waaagh_meter + cfg.WAAAGH_PER_JOURNEY, 0, cfg.WAAAGH_LAUNCH);
+  const meter = liveWaaagh(state);
+  if (meter !== null) {
+    state.story.waaagh_meter = clamp(meter + cfg.WAAAGH_PER_JOURNEY, 0, cfg.WAAAGH_LAUNCH);
     lines.push({ text: `The Waaagh! grows: ${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}`, tone: 'accent' });
     const warning = waaaghBand(cfg, state.story.waaagh_meter).warning;
     if (warning) lines.push({ text: `Comms: ${warning}`, tone: 'bad' });
@@ -81,8 +84,10 @@ export function travel(state: GameState, ctx: Ctx, to: string): TravelResult {
 /** Rolls for a travel event at the destination. Returns the event beat key, or null. */
 export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MEDIUM' | 'HIGH'): string | null {
   const cfg = ctx.data.config;
-  const band = waaaghBand(cfg, state.story.waaagh_meter);
-  let chance = cfg.TRAVEL_EVENT_CHANCE[danger] + (state.story.waaagh_meter === null ? 0 : band.event_chance_bonus);
+  // After the ending, Ork events are remnant warbands, weighted as in the Scattered band.
+  const meter = state.story.post_game ? 0 : state.story.waaagh_meter;
+  const band = waaaghBand(cfg, meter);
+  let chance = cfg.TRAVEL_EVENT_CHANCE[danger] + (meter === null ? 0 : band.event_chance_bonus);
   if (state.safe_route_charted) chance *= cfg.SAFE_ROUTE_EVENT_MULTIPLIER;
   if (ctx.rng.next() >= chance) return null;
 
@@ -93,7 +98,7 @@ export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MED
     if (ev.once && state.story.events_seen.includes(beat.key)) continue;
     if (ev.combat && state.grace_journeys > 0) continue;
     if (!allMet(state, ev.requirements)) continue;
-    const w = ev.weight * (ev.ork && state.story.waaagh_meter !== null ? band.ork_event_weight : 1);
+    const w = ev.weight * (ev.ork && meter !== null ? band.ork_event_weight : 1);
     if (w > 0) weights[beat.key] = w;
   }
   return Object.keys(weights).length ? weightedPick(ctx.rng, weights) : null;
@@ -171,6 +176,7 @@ function deliverCargo(state: GameState, ctx: Ctx): Line[] {
 /** Ports post job offers on Comms when the player docks. */
 function offerJobs(state: GameState, ctx: Ctx): Line[] {
   const lines: Line[] = [];
+  if (inAct3(state)) return lines;
   for (const m of ctx.data.messages) {
     if (!m.job || !m.job.ports.includes(state.location)) continue;
     if (state.inbox.some((x) => x.key === m.key) || !allMet(state, m.job.requirements)) continue;

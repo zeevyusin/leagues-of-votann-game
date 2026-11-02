@@ -532,5 +532,591 @@
         ]
       }
     }
+  },
+  {
+    "key": "A3_WAVE_ESCORTS",
+    "mode": "ship",
+    "intro": "The first wave comes in fast and ragged: a pack of escorts, guns blazing at anything that moves.",
+    "enemies": [
+      "ORK_ESCORT_PACK"
+    ],
+    "tags": [],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "waaagh_scaling": true,
+    "crew_risk": "YLSA",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_STRIKE_MUSTER"
+          }
+        ],
+        "text": "First strike! Your guns open up before they see you coming.",
+        "enemy_damage": 3
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "The escort pack breaks apart, burning. The rest of the Ork fleet comes on behind it.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "Your ship spins out of the line, crippled. The battle goes on without you.",
+        "effects": [
+          {
+            "set_flag": {
+              "ACT3_BATTLE_LOST": true
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_WAVE_GUNSHIP",
+    "mode": "ship",
+    "intro": "Behind the escorts comes Gitzbolt's gunship, glowing with stolen ancestor-light. Its great gun swings toward the Kin line.",
+    "enemies": [
+      "GITZBOLT_GUNSHIP"
+    ],
+    "tags": [],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "waaagh_scaling": true,
+    "superweapon": true,
+    "boarding": "A3_GUNSHIP_BOARDING",
+    "crew_risk": "YLSA",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_STRIKE_MUSTER"
+          }
+        ],
+        "text": "First strike! Your guns open up before they see you coming.",
+        "enemy_damage": 3
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "You leave the gunship dark and drifting. A tiny escape pod spits out of her belly and tumbles away into the fight.",
+        "effects": [
+          {
+            "set_flag": {
+              "SUPERWEAPON_DOWN": true
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The gunship's beam catches you square. Your ship drifts out of the fight, burning.",
+        "effects": [
+          {
+            "set_flag": {
+              "ACT3_BATTLE_LOST": true
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_GUNSHIP_BOARDING",
+    "mode": "personal",
+    "intro": "The gunship's corridors hum with stolen power. Grots scatter ahead of you, and somewhere deeper in, Gitzbolt is shouting at a machine.",
+    "enemies": [
+      "GITZBOLT_GROTS",
+      "BIG_MEK_GITZBOLT"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Gitzbolt flees down an access shaft, howling. In the heart of his machine sits the Ancestor Core, dormant and unharmed.",
+        "effects": [
+          {
+            "set_flag": {
+              "SUPERWEAPON_DOWN": true,
+              "CORE_RECOVERABLE": true
+            },
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "You promise Gitzbolt something shinier. He does not believe you, but he takes the deal anyway, and the Core with it is yours.",
+        "effects": [
+          {
+            "set_flag": {
+              "SUPERWEAPON_DOWN": true,
+              "CORE_RECOVERABLE": true
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "You wake on the deck of your own ship. Your crew dragged you out. Gitzbolt escaped with the Core.",
+        "effects": [
+          {
+            "set_flag": {
+              "SUPERWEAPON_DOWN": true
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_WAVE_FLAGSHIP_GUARD",
+    "mode": "ship",
+    "intro": "Skragnak's Kill Kroozer looms out of the smoke, guarded by its heaviest escort. Break the guard, and the flagship is open to boarding.",
+    "enemies": [
+      "KROOZER_GUARD"
+    ],
+    "tags": [],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "waaagh_scaling": true,
+    "crew_risk": "YLSA",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_STRIKE_MUSTER"
+          }
+        ],
+        "text": "First strike! Your guns open up before they see you coming.",
+        "enemy_damage": 3
+      },
+      {
+        "requirements": [
+          {
+            "story_reward": "ALLIES_URGROT"
+          }
+        ],
+        "text": "Urgrot's ships turn their guns on Skragnak's guard!",
+        "enemy_scale": 0.5
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "The guard ship lists away, gutted. Nothing stands between you and the flagship now.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The Kroozer's guns tear into you. Your ship falls out of the line.",
+        "effects": [
+          {
+            "set_flag": {
+              "ACT3_BATTLE_LOST": true
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_FLAGSHIP_BOARDING",
+    "mode": "personal",
+    "intro": "The boarding tube punches through the Kroozer's hull. On the far side: noise, smoke, and a corridor full of very big Orks.",
+    "enemies": [
+      "ARD_BOYZ"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_BATTLE_LOST"
+          }
+        ],
+        "text": "A desperate strike: the battle is lost, and everyone knows it.",
+        "roll_bonus": -2
+      },
+      {
+        "requirements": [
+          {
+            "flag": "DORRIK_VOW"
+          }
+        ],
+        "text": "Dorrik is at your shoulder, true to his vow.",
+        "roll_bonus": 2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "The 'Ard Boyz break and run for the gun decks. The way to the throne room is open.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "They beat you back to the boarding tube. You push through anyway, bleeding, but the cost is paid elsewhere: the Orks keep burning the Hold's outer settlements while you fight.",
+        "effects": [
+          {
+            "set_flag": {
+              "ACT3_DESPERATE": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_GRIZZGUT_DUEL",
+    "mode": "personal",
+    "intro": "The Orks clear a circle. Grizzgut steps into it, bigger than ever, and points his choppa at you. This one is personal.",
+    "enemies": [
+      "NOB_GRIZZGUT_3"
+    ],
+    "tags": [
+      "cramped"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": true,
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Grizzgut goes down and stays down. \"Fine,\" he wheezes from the deck. \"FINE. You win. Again.\"",
+        "effects": [
+          {
+            "set_flag": {
+              "GRIZZGUT_FINAL": "BEATEN"
+            },
+            "grizzgut": "FINAL_BROKEN",
+            "settle_grudge": "GRUDGE_GRIZZGUT"
+          }
+        ]
+      },
+      "defeat": {
+        "text": "Grizzgut stands over you, roaring his triumph. Then he gets bored and wanders off to find someone else to hit. You crawl on.",
+        "effects": [
+          {
+            "set_flag": {
+              "GRIZZGUT_FINAL": "WON",
+              "ACT3_DESPERATE": true
+            },
+            "grizzgut": "FINAL_WON",
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_SKRAGNAK_DUEL",
+    "mode": "personal",
+    "intro": "You call the challenge in front of the whole warband. Skragnak laughs, throws down his gun, and steps into the circle. \"FINALLY. A PROPER FIGHT.\"",
+    "enemies": [
+      "SKRAGNAK"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": true,
+    "crew_risk": "ANY",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Skragnak falls to one knee in front of his Boyz. The warband goes silent. Every Ork on the ship has just seen their Warboss beaten by a stunty.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The klaw comes down and the world goes white.",
+        "effects": [
+          {
+            "set_flag": {
+              "SKRAGNAK_LOST": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_SKRAGNAK_USURPER",
+    "mode": "personal",
+    "intro": "Urgrot is already at Skragnak's throat when you burst into the throne room. \"OI, STUNTY! HOLD 'IM STILL!\"",
+    "enemies": [
+      "SKRAGNAK"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": false,
+    "crew_risk": "ANY",
+    "modifiers": [
+      {
+        "requirements": [],
+        "text": "Urgrot is fighting at your side",
+        "roll_bonus": 2,
+        "enemy_damage": 4
+      },
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Between the two of you, Skragnak goes down. Urgrot plants a boot on his chest and roars. Half the warband roars back.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The klaw comes down and the world goes white.",
+        "effects": [
+          {
+            "set_flag": {
+              "SKRAGNAK_LOST": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_SKRAGNAK_UNPLUGGED",
+    "mode": "personal",
+    "intro": "Skragnak's armour dies with the Core. He tears off a dead power klaw and comes at you with his bare green fists.",
+    "enemies": [
+      "SKRAGNAK_UNPLUGGED"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": false,
+    "crew_risk": "ANY",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Without his big gun and his glowing armour, Skragnak is just a big Ork. You break him, and his Boyz watch it happen.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The klaw comes down and the world goes white.",
+        "effects": [
+          {
+            "set_flag": {
+              "SKRAGNAK_LOST": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_SKRAGNAK_AMBUSH",
+    "mode": "personal",
+    "intro": "You catch Skragnak on the muster field, half-armoured, his fleet not yet in the sky.",
+    "enemies": [
+      "SKRAGNAK_AMBUSHED"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": false,
+    "crew_risk": "ANY",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "Skragnak breaks before his Waaagh! ever leaves the ground. The muster scatters in every direction.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The klaw comes down and the world goes white.",
+        "effects": [
+          {
+            "set_flag": {
+              "SKRAGNAK_LOST": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "A3_SKRAGNAK_LAST",
+    "mode": "personal",
+    "intro": "No tricks, no allies, no plan. Just you, the Warboss, and his Meganobz between you.",
+    "enemies": [
+      "SKRAGNAK_GUARD",
+      "SKRAGNAK"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "inescapable": true,
+    "duel": false,
+    "crew_risk": "ANY",
+    "modifiers": [
+      {
+        "requirements": [
+          {
+            "flag": "ACT3_DESPERATE"
+          }
+        ],
+        "text": "You are hurt and the plan is in pieces.",
+        "roll_bonus": -2
+      }
+    ],
+    "outcomes": {
+      "victory_broken": {
+        "text": "It takes everything you have. When Skragnak finally falls, you are not sure you can stand either.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The klaw comes down and the world goes white.",
+        "effects": [
+          {
+            "set_flag": {
+              "SKRAGNAK_LOST": true
+            },
+            "inc_flag": {
+              "HOLD_FATE_DROP": 1
+            }
+          }
+        ],
+        "overrides_default_costs": true
+      },
+      "withdrew": {
+        "text": "There is no running from this.",
+        "effects": []
+      }
+    }
   }
 ]

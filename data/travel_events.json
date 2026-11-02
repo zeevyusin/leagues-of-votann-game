@@ -505,7 +505,12 @@
       "ork": true,
       "once": false
     },
-    "intro_text": "An Ork loota ship drops out of the dark, guns first.",
+    "intro_text": {
+      "default": "An Ork loota ship drops out of the dark, guns first.",
+      "variants": {
+        "POST_GAME": "A loota ship from one of Skragnak's old warbands drops out of the dark, guns first. The Waaagh! is over, but nobody told these Orks."
+      }
+    },
     "routes": [
       {
         "key": "FIGHT",
@@ -586,7 +591,12 @@
       "ork": true,
       "once": false
     },
-    "intro_text": "A string of battered Kin ships limps past, fleeing Ork raids. One hails you: \"Anything you can spare. Anything.\"",
+    "intro_text": {
+      "default": "A string of battered Kin ships limps past, fleeing Ork raids. One hails you: \"Anything you can spare. Anything.\"",
+      "variants": {
+        "POST_GAME": "A string of battered Kin ships limps past, heading home now that the Waaagh! is broken. One hails you: \"We lost everything. Anything you can spare.\""
+      }
+    },
     "routes": [
       {
         "key": "GIVE",
@@ -867,7 +877,12 @@
       "ork": true,
       "once": false
     },
-    "intro_text": "The remains of an Ork battle drift across the lane. Wrecks, guns, and an awful lot of loose metal.",
+    "intro_text": {
+      "default": "The remains of an Ork battle drift across the lane. Wrecks, guns, and an awful lot of loose metal.",
+      "variants": {
+        "POST_GAME": "The wreckage of the great battle has drifted all the way out here: Ork hulls, Kin hulls, and a lot of loose metal."
+      }
+    },
     "routes": [
       {
         "key": "SALVAGE",

@@ -43,6 +43,10 @@ export interface PlayOptions {
   maxSteps?: number;
   /** Where to fly when no objective is reachable (ignoreThreads runs bounce between two systems). */
   bounce?: [string, string];
+  /** Sound the muster as soon as Act 3 is unlocked (flying to a muster port first). */
+  muster?: boolean;
+  /** Overrides the choice on any non-hub screen: return an open option id, or undefined for the default. */
+  prefer?: (state: GameState, openIds: string[]) => string | undefined;
 }
 
 export function play(start: GameState, opts: PlayOptions): GameState {
@@ -67,6 +71,15 @@ export function play(start: GameState, opts: PlayOptions): GameState {
     if (top.type !== 'hub') {
       const open = view.options.filter((o) => !o.locked);
       if (!open.length) throw new Error(`No open options on ${view.kind}: ${view.title}`);
+      const preferred = opts.prefer?.(state, open.map((o) => o.id));
+      if (preferred) {
+        step(preferred);
+        continue;
+      }
+      if (top.type === 'muster') {
+        step(opts.muster ? 'confirm' : 'back');
+        continue;
+      }
       if (top.type === 'beat') {
         if (opts.ignoreThreads && open.some((o) => o.id === 'defer')) {
           step('defer');
@@ -76,9 +89,11 @@ export function play(start: GameState, opts: PlayOptions): GameState {
         step((pick === 'last' ? routes[routes.length - 1] : routes[0]).id);
         continue;
       }
-      // In fights, never Withdraw or use the console action: plain stances and the first allocation.
-      const plain = open.filter((o) => o.id !== 'withdraw' && o.id !== 'action');
-      step((plain[0] ?? open[0]).id);
+      // In fights, never Withdraw or use the console action: plain stances, and in ship fights
+      // the most weapons power with the least shields (so even an all-crits run ends its fights).
+      const plain = open.filter((o) => o.id !== 'withdraw' && o.id !== 'action' && o.id !== 'counterkey');
+      const weapons = plain.filter((o) => o.id.startsWith('weapons:'));
+      step((weapons[weapons.length - 1] ?? plain[0] ?? open[0]).id);
       continue;
     }
 
@@ -94,6 +109,16 @@ export function play(start: GameState, opts: PlayOptions): GameState {
           while (state.scenes[state.scenes.length - 1].type === 'notice') step('continue');
         }
       }
+      // Treat injuries while there is a market and the money (Ironkin) to do it.
+      if (view.tabs?.market && state.character.injuries.length) {
+        step('tab:market');
+        for (const id of ['mkt:rest', 'mkt:repair_injury']) {
+          const opt = buildView(state, data).options.find((o) => o.id === id);
+          if (opt && !opt.locked) step(id);
+          while (state.scenes[state.scenes.length - 1].type === 'notice') step('continue');
+        }
+        if (state.scenes[state.scenes.length - 1].type !== 'hub') continue;
+      }
       step('tab:ship');
       const repair = buildView(state, data).options.find((o) => o.id === 'repair');
       if (repair && !repair.locked) step('repair');
@@ -106,8 +131,24 @@ export function play(start: GameState, opts: PlayOptions): GameState {
       continue;
     }
 
+    // Act 3 rally: once restocked, lead the fleet out.
+    if (state.story.flags.ACT3_PHASE === 'RALLY' && !state.story.post_game) {
+      if (top.tab !== 'nav') step('tab:nav');
+      else step('launch');
+      continue;
+    }
+    // Sound the muster: fly to the nearest muster port, then use Nav.
+    const unlocked = state.story.act_events_shown.includes('ACT3_UNLOCKED') && !state.story.flags.ACT3_STARTED;
+    if (opts.muster && unlocked) {
+      if (data.config.ACT3_MUSTER_PORTS.includes(state.location) && state.docked) {
+        if (top.tab !== 'nav') step('tab:nav');
+        else step('muster');
+        continue;
+      }
+    }
+
     // Answer a Comms beat if one is waiting.
-    const comms = state.story.active_beats.map(beatOf).find((b) => b.trigger === 'comms');
+    const comms = state.story.flags.ACT3_STARTED && !state.story.post_game ? undefined : state.story.active_beats.map(beatOf).find((b) => b.trigger === 'comms');
     if (comms) {
       if (top.tab !== 'comms') step('tab:comms');
       else step(`msg:${data.messages.find((m) => m.beat === comms.key)!.key}`);
@@ -116,7 +157,8 @@ export function play(start: GameState, opts: PlayOptions): GameState {
 
     // Fly toward the first reachable objective (or bounce, when ignoring threads).
     let hop: string | null = null;
-    if (!opts.ignoreThreads)
+    if (opts.muster && unlocked) hop = routeToSystem(state, data.config.ACT3_MUSTER_PORTS[0]);
+    if (!hop && !opts.ignoreThreads)
       for (const b of state.story.active_beats.map(beatOf)) {
         if (b.trigger !== 'arrival' || !b.location || b.location === state.location) continue;
         hop = routeToSystem(state, b.location);

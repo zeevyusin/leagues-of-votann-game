@@ -227,5 +227,26 @@
         "create_grudge": "GRUDGE_SNAZRIK"
       }
     ]
+  },
+  {
+    "key": "OATH_DORRIK_VOW",
+    "title": "Dorrik's vow",
+    "giver": "Old Dorrik",
+    "terms": "Leave no Kin of this crew behind to the greenskins. Not one.",
+    "reward_text": "An old engineer finally at peace with his last war.",
+    "penalty_text": "Lose anyone in the battle, and the vow is broken.",
+    "can_fail": true,
+    "deadline_days": null,
+    "fulfil": null,
+    "on_keep": [
+      {
+        "hearthfire": 10
+      }
+    ],
+    "on_break": [
+      {
+        "hearthfire": -5
+      }
+    ]
   }
 ]

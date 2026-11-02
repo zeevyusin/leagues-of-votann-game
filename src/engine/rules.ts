@@ -51,11 +51,29 @@ export function waaaghBand(config: Config, meter: number | null) {
   return bands.find((b) => (meter ?? 0) >= b.min) ?? bands[bands.length - 1];
 }
 
-/** A port is closed once the Waaagh! meter passes its limit. */
+export const injuryOf = (d: GameData, key: string) => byKey(d.injuries, key, 'injury');
+
+export function injuryName(d: GameData, c: Character, key: string): string {
+  const i = injuryOf(d, key);
+  return c.kin_type === 'IRONKIN' ? i.ironkin_name : i.name;
+}
+
+/** A port is closed once the Waaagh! meter passes its limit. After the ending, an evacuated Hold stays closed. */
 export function portOpen(d: GameData, state: GameState, system: string): boolean {
   const s = systemOf(d, system);
   if (!s.port) return false;
+  if (state.story.post_game) return !(state.story.ending?.hold === 'EVACUATED' && system === d.config.ACT3_RALLY_SYSTEM);
   return s.closes_at_waaagh === undefined || (state.story.waaagh_meter ?? 0) < s.closes_at_waaagh;
+}
+
+/** The Waaagh! meter as the rest of the game sees it: hidden once the campaign is over. */
+export function liveWaaagh(state: GameState): number | null {
+  return state.story.post_game ? null : state.story.waaagh_meter;
+}
+
+/** Act 3 has started and the epilogue has not finished. */
+export function inAct3(state: GameState): boolean {
+  return !!state.story.flags.ACT3_STARTED && !state.story.post_game;
 }
 
 export function statLabel(d: GameData, key: StatKey): string {
@@ -105,6 +123,12 @@ export function consoleActionFor(d: GameData, c: Character) {
   };
 }
 
+/** Crew who cannot be lost right now: always protected, or only at risk in Act 3. */
+export function crewSafe(d: GameData, state: GameState, key: string): boolean {
+  const m = crewOf(d, key);
+  return m.protected || (m.act3_risk && !inAct3(state));
+}
+
 export function hasPassive(d: GameData, c: Character, key: string): boolean {
   return passiveFor(d, c).key === key;
 }
@@ -125,6 +149,10 @@ export function generalModifiers(
     const w = wearBand(cfg, state.character.wear);
     if (w.penalty !== 0) mods.push({ label: `Wear ${titleWord(w.state)}`, value: w.penalty });
   }
+  for (const key of state.character.injuries) {
+    const injury = injuryOf(d, key);
+    if (stat && injury.stat === stat) mods.push({ label: injuryName(d, state.character, key), value: injury.value });
+  }
   if (context !== 'personal' && stat) {
     for (const key of state.crew) {
       const member = crewOf(d, key);
@@ -143,15 +171,17 @@ function titleWord(s: string): string {
 
 export type TextVariant = string | { default: string; variants?: Record<string, string> };
 
-/** Picks the most specific variant: subclass, then base class, then kin type, then gender. */
+/** Picks the most specific variant: POST_GAME (after the ending), then subclass, base class, kin type, gender. */
 export function resolveText(text: TextVariant, state: GameState): string {
-  const raw = typeof text === 'string' ? text : pickVariant(text, state.character);
+  const raw = typeof text === 'string' ? text : pickVariant(text, state);
   return fillTemplate(raw, state);
 }
 
-function pickVariant(text: { default: string; variants?: Record<string, string> }, c: Character): string {
+function pickVariant(text: { default: string; variants?: Record<string, string> }, state: GameState): string {
   const v = text.variants ?? {};
-  return v[c.subclass] ?? v[c.base_class] ?? v[c.kin_type] ?? v[c.gender] ?? text.default;
+  const c = state.character;
+  const post = state.story.post_game ? v.POST_GAME : undefined;
+  return post ?? v[c.subclass] ?? v[c.base_class] ?? v[c.kin_type] ?? v[c.gender] ?? text.default;
 }
 
 const PRONOUNS = {

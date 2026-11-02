@@ -232,6 +232,7 @@ function previewCharacter(data: GameData, draft: CreationDraft): Character {
     health: 0,
     fatigued: false,
     days_since_dock: 0,
+    injuries: [],
   };
   c.health = maxHealth(data.config, c);
   return c;
@@ -378,11 +379,16 @@ export function newGame(data: GameData, draft: CreationDraft, seed: number): Gam
       hrolla_status: 'FREE',
       grizzgut_encounters: [],
       acts_completed: [],
+      crew_lost: [],
+      ending: null,
+      post_game: false,
     },
     grace_journeys: 0,
     self_maintenance_used: false,
     haggle_active: false,
     safe_route_charted: false,
+    stance_counts: { attack: 0, defend: 0, outmaneuver: 0, negotiate: 0 },
+    pending_fight_mods: [],
     scenes: [
       { type: 'hub', tab: 'comms' },
       {

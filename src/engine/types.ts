@@ -10,8 +10,10 @@ export type Tier = 'critical' | 'success' | 'partial' | 'failure';
 export type Intent = 'aggressive' | 'guarded' | 'evasive';
 export type Stance = 'attack' | 'defend' | 'outmaneuver' | 'negotiate';
 export type HubTab = 'comms' | 'nav' | 'ship' | 'logbook' | 'market';
+export type RangeBand = 'close' | 'medium' | 'long';
+export type ShipTarget = 'hull' | 'weapons' | 'shields' | 'engines';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface Character {
   name: string;
@@ -29,6 +31,8 @@ export interface Character {
   health: number;
   fatigued: boolean;
   days_since_dock: number;
+  /** Injury keys (combat-system.md 3.8). */
+  injuries: string[];
 }
 
 export interface Ship {
@@ -86,6 +90,28 @@ export interface StoryState {
   hrolla_status: 'FREE' | 'CAPTIVE' | 'RESCUED' | 'LOST';
   grizzgut_encounters: { beat: string; outcome: string }[];
   acts_completed: number[];
+  /** Crew members lost in Act 3. */
+  crew_lost: string[];
+  /** Built when the epilogue starts (story.md 7.1). */
+  ending: Ending | null;
+  /** Free-roam after the epilogue: the Waaagh! is retired. */
+  post_game: boolean;
+}
+
+export interface Ending {
+  warboss: string;
+  skragnak_fate: string;
+  grudge: string;
+  hold: 'UNBROKEN' | 'SCARRED' | 'EVACUATED';
+  core: string;
+  grizzgut: string;
+}
+
+/** A roll modifier that lasts the whole fight (rolls null) or a number of rolls. */
+export interface FightMod {
+  label: string;
+  value: number;
+  rolls: number | null;
 }
 
 /** Temporary effects from console actions used during a fight. */
@@ -99,6 +125,8 @@ export interface CombatBuffs {
   auto_withdraw: boolean;
   victory_hearthfire: number;
   defeat_hearthfire: number;
+  /** Modifiers from the encounter and the story (Act 3 rewards, Press on, and so on). */
+  mods: FightMod[];
 }
 
 export interface PersonalCombat {
@@ -109,9 +137,14 @@ export interface PersonalCombat {
   enemy: { key: string; resolve: number; resolve_max: number };
   round: number;
   intent: Intent;
-  read: 'clear' | 'vague';
+  /** 'misleading' looks like a clear read of shown_intent, which is false. */
+  read: 'clear' | 'vague' | 'misleading';
+  /** The intent the telegraph shows (differs from intent only on a misleading read). */
+  shown_intent: Intent;
   /** The two intents a vague read fits (one is the true intent). */
   vague_pair: [Intent, Intent];
+  /** The stance used in a row, for duelists who adapt. */
+  streak: { stance: Stance | null; count: number };
   telegraph: string;
   advantage: boolean;
   /** Extra difficulty for the next roll (from a failed negotiation). */
@@ -136,6 +169,11 @@ export interface ShipCombat {
   hint: string;
   /** Weapons pips chosen this round, while the player is still choosing shields. */
   pending_weapons: number | null;
+  range: RangeBand;
+  range_pref: RangeBand;
+  target: ShipTarget;
+  /** Enemy pips knocked out for the next round by subsystem hits. */
+  knocked: ShipAlloc;
   last: Line[];
   then: CombatThen;
 }
@@ -151,7 +189,11 @@ export type Scene =
   | { type: 'notice'; title: string; lines: Line[] }
   | { type: 'name_ship'; error?: string }
   | { type: 'level_up' }
-  | { type: 'mutiny' };
+  | { type: 'mutiny' }
+  | { type: 'muster' }
+  /** A disabled ship that can be boarded (combat-system.md Phase 3). */
+  | { type: 'board'; combat: ShipCombat; lines: Line[] }
+  | { type: 'epilogue'; page: number };
 
 export interface GameState {
   version: number;
@@ -179,6 +221,10 @@ export interface GameState {
   haggle_active: boolean;
   /** Chart Safe Route was used for the next journey. */
   safe_route_charted: boolean;
+  /** Stances used across the whole campaign: duelists learn your habits. */
+  stance_counts: Record<Stance, number>;
+  /** Modifiers waiting for the next fight (from next_fight effects). */
+  pending_fight_mods: FightMod[];
   /** Scene stack; the last entry is on screen. The hub is always at the bottom. */
   scenes: Scene[];
 }
@@ -203,6 +249,29 @@ export function migrateState(raw: GameState): GameState {
       if (scene.type === 'combat' && !scene.combat.buffs) scene.combat.buffs = freshBuffs();
     s.version = 2;
   }
+  if (s.version < 3) {
+    s.character.injuries = [];
+    s.story.crew_lost = [];
+    s.story.ending = null;
+    s.story.post_game = false;
+    s.stance_counts = { attack: 0, defend: 0, outmaneuver: 0, negotiate: 0 };
+    s.pending_fight_mods = [];
+    for (const scene of s.scenes) {
+      if (scene.type !== 'combat') continue;
+      const c = scene.combat;
+      c.buffs.mods ??= [];
+      if (c.mode === 'personal') {
+        c.shown_intent ??= c.intent;
+        c.streak ??= { stance: null, count: 0 };
+      } else {
+        c.range ??= 'medium';
+        c.range_pref ??= 'medium';
+        c.target ??= 'hull';
+        c.knocked ??= { weapons: 0, shields: 0, engines: 0 };
+      }
+    }
+    s.version = 3;
+  }
   return s;
 }
 
@@ -217,6 +286,7 @@ export function freshBuffs(): CombatBuffs {
     auto_withdraw: false,
     victory_hearthfire: 0,
     defeat_hearthfire: 0,
+    mods: [],
   };
 }
 

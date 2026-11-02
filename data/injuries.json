@@ -1,0 +1,7 @@
+[
+  { "key": "CRACKED_RIBS", "name": "Cracked ribs", "ironkin_name": "Dented chest plate", "stat": "grit", "value": -1 },
+  { "key": "RINGING_SKULL", "name": "Ringing skull", "ironkin_name": "Glitching optics", "stat": "wits", "value": -1 },
+  { "key": "TORN_SHOULDER", "name": "Torn shoulder", "ironkin_name": "Buckled servo", "stat": "nerve", "value": -1 },
+  { "key": "BROKEN_FINGERS", "name": "Broken fingers", "ironkin_name": "Jammed manipulator", "stat": "craft", "value": -1 },
+  { "key": "SPLIT_LIP", "name": "Split lip and a loose tooth", "ironkin_name": "Cracked vox-grille", "stat": "silver_tongue", "value": -1 }
+]

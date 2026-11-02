@@ -195,7 +195,8 @@ Heavy hits leave lasting marks. Injuries are personal-combat only, and the ship 
   - **Kin:** a **Rest** option at any port market costs `INJURY_REST_DAYS` (3) days docked and heals one injury.
   - **Ironkin:** a **Maintenance** option at any port market costs `INJURY_REPAIR_ORE` (20) Ore and repairs one injury at once.
   - Defeat recovery (section 7.1) does **not** clear injuries.
-- **Display.** Injuries appear on the Ship and Cargo screen and in the modifiers display. Penalties apply to every roll that uses the stat, not only in combat.
+- **Display.** Injuries appear on the status bar, on the Ship and Cargo screen and in the modifiers display. Penalties apply to every roll that uses the stat, not only in combat.
+- **Data.** The five injuries live in `data/injuries.json`, one per stat.
 
 ---
 
@@ -262,7 +263,7 @@ All values `[TUNABLE]`. The key idea: **engines decide the exchange, weapons dec
 
 ### 4.3.1 Range bands `[DECIDED]` (Milestone 3)
 
-- **Choosing a band.** Each round the player also picks a preferred range: **Close**, **Medium**, or **Long**.
+- **Choosing a band.** The player sets a preferred range: **Close**, **Medium**, or **Long**. It is a standing order on step 2 of the allocation, and changing it does not use the round.
 - **Who gets their band:**
   - If the player's engine pips are higher than the enemy's, the player's band is used.
   - If they are equal, the range does not change.
@@ -279,7 +280,7 @@ The band for the round is shown before the roll. The enemy's preferred band is p
 
 ### 4.3.2 Subsystem targeting `[DECIDED]` (Milestone 3)
 
-- **Choosing a target.** Each round the player may aim at an enemy **Weapons**, **Shields**, or **Engines** system instead of the hull. The default is the hull, with no change.
+- **Choosing a target.** The player may aim at an enemy **Weapons**, **Shields**, or **Engines** system instead of the hull. Like the range, it is a standing order on step 2 that stays until changed. The default is the hull, with no change.
 - **Cost.** Targeting adds +`TARGET_DIFFICULTY` (3) to the round's difficulty.
 - **Effect.** On a hit, damage is dealt as normal, and the targeted system loses pips from the enemy's budget for the **next round**:
   - Success: `TARGET_PIPS_SUCCESS` (1) pip.
@@ -490,6 +491,7 @@ TARGET_PIPS_CRIT = 2
 DUEL_HABIT_WEIGHT = 3
 DUEL_ADAPT_AFTER = 2
 DUEL_WITNESS_HEARTHFIRE = 10
+DUEL_WITNESS_REPUTATION = 5
 ```
 
 ---
@@ -570,11 +572,11 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 `[DECIDED]` Milestone 3 builds items 2 and 3, because Act 3 depends on them. The others come later.
 
 **Grudge duel (Milestone 3).** An encounter with `duel: true` is a one-on-one personal fight in front of witnesses:
-- **No Withdraw.** Negotiate works only if the enemy template allows it in duels.
+- **No Withdraw and no Negotiate.** Not even Chart Safe Route opens a way out (encounter flag `inescapable`).
 - **The enemy knows your habits.** The game counts the stances the player uses across the whole campaign (`stance_counts`). A duelist's intent weights are shifted by `DUEL_HABIT_WEIGHT` toward the intent that makes the player's favorite stance a bad matchup.
 - **The enemy adapts.** If the player uses the same stance `DUEL_ADAPT_AFTER` (2) rounds in a row, the duelist's next intent is the one that counters it, and the telegraph hints at it: "He's seen that before."
 - **Witnessed.**
-  - Winning a duel gives `DUEL_WITNESS_HEARTHFIRE` Hearthfire and reputation with the watching faction.
+  - Winning a duel gives `DUEL_WITNESS_HEARTHFIRE` Hearthfire, plus `DUEL_WITNESS_REPUTATION` reputation with the watching faction if the encounter names one (`witness_faction`).
   - Losing one costs that Hearthfire.
 - **Used by:** Skragnak (The Duel resolution) and Grizzgut's third appearance (story.md section 8).
 

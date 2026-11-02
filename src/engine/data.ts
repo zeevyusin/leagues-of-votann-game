@@ -23,6 +23,9 @@ import jobs from '../../data/jobs.json';
 import storyThreads from '../../data/story_threads.json';
 import actEvents from '../../data/act_events.json';
 import markets from '../../data/markets.json';
+import storyBeatsAct3 from '../../data/story_beats_act3.json';
+import injuries from '../../data/injuries.json';
+import endings from '../../data/endings.json';
 import { validateGameData, type GameData } from './schema';
 
 export function rawGameData() {
@@ -45,10 +48,12 @@ export function rawGameData() {
     enemies,
     enemy_ships: enemyShips,
     combat_encounters: combatEncounters,
-    // Act 1, Act 2, travel events, and job beats all share the beat format.
-    story_beats: [...storyBeats, ...storyBeatsAct2, ...travelEvents, ...jobs.beats],
+    // Act 1, Act 2, Act 3, travel events, and job beats all share the beat format.
+    story_beats: [...storyBeats, ...storyBeatsAct2, ...storyBeatsAct3, ...travelEvents, ...jobs.beats],
     story_threads: storyThreads,
     act_events: actEvents,
+    injuries,
+    endings,
     markets,
   };
 }

@@ -76,7 +76,15 @@
       "evasive": [
         "The grots scatter into the dark corridors, giggling."
       ]
-    }
+    },
+    "deceptive": true,
+    "leverage": [
+      {
+        "text": "your scan found their stash",
+        "requirements": [],
+        "scan": true
+      }
+    ]
   },
   {
     "key": "ORK_JAILERS",
@@ -206,7 +214,18 @@
       "evasive": [
         "Gutrip shoves a prisoner toward you and circles away."
       ]
-    }
+    },
+    "hardened": true,
+    "leverage": [
+      {
+        "text": "you know the muster needs its slaves alive",
+        "requirements": [
+          {
+            "lore": "LORE_MUSTER"
+          }
+        ]
+      }
+    ]
   },
   {
     "key": "NOB_GRIZZGUT_2",
@@ -232,7 +251,25 @@
       "evasive": [
         "Grizzgut circles the pit wall, playing to the crowd."
       ]
-    }
+    },
+    "leverage": [
+      {
+        "text": "you talked him down once before",
+        "requirements": [
+          {
+            "flag": "GRIZZGUT_TALKED_DOWN"
+          }
+        ]
+      },
+      {
+        "text": "you know he wants a rematch he can win",
+        "requirements": [
+          {
+            "grudge": "GRUDGE_GRIZZGUT"
+          }
+        ]
+      }
+    ]
   },
   {
     "key": "PIT_CHAMPION",
@@ -283,6 +320,261 @@
       ],
       "evasive": [
         "One edges toward your cargo bay, eyes darting."
+      ]
+    },
+    "deceptive": true,
+    "leverage": [
+      {
+        "text": "Snazrik vouches for you",
+        "requirements": [
+          {
+            "reputation": {
+              "faction": "FREEBOOTERS",
+              "min": 10
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "ARD_BOYZ",
+    "display_name": "Skragnak's 'Ard Boyz",
+    "resolve": 7,
+    "defense_difficulty": 12,
+    "damage_bonus": 1,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 6,
+      "guarded": 3,
+      "evasive": 1
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "The 'Ard Boyz lock shields and charge down the corridor, roaring.",
+        "A wall of armoured Orks lowers its choppas and comes on."
+      ],
+      "guarded": [
+        "The 'Ard Boyz brace behind a bulkhead door and dare you to come closer."
+      ],
+      "evasive": [
+        "The Boyz fall back through the hatchways, trying to draw you deeper into the ship."
+      ]
+    }
+  },
+  {
+    "key": "GITZBOLT_GROTS",
+    "display_name": "Gitzbolt's grot crew",
+    "resolve": 4,
+    "defense_difficulty": 10,
+    "damage_bonus": -1,
+    "read_difficulty": 9,
+    "intent_weights": {
+      "aggressive": 3,
+      "guarded": 3,
+      "evasive": 4
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 11,
+    "deceptive": true,
+    "leverage": [
+      {
+        "text": "they fear the counter-key",
+        "requirements": [
+          {
+            "story_reward": "TECH_COUNTERKEY"
+          }
+        ]
+      }
+    ],
+    "telegraphs": {
+      "aggressive": [
+        "A swarm of grots rushes you with wrenches and very sharp screwdrivers."
+      ],
+      "guarded": [
+        "The grots huddle behind a sparking generator, giggling."
+      ],
+      "evasive": [
+        "The grots scatter into the ducts. You hear them everywhere at once."
+      ]
+    }
+  },
+  {
+    "key": "BIG_MEK_GITZBOLT",
+    "display_name": "Big Mek Gitzbolt",
+    "resolve": 7,
+    "defense_difficulty": 12,
+    "damage_bonus": 0,
+    "read_difficulty": 11,
+    "intent_weights": {
+      "aggressive": 3,
+      "guarded": 4,
+      "evasive": 3
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 14,
+    "deceptive": true,
+    "hardened": true,
+    "leverage": [
+      {
+        "text": "you know how his weapon works",
+        "requirements": [
+          {
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      },
+      {
+        "text": "you hold the key to his machine",
+        "requirements": [
+          {
+            "story_reward": "TECH_COUNTERKEY"
+          }
+        ]
+      }
+    ],
+    "telegraphs": {
+      "aggressive": [
+        "Gitzbolt fires up a shokk-attack gun far too big for him. \"STAND STILL, I'M TESTIN' SUMFINK!\""
+      ],
+      "guarded": [
+        "Gitzbolt hides behind a crackling force field and starts tinkering with it."
+      ],
+      "evasive": [
+        "Gitzbolt hops onto a rattling jump-pack and lurches toward the escape pods."
+      ]
+    }
+  },
+  {
+    "key": "NOB_GRIZZGUT_3",
+    "display_name": "Nob Grizzgut (biggest yet)",
+    "resolve": 9,
+    "defense_difficulty": 13,
+    "damage_bonus": 1,
+    "read_difficulty": 11,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Grizzgut stamps forward on a mechanical leg made from your fleet's scrap. \"DIS TIME, STUNTY!\""
+      ],
+      "guarded": [
+        "Grizzgut raises a shield cut from a Votann hull plate. You recognise the rune on it."
+      ],
+      "evasive": [
+        "Grizzgut circles, grinning. He has learned a thing or two since the pit."
+      ]
+    }
+  },
+  {
+    "key": "SKRAGNAK",
+    "display_name": "Warboss Skragnak",
+    "resolve": 12,
+    "defense_difficulty": 14,
+    "damage_bonus": 2,
+    "read_difficulty": 12,
+    "intent_weights": {
+      "aggressive": 6,
+      "guarded": 3,
+      "evasive": 1
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Skragnak roars loud enough to shake the deck and comes at you like a falling mountain.",
+        "The Warboss hefts his power klaw and charges."
+      ],
+      "guarded": [
+        "Skragnak plants his feet and lets you come to him, klaw raised, grinning."
+      ],
+      "evasive": [
+        "Skragnak paces sideways, sizing you up. He is enjoying this."
+      ]
+    }
+  },
+  {
+    "key": "SKRAGNAK_UNPLUGGED",
+    "display_name": "Warboss Skragnak (powerless)",
+    "resolve": 8,
+    "defense_difficulty": 12,
+    "damage_bonus": 1,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "His klaw sparks and sputters, but Skragnak charges anyway, furious."
+      ],
+      "guarded": [
+        "Skragnak hunches in his dead armour, waiting for you to make a mistake."
+      ],
+      "evasive": [
+        "Skragnak glances at his Boyz. They are not cheering any more. He backs away."
+      ]
+    }
+  },
+  {
+    "key": "SKRAGNAK_AMBUSHED",
+    "display_name": "Warboss Skragnak (caught unready)",
+    "resolve": 9,
+    "defense_difficulty": 13,
+    "damage_bonus": 1,
+    "read_difficulty": 11,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 2,
+      "evasive": 3
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Skragnak, half in his armour, swings a klaw he has not finished strapping on."
+      ],
+      "guarded": [
+        "Skragnak drags a gun-servitor in front of himself and bellows for his guards."
+      ],
+      "evasive": [
+        "Skragnak stumbles back toward his landing craft, roaring for anyone at all."
+      ]
+    }
+  },
+  {
+    "key": "SKRAGNAK_GUARD",
+    "display_name": "Skragnak's Meganobz",
+    "resolve": 6,
+    "defense_difficulty": 13,
+    "damage_bonus": 1,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 4,
+      "evasive": 1
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Three Meganobz stomp forward in clanking armour, klaws snapping."
+      ],
+      "guarded": [
+        "The Meganobz form a wall of metal in front of their Warboss."
+      ],
+      "evasive": [
+        "The Meganobz spread out to come at you from three sides."
       ]
     }
   }

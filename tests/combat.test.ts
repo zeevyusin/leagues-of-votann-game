@@ -128,7 +128,8 @@ describe('ship combat', () => {
   it('a critical deals double weapons, minus enemy shields, and takes nothing', () => {
     const state = gameFor('HERNKYN_PIONEER');
     const combat = startCombat(state, ctxWith(new ScriptedRng([0.5])), 'A1_RAIDER_ESCAPE', null) as ShipCombat;
-    combat.enemy_alloc = { weapons: 4, shields: 1, engines: 1 };
+    // Equal engines (0 vs 0): the range stays Medium, so no range modifier.
+    combat.enemy_alloc = { weapons: 4, shields: 1, engines: 0 };
     const hull = state.ship.hull;
     shipRound(state, ctxWith(new ScriptedRng([0.999])), combat, { weapons: 3, shields: 3, engines: 0 });
     expect(combat.enemy.hull_max - combat.enemy.hull).toBe(3 * 2 - 1);
