@@ -21,9 +21,26 @@
     "penalty_text": "Snazrik remembers bad ones better. Reputation loss and a grudge.",
     "can_fail": true,
     "deadline_days": 30,
-    "fulfil": { "ore": 60 },
-    "on_keep": [{ "reputation": { "FREEBOOTERS": 15 }, "hearthfire": 5 }],
-    "on_break": [{ "reputation": { "FREEBOOTERS": -20 }, "hearthfire": -10, "create_grudge": "GRUDGE_SNAZRIK" }]
+    "fulfil": {
+      "ore": 60
+    },
+    "on_keep": [
+      {
+        "reputation": {
+          "FREEBOOTERS": 15
+        },
+        "hearthfire": 5
+      }
+    ],
+    "on_break": [
+      {
+        "reputation": {
+          "FREEBOOTERS": -20
+        },
+        "hearthfire": -10,
+        "create_grudge": "GRUDGE_SNAZRIK"
+      }
+    ]
   },
   {
     "key": "DEBT_TOW",
@@ -34,8 +51,181 @@
     "penalty_text": "Word gets around that you don't.",
     "can_fail": true,
     "deadline_days": 20,
-    "fulfil": { "ore": 30 },
-    "on_keep": [{ "reputation": { "DURN_LEAGUE": 5 } }],
-    "on_break": [{ "reputation": { "DURN_LEAGUE": -10 }, "hearthfire": -5 }]
+    "fulfil": {
+      "ore": 30
+    },
+    "on_keep": [
+      {
+        "reputation": {
+          "DURN_LEAGUE": 5
+        }
+      }
+    ],
+    "on_break": [
+      {
+        "reputation": {
+          "DURN_LEAGUE": -10
+        },
+        "hearthfire": -5
+      }
+    ]
+  },
+  {
+    "key": "OATH_KHARR_DEFENCE",
+    "title": "Oath of mutual defence with Kharr",
+    "giver": "The Kharr League",
+    "terms": "Stand with Kharr against the Orks, as Kharr will stand with you.",
+    "reward_text": "Kharr will remember it.",
+    "penalty_text": "A sworn oath before the ancestors cannot be broken.",
+    "can_fail": false,
+    "deadline_days": null,
+    "fulfil": null,
+    "on_keep": [],
+    "on_break": []
+  },
+  {
+    "key": "PACT_URGROT",
+    "title": "Pact with Boss Urgrot",
+    "giver": "Boss Urgrot",
+    "terms": "When the Waaagh! comes, back Urgrot's challenge against Skragnak. He will turn his ships on Skragnak in return.",
+    "reward_text": "An Ork civil war at the worst possible moment for Skragnak.",
+    "penalty_text": "Break it, and Urgrot becomes a grudge of his own.",
+    "can_fail": true,
+    "deadline_days": null,
+    "fulfil": null,
+    "on_keep": [],
+    "on_break": [
+      {
+        "create_grudge": "GRUDGE_URGROT"
+      }
+    ]
+  },
+  {
+    "key": "JOB_MEDICAE",
+    "title": "Contract: medicae for Durnvar",
+    "giver": "Karrak Station medicae guild",
+    "terms": "Deliver 2 sealed medicae crates to Hold Durnvar.",
+    "reward_text": "60 Ore and the Hold's thanks.",
+    "penalty_text": "The guild will tell everyone you let wounded Kin go without.",
+    "can_fail": true,
+    "deadline_days": 20,
+    "fulfil": {
+      "deliver": {
+        "item": "JOB_MEDICAE_CRATES",
+        "qty": 2,
+        "system": "HOLD_DURNVAR"
+      }
+    },
+    "on_keep": [
+      {
+        "ore": 60,
+        "reputation": {
+          "HOLD_DURNVAR": 5,
+          "KARRAK_STATION": 5
+        }
+      }
+    ],
+    "on_break": [
+      {
+        "reputation": {
+          "HOLD_DURNVAR": -10,
+          "KARRAK_STATION": -5
+        },
+        "hearthfire": -5
+      }
+    ]
+  },
+  {
+    "key": "JOB_SCRAP",
+    "title": "Contract: Ork scrap for the forges",
+    "giver": "Hold Durnvar forge-masters",
+    "terms": "Bring 3 loads of Ork scrap to Karrak Station.",
+    "reward_text": "90 Ore.",
+    "penalty_text": "The forge-masters will be disappointed. Loudly.",
+    "can_fail": true,
+    "deadline_days": 30,
+    "fulfil": {
+      "deliver": {
+        "item": "ORK_SCRAP",
+        "qty": 3,
+        "system": "KARRAK_STATION"
+      }
+    },
+    "on_keep": [
+      {
+        "ore": 90,
+        "reputation": {
+          "HOLD_DURNVAR": 5
+        }
+      }
+    ],
+    "on_break": [
+      {
+        "reputation": {
+          "HOLD_DURNVAR": -5
+        }
+      }
+    ]
+  },
+  {
+    "key": "JOB_BOUNTY_CUTTER",
+    "title": "Bounty: the Red Tally",
+    "giver": "Karrak Station bounty board",
+    "terms": "Disable the freebooter cutter Red Tally, last seen in the Grimholt Belt.",
+    "reward_text": "100 Ore.",
+    "penalty_text": "The bounty goes to someone else.",
+    "can_fail": true,
+    "deadline_days": 25,
+    "fulfil": null,
+    "on_keep": [
+      {
+        "ore": 100,
+        "reputation": {
+          "KARRAK_STATION": 5,
+          "DURN_LEAGUE": 5
+        }
+      }
+    ],
+    "on_break": [
+      {
+        "deactivate_beat": "JB_CUTTER_HUNT",
+        "reputation": {
+          "KARRAK_STATION": -5
+        }
+      }
+    ]
+  },
+  {
+    "key": "JOB_SEALED_CRATE",
+    "title": "Contract: Snazrik's crate",
+    "giver": "Kaptin Snazrik",
+    "terms": "Carry one sealed crate to Karrak Station. Do not open it.",
+    "reward_text": "80 Ore and Snazrik's goodwill.",
+    "penalty_text": "Snazrik does not forgive lost cargo.",
+    "can_fail": true,
+    "deadline_days": 15,
+    "fulfil": {
+      "deliver": {
+        "item": "SEALED_CRATE",
+        "qty": 1,
+        "system": "KARRAK_STATION"
+      }
+    },
+    "on_keep": [
+      {
+        "ore": 80,
+        "reputation": {
+          "FREEBOOTERS": 15
+        }
+      }
+    ],
+    "on_break": [
+      {
+        "reputation": {
+          "FREEBOOTERS": -20
+        },
+        "create_grudge": "GRUDGE_SNAZRIK"
+      }
+    ]
   }
 ]

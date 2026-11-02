@@ -48,6 +48,16 @@ export const effectSchema = z.strictObject({
   grizzgut: z.string().optional(),
   waaagh_start: z.boolean().optional(),
   complete_act: z.number().optional(),
+  /** Makes beats playable (they start on arrival at their system, or from Comms). */
+  activate_beat: z.union([z.string(), z.array(z.string())]).optional(),
+  deactivate_beat: z.string().optional(),
+  remove_cargo: z.strictObject({ key: z.string(), qty: z.number() }).optional(),
+  /** Finishes an Act 2 thread: grants its reward and thread XP. */
+  complete_thread: z.string().optional(),
+  /** Grants an Act 3 story reward directly (for rewards outside a thread's main one). */
+  story_reward: z.string().optional(),
+  /** Upgrades a ship module by one level (capped). */
+  upgrade_module: moduleKey.optional(),
 });
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -58,7 +68,15 @@ export const requirementSchema = z.strictObject({
   stat: z.strictObject({ name: statKey, min: z.number() }).optional(),
   reputation: z.strictObject({ faction: z.string(), min: z.number() }).optional(),
   flag: z.string().optional(),
+  not_flag: z.string().optional(),
   location: z.string().optional(),
+  has_cargo: z.string().optional(),
+  ore: z.number().optional(),
+  supplies: z.number().optional(),
+  crew: z.string().optional(),
+  story_reward: z.string().optional(),
+  hrolla_status: z.enum(['FREE', 'CAPTIVE', 'RESCUED', 'LOST']).optional(),
+  waaagh_min: z.number().optional(),
 });
 export type Requirement = z.infer<typeof requirementSchema>;
 
@@ -95,8 +113,24 @@ const beatSchema = z.strictObject({
   title: z.string(),
   goal: z.string(),
   objective: z.string(),
-  trigger: z.enum(['comms', 'auto', 'arrival']),
+  /** 'event' beats are travel events: picked at random on arrival, never part of the main story. */
+  trigger: z.enum(['comms', 'auto', 'arrival', 'event']),
   location: z.string().optional(),
+  /** Act 2 thread this beat belongs to (A to D). */
+  thread: z.string().optional(),
+  /** Travel event settings (trigger 'event' only). */
+  event: z
+    .strictObject({
+      weight: z.number().min(0),
+      dangers: z.array(z.enum(['LOW', 'MEDIUM', 'HIGH'])).min(1),
+      requirements: z.array(requirementSchema).default([]),
+      /** Combat events are skipped during the post-defeat grace journey. */
+      combat: z.boolean().default(false),
+      /** Ork events get more likely as the Waaagh! grows. */
+      ork: z.boolean().default(false),
+      once: z.boolean().default(false),
+    })
+    .optional(),
   intro_text: textVariant,
   kin_notes: z.record(z.string(), z.string()).optional(),
   routes: z.array(routeSchema).min(1),
@@ -104,6 +138,8 @@ const beatSchema = z.strictObject({
   outro_text: textVariant.optional(),
   on_complete: z.array(effectSchema).default([]),
   prompt_ship_name: z.boolean().default(false),
+  /** Arrival beats from Act 2 on can be put off until the next visit unless this is false. */
+  deferrable: z.boolean().optional(),
   /** Shown on its own screen when this beat completes an act (via a complete_act effect). */
   act_end_text: textVariant.optional(),
   next: z.string().nullable(),
@@ -125,6 +161,34 @@ const startingKitSchema = z.strictObject({
   reveal_systems: z.array(z.string()).optional(),
 });
 export type StartingKit = z.infer<typeof startingKitSchema>;
+
+/** How a console action works inside a fight (combat-system.md, Phase 2). */
+const combatActionSchema = z.strictObject({
+  modes: z.array(z.enum(['personal', 'ship'])),
+  fight_bonus: z.number().optional(),
+  next_rolls_bonus: z.number().optional(),
+  next_rolls_count: z.number().optional(),
+  negotiate_bonus: z.number().optional(),
+  reveal: z.boolean().optional(),
+  instant_damage: z.number().optional(),
+  heal_hull: z.number().optional(),
+  health_cost: z.number().optional(),
+  hearthfire: z.number().optional(),
+  wear: z.number().optional(),
+  auto_withdraw: z.boolean().optional(),
+  victory_hearthfire: z.number().optional(),
+  defeat_hearthfire: z.number().optional(),
+});
+export type CombatAction = z.infer<typeof combatActionSchema>;
+
+const traitCombatSchema = z.strictObject({
+  defend_reduction: z.number().optional(),
+  no_defeat_hearthfire: z.boolean().optional(),
+  tag_bonus: numRecord.optional(),
+  defend_advantage: z.boolean().optional(),
+  ship_damage_reduction: z.number().optional(),
+  victory_ore_multiplier: z.number().optional(),
+});
 
 const bandPenalty = z.strictObject({ min: z.number(), state: z.string(), penalty: z.number() });
 const hearthBand = z.strictObject({ min: z.number(), band: z.string(), modifier: z.number() });
@@ -251,6 +315,37 @@ export const configSchema = z.strictObject({
   START_DAY: z.number(),
   FIRST_MESSAGE: z.string(),
   SAVE_SLOTS: z.number(),
+
+  XP_EVENT: z.number(),
+  FUEL_MAX: z.number(),
+  SUPPLIES_MAX: z.number(),
+  WAAAGH_BANDS: z.array(
+    z.strictObject({
+      min: z.number(),
+      band: z.string(),
+      ork_event_weight: z.number(),
+      event_chance_bonus: z.number(),
+      price_multiplier: z.number(),
+      warning: z.string().optional(),
+    }),
+  ),
+  TRAVEL_EVENT_CHANCE: z.strictObject({ LOW: z.number(), MEDIUM: z.number(), HIGH: z.number() }),
+  SAFE_ROUTE_EVENT_MULTIPLIER: z.number(),
+  SAFE_ROUTE_FUEL_SAVING: z.number(),
+  SAFE_ROUTE_SUBCLASS: z.string(),
+  MODULE_UPGRADE_COST: z.record(z.string(), z.number()),
+  CARGO_CAPACITY_PER_HOLD_LEVEL: z.number(),
+  REPUTATION_DISCOUNT_AT: z.number(),
+  REPUTATION_DISCOUNT: z.number(),
+  REPUTATION_SURCHARGE_BELOW: z.number(),
+  REPUTATION_SURCHARGE: z.number(),
+  FEAST_COST: z.number(),
+  FEAST_HEARTHFIRE: z.number(),
+  FEAST_HEARTHFIRE_IRONKIN: z.number(),
+  WITHDRAW_ENABLED: z.boolean(),
+  DOCK_WORK_DAYS: z.number(),
+  DOCK_WORK_ORE: z.number(),
+  ACT2_THREAD_MESSAGES: z.array(z.string()),
 });
 export type Config = z.infer<typeof configSchema>;
 
@@ -261,6 +356,8 @@ const encounterOutcome = z.strictObject({
   effects: z.array(effectSchema).default([]),
   overrides_default_costs: z.boolean().optional(),
 });
+
+const priceList = z.record(z.string(), z.number());
 
 export const gameDataSchema = z.strictObject({
   config: configSchema,
@@ -294,8 +391,19 @@ export const gameDataSchema = z.strictObject({
         name: z.string(),
         description: z.string(),
         ironkin_variant: z.strictObject({ description: z.string(), wear_cost: z.number().optional() }).optional(),
+        combat: combatActionSchema.optional(),
+        /** Ironkin overrides for the combat effect (merged over `combat`). */
+        combat_ironkin: combatActionSchema.partial().optional(),
+        /** Market use: price improvement for the rest of the visit, once per visit. */
+        market_haggle: z.number().optional(),
       }),
-      trait: z.strictObject({ name: z.string(), description: z.string() }),
+      trait: z.strictObject({
+        name: z.string(),
+        description: z.string(),
+        combat: traitCombatSchema.optional(),
+        market_sell_bonus: z.number().optional(),
+        market_upgrade_discount: z.number().optional(),
+      }),
       starting_kit: startingKitSchema.default({}),
     }),
   ),
@@ -308,6 +416,8 @@ export const gameDataSchema = z.strictObject({
       faction: z.string(),
       danger: z.enum(['LOW', 'MEDIUM', 'HIGH']),
       hidden: z.boolean(),
+      /** The port refuses to dock ships once the Waaagh! meter reaches this value. */
+      closes_at_waaagh: z.number().optional(),
       connections: z.array(z.strictObject({ to: z.string(), days: z.number().min(1), fuel: z.number().min(0) })),
     }),
   ),
@@ -333,7 +443,9 @@ export const gameDataSchema = z.strictObject({
       protected: z.boolean(),
     }),
   ),
-  items: z.array(z.strictObject({ key: z.string(), display_name: z.string(), mission: z.boolean() })),
+  items: z.array(
+    z.strictObject({ key: z.string(), display_name: z.string(), mission: z.boolean(), value: z.number().min(0) }),
+  ),
   relics: z.array(
     z.strictObject({
       key: z.string(),
@@ -353,7 +465,13 @@ export const gameDataSchema = z.strictObject({
       penalty_text: z.string(),
       can_fail: z.boolean(),
       deadline_days: z.number().nullable(),
-      fulfil: z.strictObject({ ore: z.number() }).nullable(),
+      /** ore: pay at any port. deliver: kept automatically when docking at `system` with the cargo. */
+      fulfil: z
+        .union([
+          z.strictObject({ ore: z.number() }),
+          z.strictObject({ deliver: z.strictObject({ item: z.string(), qty: z.number(), system: z.string() }) }),
+        ])
+        .nullable(),
       on_keep: z.array(effectSchema),
       on_break: z.array(effectSchema),
     }),
@@ -368,6 +486,17 @@ export const gameDataSchema = z.strictObject({
       subject: z.string(),
       body: textVariant,
       beat: z.string().optional(),
+      /** Applied once, when the message arrives in the inbox. */
+      on_receive: z.array(effectSchema).default([]),
+      /** A job offer: accepting runs `on_accept` (usually creating an oath and activating a beat). */
+      job: z
+        .strictObject({
+          ports: z.array(z.string()).min(1),
+          requirements: z.array(requirementSchema).default([]),
+          on_accept: z.array(effectSchema),
+          reward_text: z.string(),
+        })
+        .optional(),
     }),
   ),
   lore: z.array(z.strictObject({ key: z.string(), title: z.string(), text: z.string() })),
@@ -406,6 +535,9 @@ export const gameDataSchema = z.strictObject({
       mode: z.enum(['personal', 'ship']),
       intro: z.string(),
       enemies: z.array(z.string()).min(1),
+      /** e.g. 'cramped', 'surface', 'boarding': trait bonuses key off these. */
+      tags: z.array(z.string()).default([]),
+      allow_withdraw: z.boolean().default(false),
       outcomes: z.strictObject({
         victory_broken: encounterOutcome,
         victory_negotiated: encounterOutcome.optional(),
@@ -415,6 +547,42 @@ export const gameDataSchema = z.strictObject({
     }),
   ),
   story_beats: z.array(beatSchema),
+  story_threads: z.array(
+    z.strictObject({
+      key: z.string(),
+      title: z.string(),
+      reward: z.string(),
+      reward_text: z.string(),
+      beats: z.array(z.string()).min(1),
+    }),
+  ),
+  /** One-off story screens such as "Act 3 unlocked". */
+  act_events: z.array(z.strictObject({ key: z.string(), title: z.string(), text: textVariant })),
+  markets: z.array(
+    z.strictObject({
+      port: z.string(),
+      buy_multiplier: z.number(),
+      sell_multiplier: z.number(),
+      fuel_price: z.number().nullable(),
+      supplies_price: z.number().nullable(),
+      upgrades: z.array(moduleKey),
+      /** Goods this port sells, with its base price. */
+      sells: priceList,
+      /** Per-item multiplier on what this port pays (missing = 1). */
+      buys: priceList,
+      feast: z.boolean(),
+      rumors: z.array(
+        z.strictObject({
+          key: z.string(),
+          label: z.string(),
+          price: z.number(),
+          requirements: z.array(requirementSchema).default([]),
+          effects: z.array(effectSchema),
+          text: z.string(),
+        }),
+      ),
+    }),
+  ),
 });
 export type GameData = z.infer<typeof gameDataSchema>;
 
@@ -449,6 +617,7 @@ export function crossReferenceErrors(d: GameData): string[] {
     ship: keys(d.enemy_ships),
     encounter: keys(d.combat_encounters),
     beat: keys(d.story_beats),
+    thread: keys(d.story_threads),
   };
   const need = (set: Set<string>, key: string | undefined, where: string, kind: string) => {
     if (key !== undefined && !set.has(key)) errors.push(`${where}: unknown ${kind} "${key}"`);
@@ -472,6 +641,19 @@ export function crossReferenceErrors(d: GameData): string[] {
       need(sets.relic, e.add_relic, where, 'relic');
       need(sets.system, e.reveal_system, where, 'system');
       need(sets.lore, e.lore, where, 'lore');
+      for (const b of [e.activate_beat ?? []].flat()) need(sets.beat, b, where, 'beat');
+      need(sets.beat, e.deactivate_beat, where, 'beat');
+      need(sets.item, e.remove_cargo?.key, where, 'item');
+      need(sets.thread, e.complete_thread, where, 'thread');
+    }
+  };
+  const checkReqs = (reqs: Requirement[], where: string) => {
+    for (const req of reqs) {
+      need(sets.subclass, req.subclass, where, 'subclass');
+      need(sets.faction, req.reputation?.faction, where, 'faction');
+      need(sets.system, req.location, where, 'system');
+      need(sets.item, req.has_cargo, where, 'item');
+      need(sets.crew, req.crew, where, 'crew');
     }
   };
 
@@ -486,6 +668,31 @@ export function crossReferenceErrors(d: GameData): string[] {
   need(sets.subclass, d.config.RELIC_EVALUATOR_SUBCLASS, 'config.RELIC_EVALUATOR_SUBCLASS', 'subclass');
   need(sets.subclass, d.config.ODDS_SUBCLASS, 'config.ODDS_SUBCLASS', 'subclass');
   need(sets.grudge, d.config.GRIZZGUT_GRUDGE, 'config.GRIZZGUT_GRUDGE', 'grudge');
+  need(sets.subclass, d.config.SAFE_ROUTE_SUBCLASS, 'config.SAFE_ROUTE_SUBCLASS', 'subclass');
+  for (const m of d.config.ACT2_THREAD_MESSAGES) need(sets.message, m, 'config.ACT2_THREAD_MESSAGES', 'message');
+  for (const lvl of ['2', '3'])
+    if (d.config.MODULE_UPGRADE_COST[lvl] === undefined) errors.push(`config.MODULE_UPGRADE_COST: missing level ${lvl}`);
+  for (const key of ['ACT2_STARTED', 'ACT3_UNLOCKED', 'WAAAGH_LAUNCHED'])
+    if (!d.act_events.some((a) => a.key === key)) errors.push(`act_events: missing "${key}"`);
+
+  for (const t of d.story_threads) {
+    for (const b of t.beats) {
+      need(sets.beat, b, `thread ${t.key}`, 'beat');
+      const beat = d.story_beats.find((x) => x.key === b);
+      if (beat && beat.thread !== t.key) errors.push(`thread ${t.key}: beat ${b} is not marked thread "${t.key}"`);
+    }
+  }
+
+  for (const m of d.markets) {
+    const sys = d.systems.find((s) => s.key === m.port);
+    if (!sys) errors.push(`market: unknown port "${m.port}"`);
+    else if (!sys.port) errors.push(`market ${m.port}: system is not a port`);
+    for (const k of [...Object.keys(m.sells), ...Object.keys(m.buys)]) need(sets.item, k, `market ${m.port}`, 'item');
+    for (const r of m.rumors) {
+      checkEffects(r.effects, `market ${m.port}.rumor ${r.key}`);
+      checkReqs(r.requirements, `market ${m.port}.rumor ${r.key}`);
+    }
+  }
 
   for (const s of d.subclasses) {
     if (!d.base_classes.some((b) => b.key === s.base_class))
@@ -518,8 +725,20 @@ export function crossReferenceErrors(d: GameData): string[] {
   for (const o of d.oaths) {
     checkEffects(o.on_keep, `oath ${o.key}.on_keep`);
     checkEffects(o.on_break, `oath ${o.key}.on_break`);
+    if (o.fulfil && 'deliver' in o.fulfil) {
+      need(sets.item, o.fulfil.deliver.item, `oath ${o.key}`, 'item');
+      need(sets.system, o.fulfil.deliver.system, `oath ${o.key}`, 'system');
+    }
   }
-  for (const m of d.messages) need(sets.beat, m.beat, `message ${m.key}`, 'beat');
+  for (const m of d.messages) {
+    need(sets.beat, m.beat, `message ${m.key}`, 'beat');
+    checkEffects(m.on_receive, `message ${m.key}.on_receive`);
+    if (m.job) {
+      for (const p of m.job.ports) need(sets.system, p, `message ${m.key}`, 'system');
+      checkEffects(m.job.on_accept, `message ${m.key}.job`);
+      checkReqs(m.job.requirements, `message ${m.key}.job`);
+    }
+  }
 
   for (const enc of d.combat_encounters) {
     for (const e of enc.enemies) need(enc.mode === 'personal' ? sets.enemy : sets.ship, e, `encounter ${enc.key}`, 'enemy');
@@ -527,6 +746,8 @@ export function crossReferenceErrors(d: GameData): string[] {
     const negotiable = enc.mode === 'personal' && enc.enemies.some((e) => d.enemies.find((x) => x.key === e)?.negotiable);
     if (negotiable && !enc.outcomes.victory_negotiated)
       errors.push(`encounter ${enc.key}: has a negotiable enemy but no victory_negotiated outcome`);
+    if (!enc.outcomes.withdrew)
+      errors.push(`encounter ${enc.key}: needs a withdrew outcome (Withdraw and Chart Safe Route can end any fight)`);
   }
 
   for (const b of d.story_beats) {
@@ -534,6 +755,9 @@ export function crossReferenceErrors(d: GameData): string[] {
     if (b.next !== null) need(sets.beat, b.next, where, 'beat');
     need(sets.system, b.location, where, 'system');
     if (b.trigger === 'arrival' && !b.location) errors.push(`${where}: arrival beats need a location`);
+    if ((b.trigger === 'event') !== (b.event !== undefined)) errors.push(`${where}: event settings go only on trigger "event" beats`);
+    if (b.thread) need(sets.thread, b.thread, where, 'thread');
+    if (b.event) checkReqs(b.event.requirements, where);
     if (!b.routes.some((r) => r.requirements.length === 0))
       errors.push(`${where}: needs at least one route with no requirements (the fallback)`);
     checkEffects(b.on_complete, `${where}.on_complete`);
@@ -544,11 +768,8 @@ export function crossReferenceErrors(d: GameData): string[] {
       if (r.roll) diff(r.roll.difficulty, rw);
       if (r.console_action) diff(r.console_action.difficulty, rw);
       checkEffects(r.effects_always, rw);
-      for (const req of r.requirements) {
-        need(sets.subclass, req.subclass, rw, 'subclass');
-        need(sets.faction, req.reputation?.faction, rw, 'faction');
-        need(sets.system, req.location, rw, 'system');
-      }
+      checkReqs(r.requirements, rw);
+      for (const t of tierSchema.options) if (r.outcomes?.[t]) checkEffects(r.outcomes[t]!.effects, `${rw}.outcomes.${t}`);
     }
   }
   return errors;

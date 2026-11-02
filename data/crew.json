@@ -5,7 +5,10 @@
     "kin_type": "IRONKIN",
     "role": "Engineer",
     "bio": "Gruff, loyal, and older than most of the fleet's ships. Remembers the last Ork war and does not like to talk about it.",
-    "trait": { "name": "Workshop Veteran", "description": "Hull repairs cost 1 Ore less per point." },
+    "trait": {
+      "name": "Workshop Veteran",
+      "description": "Hull repairs cost 1 Ore less per point."
+    },
     "repair_discount": 1,
     "roll_modifiers": [],
     "protected": true
@@ -16,9 +19,55 @@
     "kin_type": "KIN",
     "role": "Pilot",
     "bio": "Young, sharp, and on her first expedition. Flies better than she talks.",
-    "trait": { "name": "Steady Hands", "description": "+1 to Nerve rolls outside personal combat." },
+    "trait": {
+      "name": "Steady Hands",
+      "description": "+1 to Nerve rolls outside personal combat."
+    },
     "repair_discount": 0,
-    "roll_modifiers": [{ "stat": "nerve", "value": 1 }],
+    "roll_modifiers": [
+      {
+        "stat": "nerve",
+        "value": 1
+      }
+    ],
+    "protected": false
+  },
+  {
+    "key": "HROLLA_VASK",
+    "display_name": "Fleet-Theyn Hrolla Vask",
+    "kin_type": "KIN",
+    "role": "Fleet-Theyn",
+    "bio": "The leader of the broken fleet. Scarred, furious, and very glad to see you.",
+    "trait": {
+      "name": "Fleet-Theyn's Presence",
+      "description": "+1 to Silver Tongue rolls outside personal combat."
+    },
+    "repair_discount": 0,
+    "roll_modifiers": [
+      {
+        "stat": "silver_tongue",
+        "value": 1
+      }
+    ],
+    "protected": true
+  },
+  {
+    "key": "BROKKA",
+    "display_name": "Brokka",
+    "kin_type": "KIN",
+    "role": "Freed miner",
+    "bio": "Spent three months in an Ork pit. Talks about it with a hammer.",
+    "trait": {
+      "name": "Pick and Hammer",
+      "description": "+1 to Craft rolls outside personal combat."
+    },
+    "repair_discount": 0,
+    "roll_modifiers": [
+      {
+        "stat": "craft",
+        "value": 1
+      }
+    ],
     "protected": false
   }
 ]

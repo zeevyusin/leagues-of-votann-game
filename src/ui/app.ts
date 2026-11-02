@@ -13,8 +13,14 @@ type Mode =
   | { kind: 'creation'; draft: CreationDraft }
   | { kind: 'game'; state: GameState; menu: boolean; message?: string };
 
-const TAB_LABELS: Record<HubTab, string> = { comms: 'Comms', nav: 'Nav', ship: 'Ship', logbook: 'Logbook' };
-const TAB_ORDER: HubTab[] = ['comms', 'nav', 'ship', 'logbook'];
+const TAB_LABELS: Record<HubTab, string> = { comms: 'Comms', nav: 'Nav', ship: 'Ship', logbook: 'Logbook', market: 'Market' };
+
+/** The Market tab only appears while docked at a port with a market. */
+function tabOrder(view: View): HubTab[] {
+  const tabs: HubTab[] = ['comms', 'nav', 'ship', 'logbook'];
+  if (view.tabs?.market) tabs.push('market');
+  return tabs;
+}
 
 export class App {
   private mode: Mode = { kind: 'title' };
@@ -195,8 +201,9 @@ export class App {
     const view = this.currentView();
     if (e.key === 'Tab' && view.tabs) {
       e.preventDefault();
-      const i = TAB_ORDER.indexOf(view.tabs.active);
-      const next = TAB_ORDER[(i + (e.shiftKey ? TAB_ORDER.length - 1 : 1)) % TAB_ORDER.length];
+      const order = tabOrder(view);
+      const i = order.indexOf(view.tabs.active);
+      const next = order[(i + (e.shiftKey ? order.length - 1 : 1)) % order.length];
       this.choose(`tab:${next}`);
       return;
     }
@@ -255,7 +262,7 @@ export class App {
 
     if (view.tabs) {
       const tabs = el('nav', 'tabs');
-      for (const t of TAB_ORDER) {
+      for (const t of tabOrder(view)) {
         const b = el('button', `tab${view.tabs.active === t ? ' active' : ''}`);
         b.append(document.createTextNode(TAB_LABELS[t]));
         if (t === 'comms' && view.tabs.unread) b.append(el('span', 'badge', String(view.tabs.unread)));

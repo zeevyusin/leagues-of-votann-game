@@ -8,5 +8,15 @@
     "key": "LORE_SKRAGNAK",
     "title": "Warboss Skragnak",
     "text": "The Warboss whose Orks raided the Anvil. With Gitzbolt's new weapon behind him, every Ork in the Reach wants to fight under his banner."
+  },
+  {
+    "key": "LORE_MUSTER",
+    "title": "The muster at Skrapfang Rock",
+    "text": "Hundreds of Ork ships gathering around a cratered moon, waiting for Skragnak to point them at Hold Durnvar."
+  },
+  {
+    "key": "LORE_GITZBOLT_WEAPON",
+    "title": "Gitzbolt's weapon",
+    "text": "A super-weapon too hungry for any Ork reactor. The Ancestor Core is the heart it was missing."
   }
 ]

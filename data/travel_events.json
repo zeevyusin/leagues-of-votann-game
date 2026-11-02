@@ -1,0 +1,1049 @@
+[
+  {
+    "key": "EV_DERELICT",
+    "act": 2,
+    "title": "Derelict",
+    "goal": "Decide what to do with the wreck.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 3,
+      "dangers": [
+        "MEDIUM",
+        "HIGH"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "A dead ship tumbles slowly across your path, its hull split open. No power, no signals. Maybe something worth taking.",
+    "routes": [
+      {
+        "key": "SALVAGE",
+        "label": "Board it and strip what you can",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "SCAN",
+        "label": "Scan it first, then go in",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "LEAVE",
+        "label": "Leave it alone",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "You let the dead keep their ship.",
+            "effects": []
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "A good haul: Ork scrap and sealed ration crates.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 2
+            }
+          },
+          {
+            "supplies": 4
+          }
+        ]
+      },
+      "success": {
+        "text": "Some scrap and a few ration packs.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 1
+            }
+          },
+          {
+            "supplies": 2
+          }
+        ]
+      },
+      "partial": {
+        "text": "You find a little, and cut your hand on the way out.",
+        "effects": [
+          {
+            "supplies": 1,
+            "health": -1
+          }
+        ]
+      },
+      "failure": {
+        "text": "Something in there was still live. It went off.",
+        "effects": [
+          {
+            "hull": -2,
+            "health": -2
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_RADIATION_STORM",
+    "act": 2,
+    "title": "Radiation Storm",
+    "goal": "Get through it.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 3,
+      "dangers": [
+        "MEDIUM",
+        "HIGH"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "A radiation storm boils across the lane. Your shielding groans. You need to get through it, or around it.",
+    "kin_notes": {
+      "KIN": "Your skin prickles. Kin were not made for this."
+    },
+    "routes": [
+      {
+        "key": "IRONKIN",
+        "label": "Walk the hull yourself and patch the shielding (Ironkin)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "kin_type": "IRONKIN"
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "The storm crackles over your frame like rain. You fix the shielding and climb back in.",
+            "effects": []
+          }
+        }
+      },
+      {
+        "key": "PILOT",
+        "label": "Punch straight through",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2
+        }
+      },
+      {
+        "key": "SHIELDS",
+        "label": "Retune the shields on the fly",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You slide through the storm without a scratch.",
+        "effects": []
+      },
+      "success": {
+        "text": "You come out the other side with a few warnings blinking.",
+        "effects": []
+      },
+      "partial": {
+        "text": "You make it, but everyone aboard feels sick for a day.",
+        "effects": [
+          {
+            "health": -2
+          }
+        ]
+      },
+      "failure": {
+        "text": "The storm fries a relay and leaves you all shaking.",
+        "effects": [
+          {
+            "health": -3,
+            "hull": -2
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_DISTRESS_MINERS",
+    "act": 2,
+    "title": "Distress Call",
+    "goal": "Decide whether to help.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 3,
+      "dangers": [
+        "LOW",
+        "MEDIUM"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "A distress beacon: a Kin mining skiff with a dead engine and six miners aboard, running out of air.",
+    "routes": [
+      {
+        "key": "GIVE",
+        "label": "Give them supplies and a tow to safety (5 Supplies)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "supplies": 5
+          }
+        ],
+        "effects_always": [
+          {
+            "supplies": -5
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "The miners cheer when your tow line catches. Word of this will get around.",
+            "effects": [
+              {
+                "hearthfire": 10,
+                "reputation": {
+                  "DURN_LEAGUE": 5
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "FIX",
+        "label": "Fix their engine",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "IGNORE",
+        "label": "You cannot spare the time",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "You fly on. The crew is quiet for a long time.",
+            "effects": [
+              {
+                "hearthfire": -5
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "Their engine roars back to life, better than before. They insist you take a crate of ore.",
+        "effects": [
+          {
+            "hearthfire": 10,
+            "add_cargo": {
+              "key": "ORE_CRATES",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "Their engine coughs back to life. They thank you all the way to the horizon.",
+        "effects": [
+          {
+            "hearthfire": 5,
+            "reputation": {
+              "DURN_LEAGUE": 3
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You get them moving, but it costs you parts.",
+        "effects": [
+          {
+            "supplies": -2,
+            "hearthfire": 5
+          }
+        ]
+      },
+      "failure": {
+        "text": "You cannot fix it. You tow them instead, slowly.",
+        "effects": [
+          {
+            "supplies": -3
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_HERNKYN_TRADER",
+    "act": 2,
+    "title": "Hernkyn Trader",
+    "goal": "Trade, or not.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "LOW"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "A Hernkyn trader hails you, selling supplies from the back of a battered hauler. \"Fair prices for fellow Kin. Mostly fair.\"",
+    "routes": [
+      {
+        "key": "TRADE",
+        "label": "Haggle for a crate of supplies",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "PASS",
+        "label": "Wave and fly on",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "The trader waves back.",
+            "effects": []
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You talk her into a bargain she will regret.",
+        "effects": [
+          {
+            "ore": -10,
+            "supplies": 8
+          }
+        ]
+      },
+      "success": {
+        "text": "A fair trade.",
+        "effects": [
+          {
+            "ore": -15,
+            "supplies": 6
+          }
+        ]
+      },
+      "partial": {
+        "text": "Not your best deal.",
+        "effects": [
+          {
+            "ore": -20,
+            "supplies": 5
+          }
+        ]
+      },
+      "failure": {
+        "text": "She drives a hard bargain.",
+        "effects": [
+          {
+            "ore": -25,
+            "supplies": 4
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_PIRATES",
+    "act": 2,
+    "title": "Pirate Boarders",
+    "goal": "Deal with the boarders.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "MEDIUM",
+        "HIGH"
+      ],
+      "requirements": [],
+      "combat": true,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "A freebooter skiff slams into your hull. Grapples. Cutting torches. They are coming aboard.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Meet them at the airlock",
+        "encounter": "EV_PIRATE_BOARDING"
+      },
+      {
+        "key": "PAY",
+        "label": "Pay them off (20 Ore)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "ore": 20
+          }
+        ],
+        "effects_always": [
+          {
+            "ore": -20
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "They take the Ore, salute, and leave. Freebooter manners.",
+            "effects": []
+          }
+        }
+      },
+      {
+        "key": "OUTRUN",
+        "label": "Blow the grapples and run",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You tear free and leave them spinning.",
+        "effects": []
+      },
+      "success": {
+        "text": "You break away.",
+        "effects": []
+      },
+      "partial": {
+        "text": "You get away, but the grapples tear some hull with them.",
+        "effects": [
+          {
+            "hull": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "They get aboard long enough to grab a few things.",
+        "effects": [
+          {
+            "ore": -15,
+            "hull": -2
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_ORK_LOOTAS",
+    "act": 2,
+    "title": "Ork Lootas",
+    "goal": "Survive the lootas.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "MEDIUM",
+        "HIGH"
+      ],
+      "requirements": [],
+      "combat": true,
+      "ork": true,
+      "once": false
+    },
+    "intro_text": "An Ork loota ship drops out of the dark, guns first.",
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Fight it out",
+        "encounter": "EV_ORK_LOOTAS"
+      },
+      {
+        "key": "EVADE",
+        "label": "Dive into the nearest debris and lose them",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "HIDE",
+        "label": "Go dark and hope they fly past",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "They fly straight past, arguing.",
+        "effects": []
+      },
+      "success": {
+        "text": "You lose them.",
+        "effects": []
+      },
+      "partial": {
+        "text": "They get a few shots in before you lose them.",
+        "effects": [
+          {
+            "hull": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "They rake you good before getting bored.",
+        "effects": [
+          {
+            "hull": -5
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_REFUGEES",
+    "act": 2,
+    "title": "Refugees",
+    "goal": "Decide how to help.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "LOW",
+        "MEDIUM"
+      ],
+      "requirements": [
+        {
+          "waaagh_min": 25
+        }
+      ],
+      "combat": false,
+      "ork": true,
+      "once": false
+    },
+    "intro_text": "A string of battered Kin ships limps past, fleeing Ork raids. One hails you: \"Anything you can spare. Anything.\"",
+    "routes": [
+      {
+        "key": "GIVE",
+        "label": "Share your supplies (6 Supplies)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "supplies": 6
+          }
+        ],
+        "effects_always": [
+          {
+            "supplies": -6
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "They will remember your ship's name.",
+            "effects": [
+              {
+                "hearthfire": 10,
+                "reputation": {
+                  "HOLD_DURNVAR": 5
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "ESCORT",
+        "label": "Escort them to the next system",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "REFUSE",
+        "label": "Keep what you have",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "You fly on. Ylsa does not speak to you for a day.",
+            "effects": [
+              {
+                "hearthfire": -5
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You get them to safety without a single loss.",
+        "effects": [
+          {
+            "hearthfire": 10,
+            "reputation": {
+              "HOLD_DURNVAR": 5
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "They make it.",
+        "effects": [
+          {
+            "hearthfire": 5
+          }
+        ]
+      },
+      "partial": {
+        "text": "Most of them make it.",
+        "effects": [
+          {
+            "hearthfire": 3,
+            "supplies": -2
+          }
+        ]
+      },
+      "failure": {
+        "text": "Raiders catch the convoy. You save who you can.",
+        "effects": [
+          {
+            "hull": -3,
+            "hearthfire": -3
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_ASTEROIDS",
+    "act": 2,
+    "title": "Asteroid Field",
+    "goal": "Get through it.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "MEDIUM"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "The lane runs through a drifting asteroid field. Big ones, small ones, fast ones.",
+    "routes": [
+      {
+        "key": "PILOT",
+        "label": "Thread the field",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "AROUND",
+        "label": "Go around (1 Fuel)",
+        "auto_tier": "success",
+        "requirements": [],
+        "effects_always": [
+          {
+            "fuel": -1
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "The long way round. Slow, but safe.",
+            "effects": []
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You fly the field like it is a dance. Ylsa claps.",
+        "effects": [
+          {
+            "hearthfire": 3
+          }
+        ]
+      },
+      "success": {
+        "text": "Through, with a few scrapes.",
+        "effects": []
+      },
+      "partial": {
+        "text": "A small rock hits harder than it looked.",
+        "effects": [
+          {
+            "hull": -2
+          }
+        ]
+      },
+      "failure": {
+        "text": "A big rock clips the engine housing.",
+        "effects": [
+          {
+            "hull": -4
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_CREW_DISPUTE",
+    "act": 2,
+    "title": "Crew Dispute",
+    "goal": "Settle it.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "LOW",
+        "MEDIUM"
+      ],
+      "requirements": [
+        {
+          "crew": "YLSA"
+        },
+        {
+          "crew": "DORRIK"
+        }
+      ],
+      "combat": false,
+      "ork": false,
+      "once": true
+    },
+    "intro_text": "Dorrik and Ylsa are shouting at each other in the galley. Something about the last fight, and who was to blame.",
+    "routes": [
+      {
+        "key": "TALK",
+        "label": "Sit them both down and hear them out",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "ORDER",
+        "label": "Order them both back to work",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "By the end they are laughing about it. The whole ship feels warmer.",
+        "effects": [
+          {
+            "hearthfire": 10
+          }
+        ]
+      },
+      "success": {
+        "text": "It blows over.",
+        "effects": [
+          {
+            "hearthfire": 3
+          }
+        ]
+      },
+      "partial": {
+        "text": "They stop shouting, but neither is happy.",
+        "effects": []
+      },
+      "failure": {
+        "text": "It gets worse before it gets better.",
+        "effects": [
+          {
+            "hearthfire": -8
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_SCRAP_FIELD",
+    "act": 2,
+    "title": "Ork Scrap",
+    "goal": "Salvage, or not.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "MEDIUM",
+        "HIGH"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": true,
+      "once": false
+    },
+    "intro_text": "The remains of an Ork battle drift across the lane. Wrecks, guns, and an awful lot of loose metal.",
+    "routes": [
+      {
+        "key": "SALVAGE",
+        "label": "Salvage what you can",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "LEAVE",
+        "label": "Fly through",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "You leave it to the scavengers.",
+            "effects": []
+          }
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "A fine haul of Ork scrap.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 3
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "A decent haul.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 2
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "Some scrap, and a few new dents.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 1
+            }
+          },
+          {
+            "hull": -1
+          }
+        ]
+      },
+      "failure": {
+        "text": "A booby-trapped wreck. Of course.",
+        "effects": [
+          {
+            "hull": -3
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  },
+  {
+    "key": "EV_FREEBOOTER_TOLL",
+    "act": 2,
+    "title": "Freebooter Toll",
+    "goal": "Get past the freebooters.",
+    "objective": "",
+    "trigger": "event",
+    "event": {
+      "weight": 2,
+      "dangers": [
+        "MEDIUM"
+      ],
+      "requirements": [],
+      "combat": false,
+      "ork": false,
+      "once": false
+    },
+    "intro_text": "Three freebooter ships block the lane. Their kaptin grins over the vox: \"Toll road, stunty. Fifteen Ore.\"",
+    "routes": [
+      {
+        "key": "PAY",
+        "label": "Pay the toll (15 Ore)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "ore": 15
+          }
+        ],
+        "effects_always": [
+          {
+            "ore": -15
+          }
+        ],
+        "outcomes": {
+          "success": {
+            "text": "\"Pleasure doin' bizness.\" They part to let you through.",
+            "effects": [
+              {
+                "reputation": {
+                  "FREEBOOTERS": 3
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "TALK",
+        "label": "Talk your way through",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "BLUFF",
+        "label": "Run out your guns and stare them down",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "They decide you're more trouble than you're worth, and wave you through with a salute.",
+        "effects": [
+          {
+            "reputation": {
+              "FREEBOOTERS": 5
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "They let you through, grumbling.",
+        "effects": []
+      },
+      "partial": {
+        "text": "They let you through, after a \"small fee\".",
+        "effects": [
+          {
+            "ore": -8
+          }
+        ]
+      },
+      "failure": {
+        "text": "They take the toll and a few potshots for the trouble.",
+        "effects": [
+          {
+            "ore": -15,
+            "hull": -2
+          }
+        ]
+      }
+    },
+    "on_complete": [],
+    "next": null
+  }
+]

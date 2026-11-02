@@ -16,5 +16,11 @@
     "title": "Snazrik's unpaid bill",
     "against": "Kaptin Snazrik",
     "description": "You broke your debt to the freebooters. They have long memories and short tempers."
+  },
+  {
+    "key": "GRUDGE_URGROT",
+    "title": "The broken pact",
+    "against": "Boss Urgrot",
+    "description": "You made a deal with an Ork and broke it. He took it personally."
   }
 ]

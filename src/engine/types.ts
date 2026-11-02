@@ -9,9 +9,9 @@ export type BaseClass = 'WARRIOR' | 'PATHFINDER' | 'ARTIFICER' | 'SPEAKER';
 export type Tier = 'critical' | 'success' | 'partial' | 'failure';
 export type Intent = 'aggressive' | 'guarded' | 'evasive';
 export type Stance = 'attack' | 'defend' | 'outmaneuver' | 'negotiate';
-export type HubTab = 'comms' | 'nav' | 'ship' | 'logbook';
+export type HubTab = 'comms' | 'nav' | 'ship' | 'logbook' | 'market';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface Character {
   name: string;
@@ -65,10 +65,21 @@ export interface InboxMessage {
   day: number;
 }
 
+export type BeatResult = Tier | 'victory_broken' | 'victory_negotiated' | 'defeat' | 'withdrew';
+
 export interface StoryState {
   act: number;
-  current_beat: string | null;
-  completed_beats: { key: string; route: string; tier: Tier | 'victory_broken' | 'victory_negotiated' | 'defeat' }[];
+  /** Beats waiting to be played: each starts on arrival at its system, or from Comms. */
+  active_beats: string[];
+  /** The beat being resolved right now (used to tag records such as Grizzgut's). */
+  playing_beat: string | null;
+  completed_beats: { key: string; route: string; tier: BeatResult }[];
+  threads_completed: string[];
+  story_rewards: string[];
+  events_seen: string[];
+  act_events_shown: string[];
+  /** Beats the player put off this visit; they wait until the next arrival. */
+  deferred_beats: string[];
   waaagh_meter: number | null;
   flags: Record<string, string | number | boolean>;
   core_status: 'IN_VAULT' | 'STOLEN' | 'RECOVERED' | 'DESTROYED' | 'LOST';
@@ -77,8 +88,22 @@ export interface StoryState {
   acts_completed: number[];
 }
 
+/** Temporary effects from console actions used during a fight. */
+export interface CombatBuffs {
+  action_used: boolean;
+  fight_bonus: number;
+  next_rolls_bonus: number;
+  next_rolls_left: number;
+  negotiate_bonus: number;
+  reveal: boolean;
+  auto_withdraw: boolean;
+  victory_hearthfire: number;
+  defeat_hearthfire: number;
+}
+
 export interface PersonalCombat {
   mode: 'personal';
+  buffs: CombatBuffs;
   encounter: string;
   enemy_index: number;
   enemy: { key: string; resolve: number; resolve_max: number };
@@ -103,6 +128,7 @@ export interface ShipAlloc {
 
 export interface ShipCombat {
   mode: 'ship';
+  buffs: CombatBuffs;
   encounter: string;
   enemy: { key: string; hull: number; hull_max: number };
   round: number;
@@ -149,8 +175,49 @@ export interface GameState {
   story: StoryState;
   grace_journeys: number;
   self_maintenance_used: boolean;
+  /** Haggle was used during this port visit (resets on travel). */
+  haggle_active: boolean;
+  /** Chart Safe Route was used for the next journey. */
+  safe_route_charted: boolean;
   /** Scene stack; the last entry is on screen. The hub is always at the bottom. */
   scenes: Scene[];
+}
+
+/** Upgrades an older save to the current shape. Add a step here whenever SAVE_VERSION goes up. */
+export function migrateState(raw: GameState): GameState {
+  const s = raw as GameState & { story: StoryState & { current_beat?: string | null } };
+  if (s.version > SAVE_VERSION) throw new Error('This save was made by a newer version of the game.');
+  if (s.version < 2) {
+    const legacy = s.story.current_beat;
+    s.story.active_beats = legacy ? [legacy] : [];
+    delete s.story.current_beat;
+    s.story.playing_beat = null;
+    s.story.threads_completed = [];
+    s.story.story_rewards = [];
+    s.story.events_seen = [];
+    s.story.act_events_shown = [];
+    s.story.deferred_beats = [];
+    s.haggle_active = false;
+    s.safe_route_charted = false;
+    for (const scene of s.scenes)
+      if (scene.type === 'combat' && !scene.combat.buffs) scene.combat.buffs = freshBuffs();
+    s.version = 2;
+  }
+  return s;
+}
+
+export function freshBuffs(): CombatBuffs {
+  return {
+    action_used: false,
+    fight_bonus: 0,
+    next_rolls_bonus: 0,
+    next_rolls_left: 0,
+    negotiate_bonus: 0,
+    reveal: false,
+    auto_withdraw: false,
+    victory_hearthfire: 0,
+    defeat_hearthfire: 0,
+  };
 }
 
 // ---------- View model ----------
@@ -182,7 +249,7 @@ export interface View {
   title: string;
   subtitle?: string;
   status?: StatusItem[];
-  tabs?: { active: HubTab; unread: number };
+  tabs?: { active: HubTab; unread: number; market: boolean };
   body: Line[];
   options: Option[];
   input?: { id: string; prompt: string; maxLength: number; value?: string };

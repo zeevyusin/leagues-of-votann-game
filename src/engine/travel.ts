@@ -1,7 +1,9 @@
-// Travel, time, Supplies, recovery, and fatigue (game-overview.md section 4).
+// Travel, time, Supplies, recovery, fatigue, travel events, and docking (game-overview.md sections 4 and 7).
 import { applyDefeat } from './defeat';
-import { checkOathDeadlines, createOath, grantXp } from './effects';
-import { clamp, maxHealth, systemOf, type Ctx } from './rules';
+import { allMet } from './conditions';
+import { checkOathDeadlines, createOath, grantXp, receiveMessage, resolveOath } from './effects';
+import { weightedPick } from './rng';
+import { clamp, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
 import type { GameState, Line } from './types';
 
 export function routeTo(state: GameState, ctx: Ctx, to: string) {
@@ -13,22 +15,36 @@ export function availableRoutes(state: GameState, ctx: Ctx) {
   return systemOf(ctx.data, state.location).connections.filter((c) => state.discovered_systems.includes(c.to));
 }
 
-export function isStranded(state: GameState, ctx: Ctx): boolean {
-  const routes = availableRoutes(state, ctx);
-  return routes.length > 0 && routes.every((r) => r.fuel > state.resources.fuel);
+/** Fuel a route costs right now (Chart Safe Route saves some). */
+export function routeFuel(state: GameState, ctx: Ctx, fuel: number): number {
+  return state.safe_route_charted ? Math.max(1, fuel - ctx.data.config.SAFE_ROUTE_FUEL_SAVING) : fuel;
 }
 
-/** Moves the ship, passes the days, and docks on arrival. Returns a travel log. */
-export function travel(state: GameState, ctx: Ctx, to: string): Line[] {
+export function isStranded(state: GameState, ctx: Ctx): boolean {
+  const routes = availableRoutes(state, ctx);
+  return routes.length > 0 && routes.every((r) => routeFuel(state, ctx, r.fuel) > state.resources.fuel);
+}
+
+export interface TravelResult {
+  lines: Line[];
+  /** A travel event beat to play on arrival, if one fired. */
+  event: string | null;
+}
+
+/** Moves the ship, passes the days, maybe fires a travel event, and docks on arrival. */
+export function travel(state: GameState, ctx: Ctx, to: string): TravelResult {
   const cfg = ctx.data.config;
   const route = routeTo(state, ctx, to);
   if (!route) throw new Error(`No route from ${state.location} to ${to}`);
-  if (route.fuel > state.resources.fuel) throw new Error('Not enough fuel');
+  const fuel = routeFuel(state, ctx, route.fuel);
+  if (fuel > state.resources.fuel) throw new Error('Not enough fuel');
 
   const lines: Line[] = [];
-  state.resources.fuel -= route.fuel;
+  state.resources.fuel -= fuel;
   state.docked = false;
-  lines.push({ text: `-${route.fuel} Fuel`, tone: 'muted' });
+  state.haggle_active = false;
+  state.story.deferred_beats = [];
+  lines.push({ text: `-${fuel} Fuel${state.safe_route_charted ? ' (safe route charted)' : ''}`, tone: 'muted' });
   for (let i = 0; i < route.days; i++) lines.push(...passDay(state, ctx));
 
   state.location = to;
@@ -38,14 +54,20 @@ export function travel(state: GameState, ctx: Ctx, to: string): Line[] {
     lines.push({ text: `First visit to ${sys.display_name}.`, tone: 'teal' });
     lines.push(...grantXp(state, ctx, cfg.XP_DISCOVERY));
   }
-  if (sys.port) lines.push(...dock(state, ctx));
 
-  state.self_maintenance_used = false;
-  if (state.grace_journeys > 0) state.grace_journeys--;
   if (state.story.waaagh_meter !== null) {
     state.story.waaagh_meter = clamp(state.story.waaagh_meter + cfg.WAAAGH_PER_JOURNEY, 0, cfg.WAAAGH_LAUNCH);
     lines.push({ text: `The Waaagh! grows: ${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}`, tone: 'accent' });
+    const warning = waaaghBand(cfg, state.story.waaagh_meter).warning;
+    if (warning) lines.push({ text: `Comms: ${warning}`, tone: 'bad' });
   }
+
+  const event = pickTravelEvent(state, ctx, sys.danger);
+  if (sys.port) lines.push(...dock(state, ctx));
+
+  state.self_maintenance_used = false;
+  state.safe_route_charted = false;
+  if (state.grace_journeys > 0) state.grace_journeys--;
 
   // Constant Wear mode can push an Ironkin to Critical Wear during a journey.
   const c = state.character;
@@ -53,7 +75,28 @@ export function travel(state: GameState, ctx: Ctx, to: string): Line[] {
     lines.push({ text: 'Your frame locks up. Critical Wear: you are incapacitated until repaired.', tone: 'bad' });
     lines.push(...applyDefeat(state, ctx, { cause: 'wear' }));
   }
-  return lines;
+  return { lines, event };
+}
+
+/** Rolls for a travel event at the destination. Returns the event beat key, or null. */
+export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MEDIUM' | 'HIGH'): string | null {
+  const cfg = ctx.data.config;
+  const band = waaaghBand(cfg, state.story.waaagh_meter);
+  let chance = cfg.TRAVEL_EVENT_CHANCE[danger] + (state.story.waaagh_meter === null ? 0 : band.event_chance_bonus);
+  if (state.safe_route_charted) chance *= cfg.SAFE_ROUTE_EVENT_MULTIPLIER;
+  if (ctx.rng.next() >= chance) return null;
+
+  const weights: Record<string, number> = {};
+  for (const beat of ctx.data.story_beats) {
+    const ev = beat.event;
+    if (!ev || !ev.dangers.includes(danger)) continue;
+    if (ev.once && state.story.events_seen.includes(beat.key)) continue;
+    if (ev.combat && state.grace_journeys > 0) continue;
+    if (!allMet(state, ev.requirements)) continue;
+    const w = ev.weight * (ev.ork && state.story.waaagh_meter !== null ? band.ork_event_weight : 1);
+    if (w > 0) weights[beat.key] = w;
+  }
+  return Object.keys(weights).length ? weightedPick(ctx.rng, weights) : null;
 }
 
 export function passDay(state: GameState, ctx: Ctx): Line[] {
@@ -88,16 +131,50 @@ export function passDay(state: GameState, ctx: Ctx): Line[] {
 }
 
 export function dock(state: GameState, ctx: Ctx): Line[] {
+  const sys = systemOf(ctx.data, state.location);
+  if (!portOpen(ctx.data, state, state.location)) {
+    state.docked = false;
+    return [{ text: `${sys.display_name} has closed its docks to everyone. The Waaagh! has scared them off.`, tone: 'bad' }];
+  }
   const c = state.character;
   state.docked = true;
   const healed = maxHealth(ctx.data.config, c) - c.health;
   c.health += healed;
   c.days_since_dock = 0;
-  const lines: Line[] = [{ text: `Docked at ${systemOf(ctx.data, state.location).display_name}.`, tone: 'teal' }];
+  const lines: Line[] = [{ text: `Docked at ${sys.display_name}.`, tone: 'teal' }];
   if (healed > 0) lines.push({ text: `Rest in port restores your Health (+${healed}).`, tone: 'good' });
   if (c.fatigued) {
     c.fatigued = false;
     lines.push({ text: 'You are no longer Fatigued.', tone: 'good' });
+  }
+  lines.push(...deliverCargo(state, ctx));
+  lines.push(...offerJobs(state, ctx));
+  return lines;
+}
+
+/** Delivery oaths are kept automatically when docking at their destination with the cargo. */
+function deliverCargo(state: GameState, ctx: Ctx): Line[] {
+  const lines: Line[] = [];
+  for (const o of state.oaths) {
+    if (o.status !== 'ACTIVE') continue;
+    const f = oathOf(ctx.data, o.key).fulfil;
+    if (!f || !('deliver' in f) || f.deliver.system !== state.location) continue;
+    const slot = state.cargo.find((c) => c.key === f.deliver.item);
+    if (!slot || slot.qty < f.deliver.qty) continue;
+    slot.qty -= f.deliver.qty;
+    state.cargo = state.cargo.filter((c) => c.qty > 0);
+    lines.push({ text: 'Cargo delivered.', tone: 'good' }, ...resolveOath(state, ctx, o.key, 'KEPT'));
+  }
+  return lines;
+}
+
+/** Ports post job offers on Comms when the player docks. */
+function offerJobs(state: GameState, ctx: Ctx): Line[] {
+  const lines: Line[] = [];
+  for (const m of ctx.data.messages) {
+    if (!m.job || !m.job.ports.includes(state.location)) continue;
+    if (state.inbox.some((x) => x.key === m.key) || !allMet(state, m.job.requirements)) continue;
+    lines.push(...receiveMessage(state, ctx, m.key));
   }
   return lines;
 }

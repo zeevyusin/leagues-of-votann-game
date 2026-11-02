@@ -1,5 +1,56 @@
 [
-  { "key": "SURVEY_SAMPLES", "display_name": "Survey core samples", "mission": false },
-  { "key": "ORE_CRATES", "display_name": "Crates of raw ore", "mission": false },
-  { "key": "VAULT_RUBBINGS", "display_name": "Rubbings of the vault runes", "mission": true }
+  {
+    "key": "SURVEY_SAMPLES",
+    "display_name": "Survey core samples",
+    "mission": false,
+    "value": 6
+  },
+  {
+    "key": "ORE_CRATES",
+    "display_name": "Crates of raw ore",
+    "mission": false,
+    "value": 12
+  },
+  {
+    "key": "ORK_SCRAP",
+    "display_name": "Ork scrap",
+    "mission": false,
+    "value": 10
+  },
+  {
+    "key": "MEDICAE_KITS",
+    "display_name": "Medicae kits",
+    "mission": false,
+    "value": 15
+  },
+  {
+    "key": "HOLD_ALE",
+    "display_name": "Barrels of Durnvar ale",
+    "mission": false,
+    "value": 7
+  },
+  {
+    "key": "VAULT_RUBBINGS",
+    "display_name": "Rubbings of the vault runes",
+    "mission": true,
+    "value": 0
+  },
+  {
+    "key": "NAV_DATA",
+    "display_name": "Ork scout nav data",
+    "mission": true,
+    "value": 0
+  },
+  {
+    "key": "JOB_MEDICAE_CRATES",
+    "display_name": "Sealed medicae crates (contract)",
+    "mission": true,
+    "value": 0
+  },
+  {
+    "key": "SEALED_CRATE",
+    "display_name": "A sealed crate (do not open)",
+    "mission": true,
+    "value": 0
+  }
 ]

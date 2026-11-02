@@ -39,6 +39,24 @@ export const enemyShipOf = (d: GameData, key: string) => byKey(d.enemy_ships, ke
 export const itemOf = (d: GameData, key: string) => byKey(d.items, key, 'item');
 export const relicOf = (d: GameData, key: string) => byKey(d.relics, key, 'relic');
 export const loreOf = (d: GameData, key: string) => byKey(d.lore, key, 'lore');
+export const threadOf = (d: GameData, key: string) => byKey(d.story_threads, key, 'thread');
+export const actEventOf = (d: GameData, key: string) => byKey(d.act_events, key, 'act event');
+
+export function marketOf(d: GameData, port: string) {
+  return d.markets.find((m) => m.port === port) ?? null;
+}
+
+export function waaaghBand(config: Config, meter: number | null) {
+  const bands = [...config.WAAAGH_BANDS].sort((a, b) => b.min - a.min);
+  return bands.find((b) => (meter ?? 0) >= b.min) ?? bands[bands.length - 1];
+}
+
+/** A port is closed once the Waaagh! meter passes its limit. */
+export function portOpen(d: GameData, state: GameState, system: string): boolean {
+  const s = systemOf(d, system);
+  if (!s.port) return false;
+  return s.closes_at_waaagh === undefined || (state.story.waaagh_meter ?? 0) < s.closes_at_waaagh;
+}
 
 export function statLabel(d: GameData, key: StatKey): string {
   return byKey(d.stats, key, 'stat').display_name;

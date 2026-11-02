@@ -128,7 +128,19 @@ Base kit: **Fuel 10, Ore 100, Supplies 20, Hearthfire 50, Hull 20, cargo capacit
 - Ironkin are immune (Tireless, see `character-creation.md`). Crew members are not tracked separately.
 - All values `[TUNABLE]`.
 
-### 4.5 Failure states
+### 4.5 Port market `[DECIDED]`
+Every port has a **Market** screen (a fifth console tab that appears only while docked). All prices are `[TUNABLE]` and live in `data/markets.json` and `config.json`.
+
+- **Buy:** Fuel, Supplies, and module upgrades. Each module goes from level 1 to 2 to 3; level 2 costs `120` Ore and level 3 costs `250` Ore at base price. Upgrading the cargo hold adds `5` capacity per level.
+- **Sell:** trade goods and salvage in the cargo hold. Each item has a base value; each port buys some goods above or below it.
+- **Per-port prices:** every port has a price multiplier for buying and selling, and a list of goods it pays more or less for. Not every port sells every upgrade.
+- **Reputation:** with the port's faction, reputation 20+ gives 10% off purchases; reputation below 0 adds 20%.
+- **Class modifiers:** Haggle (Prospector-Trader console action) gives 15% better prices on buys and sells for the rest of the visit, once per visit (Ironkin pay Wear as usual). Eye for Ore (Prospector-Trader trait) sells goods for 10% more.
+- **Waaagh! pressure:** from the Rising band (60+), Fuel and Supplies cost 25% more everywhere, and Ork bribes cost more.
+- Prices are rounded to whole Ore and never drop below 1.
+- **Dock work (safety valve):** every market offers "Take dock work": `2` days pass and the player earns `25` Ore (`DOCK_WORK_DAYS`, `DOCK_WORK_ORE`, `[TUNABLE]`). A broke captain can always earn enough Fuel to reach the next objective, so running out of Ore can never soft-lock the game.
+
+### 4.6 Failure states
 - **Out of fuel:** ship is stranded. Options: call for help (costly, may create a debt oath), salvage nearby, or wait. Not an instant game over.
 - **Mutiny:** triggers a special event. Player may quell it with a Speaker action or high Hearthfire recovery, otherwise crew leaves.
 - **Ship destroyed / player incapacitated:** see section 5.4.
@@ -327,7 +339,9 @@ This keeps story authoring separate from engine code.
 - Art and audio (the console's color theme is decided in section 9.0)
 - Player-selectable difficulty modes, localization (English only)
 
-## 11. Milestone 1: Act 1 Vertical Slice `[DECIDED]`
+## 11. Milestones
+
+### 11.1 Milestone 1: Act 1 Vertical Slice `[DECIDED]`
 
 The first development milestone is a **playable Act 1, start to finish**. It includes:
 
@@ -348,6 +362,26 @@ The first development milestone is a **playable Act 1, start to finish**. It inc
 - Save and load work at the hub, between beats, and mid-combat.
 - No number or display name is hardcoded in engine logic.
 - Engine unit tests cover the roll resolver, character creation math, combat round resolution, and defeat safety rules.
+
+### 11.2 Milestone 2: Act 2 Playable `[DECIDED]`
+
+The second milestone makes **Act 2 playable from the end of Act 1 until Act 3 unlocks** (`story.md` section 6.2 to 6.6). It includes:
+
+1. **Story engine upgrade:** several beats can be active at once (one per thread), each tied to a system or a Comms message. Thread progress, thread rewards, the 2-of-4 unlock check, and the early-Waaagh! failure path.
+2. **All four Act 2 threads** (A to D, three beats each) and the optional **Rescue Hrolla** beat, with class routes, fallbacks, Kin/Ironkin notes, and subclass stake lines where they fit.
+3. **Waaagh! meter effects:** band effects on travel events, bribe prices, port access, and Comms warnings (`story.md` section 5).
+4. **Travel events** (section 7): a weighted pool written in the same format as story beats.
+5. **Side jobs** at ports: delivery and bounty contracts that create oaths.
+6. **Port market** with per-port prices (section 4.5).
+7. **Combat Phase 2, partial** (`combat-system.md` section 9): console actions and subclass traits in combat, Withdraw, and enemy shields and engines mattering in ship fights. Injuries, leverage, misleading reads, range bands and subsystem targeting stay for later.
+8. **Act 3 is not built.** Unlocking it (or an early Waaagh! launch) shows an "Act 3 unlocked" screen and the game continues in free play.
+9. **Writing:** Claude drafts all Act 2 text into the data files; the author reviews and edits it later.
+
+**Done when:**
+- Every class and kin type can unlock Act 3 from a finished Act 1, including a run where every roll fails.
+- A run that ignores the threads and only travels reaches the early Waaagh! launch without soft-locking.
+- Prices, events, and jobs come from data files; nothing new is hardcoded.
+- Tests cover the thread unlock, the market, travel events, withdraw, and the new combat modifiers.
 
 ## 12. Design Decisions Summary
 
@@ -373,4 +407,7 @@ The first development milestone is a **playable Act 1, start to finish**. It inc
 | Saving | Autosave + 3 manual slots, JSON export/import |
 | Visual style | Dark background, blue/teal panels, orange accents |
 | Audience | Personal, free, non-commercial fan project with a disclaimer |
-| First milestone | Act 1 vertical slice (section 11) |
+| First milestone | Act 1 vertical slice (section 11.1) |
+| Second milestone | Act 2 playable, with travel events, side jobs, a port market, and part of combat Phase 2 (section 11.2) |
+| Economy | Port market with per-port prices, reputation and class modifiers (section 4.5) |
+| Act 2 writing | Claude drafts, author reviews |

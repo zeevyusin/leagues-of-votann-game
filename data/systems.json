@@ -8,9 +8,21 @@
     "danger": "MEDIUM",
     "hidden": false,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
-      { "to": "HOLD_DURNVAR", "days": 4, "fuel": 4 },
-      { "to": "CINDER_DRIFT", "days": 2, "fuel": 2 }
+      {
+        "to": "KARRAK_STATION",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "HOLD_DURNVAR",
+        "days": 4,
+        "fuel": 4
+      },
+      {
+        "to": "CINDER_DRIFT",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -22,12 +34,36 @@
     "danger": "LOW",
     "hidden": false,
     "connections": [
-      { "to": "KETHRAS_ANVIL", "days": 2, "fuel": 2 },
-      { "to": "HOLD_DURNVAR", "days": 3, "fuel": 3 },
-      { "to": "SNAZRIK_HAVEN", "days": 2, "fuel": 2 },
-      { "to": "KHARR_HOLD", "days": 3, "fuel": 3 },
-      { "to": "GRIMHOLT_BELT", "days": 2, "fuel": 2 },
-      { "to": "CINDER_DRIFT", "days": 1, "fuel": 1 }
+      {
+        "to": "KETHRAS_ANVIL",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "HOLD_DURNVAR",
+        "days": 3,
+        "fuel": 3
+      },
+      {
+        "to": "SNAZRIK_HAVEN",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "KHARR_HOLD",
+        "days": 3,
+        "fuel": 3
+      },
+      {
+        "to": "GRIMHOLT_BELT",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "CINDER_DRIFT",
+        "days": 1,
+        "fuel": 1
+      }
     ]
   },
   {
@@ -39,9 +75,21 @@
     "danger": "LOW",
     "hidden": false,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 3, "fuel": 3 },
-      { "to": "KETHRAS_ANVIL", "days": 4, "fuel": 4 },
-      { "to": "KHARR_HOLD", "days": 2, "fuel": 2 }
+      {
+        "to": "KARRAK_STATION",
+        "days": 3,
+        "fuel": 3
+      },
+      {
+        "to": "KETHRAS_ANVIL",
+        "days": 4,
+        "fuel": 4
+      },
+      {
+        "to": "KHARR_HOLD",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -53,8 +101,16 @@
     "danger": "LOW",
     "hidden": true,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 3, "fuel": 3 },
-      { "to": "HOLD_DURNVAR", "days": 2, "fuel": 2 }
+      {
+        "to": "KARRAK_STATION",
+        "days": 3,
+        "fuel": 3
+      },
+      {
+        "to": "HOLD_DURNVAR",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -66,9 +122,21 @@
     "danger": "MEDIUM",
     "hidden": true,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 1, "fuel": 1 },
-      { "to": "KETHRAS_ANVIL", "days": 2, "fuel": 2 },
-      { "to": "SKRAPFANG_ROCK", "days": 3, "fuel": 3 }
+      {
+        "to": "KARRAK_STATION",
+        "days": 1,
+        "fuel": 1
+      },
+      {
+        "to": "KETHRAS_ANVIL",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "SKRAPFANG_ROCK",
+        "days": 3,
+        "fuel": 3
+      }
     ]
   },
   {
@@ -80,8 +148,16 @@
     "danger": "HIGH",
     "hidden": true,
     "connections": [
-      { "to": "CINDER_DRIFT", "days": 3, "fuel": 3 },
-      { "to": "DA_PIT", "days": 1, "fuel": 1 }
+      {
+        "to": "CINDER_DRIFT",
+        "days": 3,
+        "fuel": 3
+      },
+      {
+        "to": "DA_PIT",
+        "days": 1,
+        "fuel": 1
+      }
     ]
   },
   {
@@ -93,8 +169,16 @@
     "danger": "MEDIUM",
     "hidden": true,
     "connections": [
-      { "to": "GRIMHOLT_BELT", "days": 2, "fuel": 2 },
-      { "to": "RUSTMAW", "days": 2, "fuel": 2 }
+      {
+        "to": "GRIMHOLT_BELT",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "RUSTMAW",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -106,8 +190,16 @@
     "danger": "MEDIUM",
     "hidden": true,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
-      { "to": "GITZBOLT_SCRAPFIELD", "days": 2, "fuel": 2 }
+      {
+        "to": "KARRAK_STATION",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "GITZBOLT_SCRAPFIELD",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -119,8 +211,16 @@
     "danger": "HIGH",
     "hidden": true,
     "connections": [
-      { "to": "GITZBOLT_SCRAPFIELD", "days": 2, "fuel": 2 },
-      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
+      {
+        "to": "GITZBOLT_SCRAPFIELD",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "URGROT_CAMP",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -132,8 +232,16 @@
     "danger": "HIGH",
     "hidden": true,
     "connections": [
-      { "to": "SKRAPFANG_ROCK", "days": 1, "fuel": 1 },
-      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
+      {
+        "to": "SKRAPFANG_ROCK",
+        "days": 1,
+        "fuel": 1
+      },
+      {
+        "to": "URGROT_CAMP",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -145,9 +253,21 @@
     "danger": "HIGH",
     "hidden": true,
     "connections": [
-      { "to": "RUSTMAW", "days": 2, "fuel": 2 },
-      { "to": "DA_PIT", "days": 2, "fuel": 2 },
-      { "to": "SNAZRIK_HAVEN", "days": 2, "fuel": 2 }
+      {
+        "to": "RUSTMAW",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "DA_PIT",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "SNAZRIK_HAVEN",
+        "days": 2,
+        "fuel": 2
+      }
     ]
   },
   {
@@ -159,8 +279,17 @@
     "danger": "MEDIUM",
     "hidden": true,
     "connections": [
-      { "to": "KARRAK_STATION", "days": 2, "fuel": 2 },
-      { "to": "URGROT_CAMP", "days": 2, "fuel": 2 }
-    ]
+      {
+        "to": "KARRAK_STATION",
+        "days": 2,
+        "fuel": 2
+      },
+      {
+        "to": "URGROT_CAMP",
+        "days": 2,
+        "fuel": 2
+      }
+    ],
+    "closes_at_waaagh": 60
   }
 ]

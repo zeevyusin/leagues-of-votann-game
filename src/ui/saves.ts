@@ -1,7 +1,7 @@
 // Save slots in browser storage: one autosave plus manual slots, with JSON export/import.
 import type { GameData } from '../engine/schema';
 import { systemOf } from '../engine/rules';
-import { SAVE_VERSION, type GameState } from '../engine/types';
+import { migrateState, type GameState } from '../engine/types';
 
 const PREFIX = 'votann.';
 export const AUTOSAVE = 'autosave';
@@ -55,11 +55,10 @@ export function parseSave(raw: string): SaveRecord {
   return { ...record, state: migrate(record.state) };
 }
 
-/** Upgrades older saves to the current state shape. Add a step here whenever SAVE_VERSION goes up. */
+/** Checks a save is usable, then upgrades it to the current state shape (engine/types.ts migrateState). */
 function migrate(state: GameState): GameState {
-  if (state.version > SAVE_VERSION) throw new Error('This save was made by a newer version of the game.');
   if (!Array.isArray(state.scenes) || !state.scenes.length || !state.character) throw new Error('This save file is damaged.');
-  return state;
+  return migrateState(state);
 }
 
 export function exportSave(state: GameState, data: GameData): void {

@@ -1,0 +1,1633 @@
+[
+  {
+    "key": "A2_A1_COLD_TRAILS",
+    "act": 2,
+    "thread": "A",
+    "trigger": "arrival",
+    "location": "CINDER_DRIFT",
+    "title": "Cold Trails",
+    "goal": "Find which way the raiders went.",
+    "objective": "Search Cinder Drift for raider wakes.",
+    "intro_text": "Cinder Drift is ash and ice and silence. Through it, faint as breath on glass, run the cooling wakes of Ork engines. Dozens of them. They all bend the same way, if you can read them.",
+    "kin_notes": {
+      "IRONKIN": "Your frame picks up the residue of crude plasma drives, sour and loud even after days."
+    },
+    "routes": [
+      {
+        "key": "SCAN",
+        "label": "Sweep the drift with your scanners and map the wakes",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "RESIDUE",
+        "label": "Sample the ion residue and work out how old each wake is",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "HUNCH",
+        "label": "Fly the drift by eye and trust your gut",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 2
+        }
+      },
+      {
+        "key": "FREEBOOTER",
+        "label": "Hail a freebooter skulking in the ash and buy what it saw",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "effects_always": [
+          {
+            "ore": -10
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "NORMAL"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The wakes fan out and then bend, every one of them, toward the same dead moon. On the way you find a half-drained Ork fuel bladder. Still good.",
+        "effects": [
+          {
+            "fuel": 3,
+            "hearthfire": 5
+          }
+        ]
+      },
+      "success": {
+        "text": "The pattern comes clear: the raiders are gathering somewhere past the Grimholt Belt. A scout ship runs the lane there regularly.",
+        "effects": []
+      },
+      "partial": {
+        "text": "You get the pattern, but it takes days of crawling through the ash.",
+        "effects": [
+          {
+            "supplies": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "You follow the wrong wake for two days before the drift spits you back out. You have a direction now, at least.",
+        "effects": [
+          {
+            "supplies": -4,
+            "hearthfire": -5
+          }
+        ]
+      }
+    },
+    "outro_text": "Ylsa pins the route on the Nav display: every wake passes through the Grimholt Belt. \"If their scouts run that lane, we can catch one.\"",
+    "on_complete": [
+      {
+        "reveal_system": "GRIMHOLT_BELT"
+      }
+    ],
+    "next": "A2_A2_SCOUT_SHIP"
+  },
+  {
+    "key": "A2_A2_SCOUT_SHIP",
+    "act": 2,
+    "thread": "A",
+    "trigger": "arrival",
+    "location": "GRIMHOLT_BELT",
+    "title": "The Scout Ship",
+    "goal": "Get the Ork scout's navigation data.",
+    "objective": "Catch the Ork scout ship in the Grimholt Belt.",
+    "intro_text": "There: a lean Ork scout ship, all engine and no sense, threading the asteroids. Its nav-cogitator will know exactly where the Waaagh! is gathering.",
+    "kin_notes": {
+      "IRONKIN": "Machine Link: you can hear its transponder babbling. Crude, but crackable."
+    },
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Run it down and disable it",
+        "encounter": "A2_SCOUT_FIGHT"
+      },
+      {
+        "key": "AMBUSH",
+        "label": "Lie in wait behind an asteroid and hit it as it passes",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2
+        },
+        "subclass_bonus": {
+          "HERNKYN_YAEGIR": 3
+        }
+      },
+      {
+        "key": "SPOOF",
+        "label": "Spoof its transponder and download the data remotely",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "BRIBE",
+        "label": "Buy the data from the scout's greedy kaptin",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "effects_always": [
+          {
+            "ore": -20
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You get the nav data and the scout never knows you were there. You even pick some useful scrap off its hull.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          },
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 2
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "The nav data is yours.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You get most of the data, but the scout takes a few shots at you on the way out.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          },
+          {
+            "hull": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "It goes badly. You end up with half the data and a scorched hull, but half is enough to find the muster.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          },
+          {
+            "hull": -5
+          }
+        ]
+      }
+    },
+    "outro_text": "Dorrik reads the data off a cracked Ork screen. \"Skrapfang Rock. A moon past the drift. That's where they're all going.\"",
+    "on_complete": [
+      {
+        "reveal_system": "SKRAPFANG_ROCK"
+      },
+      {
+        "reveal_system": "CINDER_DRIFT"
+      }
+    ],
+    "next": "A2_A3_SKRAPFANG"
+  },
+  {
+    "key": "A2_A3_SKRAPFANG",
+    "act": 2,
+    "thread": "A",
+    "trigger": "arrival",
+    "location": "SKRAPFANG_ROCK",
+    "title": "Skrapfang Rock",
+    "goal": "Find out how big the muster is, and where it will strike.",
+    "objective": "Observe the Ork muster at Skrapfang Rock.",
+    "intro_text": "Skrapfang Rock is loud even from orbit. The moon's craters are full of Orks: ships, camps, bonfires, and a vast crowd around a crude stage where something big is shouting.",
+    "kin_notes": {
+      "KIN": "Down there the air is poison and the ground is hot. You would not last a day."
+    },
+    "routes": [
+      {
+        "key": "OBSERVE",
+        "label": "Hang in the shadow of the moon and count everything",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "BUOY",
+        "label": "Drop a sensor buoy disguised as Ork junk",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "VOX",
+        "label": "Tap their vox and let them boast",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "LAND",
+        "label": "Land in a crater and walk in among them",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "VERY_HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You count the ships, mark their muster plan, and spot Gitzbolt's workshop glowing green. You even catch Skragnak's speech: he means to strike Hold Durnvar.",
+        "effects": [
+          {
+            "hearthfire": 5
+          },
+          {
+            "lore": "LORE_MUSTER"
+          }
+        ]
+      },
+      "success": {
+        "text": "You have the size of it, and the route it will take.",
+        "effects": [
+          {
+            "lore": "LORE_MUSTER"
+          }
+        ]
+      },
+      "partial": {
+        "text": "You get what you came for, but an Ork gunner takes potshots at you on the way out.",
+        "effects": [
+          {
+            "hull": -4
+          },
+          {
+            "lore": "LORE_MUSTER"
+          }
+        ]
+      },
+      "failure": {
+        "text": "They spot you. You flee with half a picture and a hull full of holes.",
+        "effects": [
+          {
+            "hull": -6
+          },
+          {
+            "lore": "LORE_MUSTER"
+          }
+        ]
+      }
+    },
+    "outro_text": "On the way out, Ylsa points at a fat cargo hulk parked in high orbit, away from the others. \"Prison ship. Has to be.\" Somewhere in there is Hrolla Vask.",
+    "on_complete": [
+      {
+        "complete_thread": "A"
+      },
+      {
+        "activate_beat": "A2_HROLLA_RESCUE"
+      }
+    ],
+    "next": null
+  },
+  {
+    "key": "A2_HROLLA_RESCUE",
+    "act": 2,
+    "trigger": "arrival",
+    "location": "SKRAPFANG_ROCK",
+    "title": "Rescue Hrolla",
+    "goal": "Get the Fleet-Theyn out of the Ork prison hulk.",
+    "objective": "Rescue Hrolla Vask from the prison hulk at Skrapfang Rock.",
+    "intro_text": "The prison hulk hangs alone in high orbit, lightly guarded. The Orks don't think anyone would be mad enough to come for their prisoners. They are about to learn something about the Kin.",
+    "kin_notes": {
+      "IRONKIN": "The hulk's doors are run by an old stolen Votann lock-spirit. It recognises you."
+    },
+    "routes": [
+      {
+        "key": "BOARD",
+        "label": "Board the hulk and fight to the cells",
+        "encounter": "HROLLA_BOARDING"
+      },
+      {
+        "key": "OATH",
+        "label": "Keep the oath you failed on the Anvil",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "NORMAL"
+        },
+        "requirements": [
+          {
+            "subclass": "EINHYR_HEARTHGUARD"
+          }
+        ],
+        "subclass_bonus": {
+          "EINHYR_HEARTHGUARD": 3
+        }
+      },
+      {
+        "key": "SNEAK",
+        "label": "Slip aboard through a garbage chute",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "CUT",
+        "label": "Cut through the hull straight into the cell block",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "BLUFF",
+        "label": "Pose as a Mek come to collect 'da stunty' for experiments",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "You are in and out before the jailers finish their breakfast. Hrolla walks to your ship on her own feet, swearing the whole way.",
+        "effects": [
+          {
+            "add_crew": "HROLLA_VASK",
+            "set_hrolla_status": "RESCUED",
+            "hearthfire": 20,
+            "reputation": {
+              "HOLD_DURNVAR": 15
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "You find Hrolla in the last cell, chained, bloody, and grinning. 'Took your time, Captain.'",
+        "effects": [
+          {
+            "add_crew": "HROLLA_VASK",
+            "set_hrolla_status": "RESCUED",
+            "hearthfire": 15,
+            "reputation": {
+              "HOLD_DURNVAR": 15
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You get her out, but the alarm goes up and you both take a beating on the way.",
+        "effects": [
+          {
+            "add_crew": "HROLLA_VASK",
+            "set_hrolla_status": "RESCUED",
+            "hearthfire": 10,
+            "reputation": {
+              "HOLD_DURNVAR": 10
+            },
+            "health": -3,
+            "hull": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "You reach the cells too late: the Orks have moved her deeper in. You barely get out yourself. She is still alive. You heard her swearing.",
+        "effects": [
+          {
+            "health": -3,
+            "hull": -4,
+            "hearthfire": -5
+          }
+        ]
+      }
+    },
+    "outro_text": {
+      "default": "Whatever happened today, the Orks at Skrapfang Rock now know the Durn Prospect Fleet is not finished.",
+      "variants": {
+        "EINHYR_HEARTHGUARD": "You swore to keep the Fleet-Theyn alive. On the Anvil you failed. Today, whatever happened, you came back for her. That is what the oath means."
+      }
+    },
+    "next": null,
+    "on_complete": []
+  },
+  {
+    "key": "A2_B1_SCRAP_AUTOPSY",
+    "act": 2,
+    "thread": "B",
+    "trigger": "arrival",
+    "location": "GITZBOLT_SCRAPFIELD",
+    "title": "Scrap Autopsy",
+    "goal": "Work out what Gitzbolt is building.",
+    "objective": "Study the wrecks in the Scrapfield.",
+    "intro_text": "The Scrapfield is where Gitzbolt dumps his failures. Half-built gun platforms, melted reactors, a thing that might have been a walking fortress. Some of it still twitches.",
+    "routes": [
+      {
+        "key": "DISSECT",
+        "label": "Take a failed prototype apart, bolt by bolt",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        },
+        "subclass_bonus": {
+          "BROKHYR_IRONMASTER": 2
+        }
+      },
+      {
+        "key": "SCAN",
+        "label": "Scan the field and look for a pattern in the failures",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2
+        }
+      },
+      {
+        "key": "HAUL",
+        "label": "Haul the biggest wreck aboard and let Dorrik pick it apart",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "WARRIOR": 2
+        },
+        "effects_always": [
+          {
+            "supplies": -2
+          }
+        ]
+      },
+      {
+        "key": "GROT",
+        "label": "Bribe a scavenging grot to tell you what it has seen",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "effects_always": [
+          {
+            "ore": -10
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "NORMAL"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "Every failure has the same missing piece: a power source big enough to run it. Gitzbolt found that piece on Kethra's Anvil. You also leave with a hold full of good scrap.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 3
+            }
+          },
+          {
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      },
+      "success": {
+        "text": "You understand it now: a weapon too hungry for any Ork reactor. That's what the Core is for.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 1
+            }
+          },
+          {
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      },
+      "partial": {
+        "text": "You work it out, but a twitching wreck takes a bite out of your arm first.",
+        "effects": [
+          {
+            "health": -2
+          },
+          {
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      },
+      "failure": {
+        "text": "Something explodes. When the smoke clears you have scorched plating and one useful clue.",
+        "effects": [
+          {
+            "hull": -4
+          },
+          {
+            "lore": "LORE_GITZBOLT_WEAPON"
+          }
+        ]
+      }
+    },
+    "outro_text": "Dorrik turns a melted coupling over in his iron hands. \"To stop the weapon, we need to understand the Core. The vault on the Anvil will have records.\"",
+    "next": "A2_B2_VAULTS_MEMORY",
+    "on_complete": []
+  },
+  {
+    "key": "A2_B2_VAULTS_MEMORY",
+    "act": 2,
+    "thread": "B",
+    "trigger": "arrival",
+    "location": "KETHRAS_ANVIL",
+    "title": "The Vault's Memory",
+    "goal": "Recover the vault's records of the Core.",
+    "objective": "Return to the vault on Kethra's Anvil.",
+    "intro_text": "The dig site is cold now. Burned rigs, empty camps, Kin graves under cairns of ore. The vault door hangs open. Inside, the walls are covered in ancestor runes, and something is scratching around in the dark.",
+    "kin_notes": {
+      "IRONKIN": "Machine Link: the vault knows you are Votann. Its old spirit stirs and waits."
+    },
+    "routes": [
+      {
+        "key": "LORE",
+        "label": "Read the runes the old way, as an Arkanyst should",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "NORMAL"
+        },
+        "requirements": [
+          {
+            "subclass": "ARKANYST_EVALUATOR"
+          }
+        ],
+        "subclass_bonus": {
+          "ARKANYST_EVALUATOR": 3
+        }
+      },
+      {
+        "key": "LINK",
+        "label": "Jack into the vault's machine-spirit",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "requirements": [
+          {
+            "kin_type": "IRONKIN"
+          }
+        ],
+        "class_bonus": {
+          "ARTIFICER": 2
+        }
+      },
+      {
+        "key": "CLEAR",
+        "label": "Clear out whatever is scratching in the dark",
+        "encounter": "B2_VAULT_SCAVENGERS"
+      },
+      {
+        "key": "DECIPHER",
+        "label": "Copy every rune and decipher them aboard ship",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2,
+          "ARTIFICER": 2
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The records are all here: how the Core was made, and how it can be stilled. You copy everything.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          },
+          {
+            "hearthfire": 5
+          }
+        ]
+      },
+      "success": {
+        "text": "You copy the records that matter.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You get the records, but a collapsing ceiling nearly takes you with it.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          },
+          {
+            "health": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "The vault fights you: falling stone, failing lights, dead ends. You leave with fragments. Fragments may be enough.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          },
+          {
+            "health": -3,
+            "supplies": -2
+          }
+        ]
+      }
+    },
+    "outro_text": "Back aboard, Dorrik spreads the rubbings across the deck. \"A key. A counter-signal. Build it right and the Core goes to sleep, wherever it is.\" He looks up. \"Karrak's workshops could build it.\"",
+    "next": "A2_B3_COUNTER_KEY",
+    "on_complete": []
+  },
+  {
+    "key": "A2_B3_COUNTER_KEY",
+    "act": 2,
+    "thread": "B",
+    "trigger": "arrival",
+    "location": "KARRAK_STATION",
+    "title": "The Counter-Key",
+    "goal": "Build a device that can shut the Core down.",
+    "objective": "Build the counter-key in the Karrak Station workshops.",
+    "intro_text": "Karrak's workshops rent by the hour and ask no questions. You lay the vault rubbings out on a borrowed bench. The design is simple. Building it will not be.",
+    "routes": [
+      {
+        "key": "BUILD",
+        "label": "Build it yourself, by the book",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        },
+        "requirements": [
+          {
+            "supplies": 5
+          }
+        ],
+        "effects_always": [
+          {
+            "supplies": -5
+          }
+        ]
+      },
+      {
+        "key": "DORRIK",
+        "label": "Let Dorrik build it while you keep him in tea and silence",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "NORMAL"
+        },
+        "requirements": [
+          {
+            "crew": "DORRIK"
+          }
+        ],
+        "effects_always": [
+          {
+            "supplies": -3
+          }
+        ]
+      },
+      {
+        "key": "HIRE",
+        "label": "Hire the station's best tinkers",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "NORMAL"
+        },
+        "requirements": [
+          {
+            "ore": 40
+          }
+        ],
+        "class_bonus": {
+          "SPEAKER": 2
+        },
+        "effects_always": [
+          {
+            "ore": -40
+          }
+        ]
+      },
+      {
+        "key": "SNIKROT",
+        "label": "Message Gitzbolt's unhappy assistant grot and buy his help",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "SLOW",
+        "label": "Do it the slow way: try, fail, and try again",
+        "auto_tier": "partial",
+        "effects_always": [
+          {
+            "supplies": -4
+          }
+        ]
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The counter-key hums in your hand, a small grey box with a big job. It works. You test it twice to be sure.",
+        "effects": [
+          {
+            "hearthfire": 10
+          }
+        ]
+      },
+      "success": {
+        "text": "The counter-key is finished. It should work. Probably.",
+        "effects": []
+      },
+      "partial": {
+        "text": "It works, but it took longer and cost more than it should have.",
+        "effects": [
+          {
+            "ore": -15
+          }
+        ]
+      },
+      "failure": {
+        "text": "The first two attempts burn out. The third holds. You hope it holds when it matters.",
+        "effects": [
+          {
+            "ore": -20,
+            "hearthfire": -5
+          }
+        ]
+      }
+    },
+    "outro_text": "The counter-key goes into the ship's strongbox. When the time comes, Gitzbolt's super-weapon will have to work without its heart.",
+    "on_complete": [
+      {
+        "complete_thread": "B"
+      }
+    ],
+    "next": null
+  },
+  {
+    "key": "A2_C1_SLOW_COUNCIL",
+    "act": 2,
+    "thread": "C",
+    "trigger": "arrival",
+    "location": "HOLD_DURNVAR",
+    "title": "The Slow Council",
+    "goal": "Convince Hold Durnvar's council to send ships.",
+    "objective": "Speak to the council at Hold Durnvar.",
+    "intro_text": "The council hall of Hold Durnvar is warm, old, and full of Kin who have not decided anything quickly in three centuries. They have heard about the raid. They have not yet heard you.",
+    "kin_notes": {
+      "IRONKIN": "Some of the councillors look at your frame and remember the Ironkin who built this Hold. Some look away."
+    },
+    "routes": [
+      {
+        "key": "SPEECH",
+        "label": "Stand and speak for the dead of the Durn Prospect Fleet",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "subclass_bonus": {
+          "THEYN_KAPITAN": 2
+        }
+      },
+      {
+        "key": "EVIDENCE",
+        "label": "Lay the Ork scout's nav data on the council table",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "has_cargo": "NAV_DATA"
+          }
+        ]
+      },
+      {
+        "key": "HONOUR",
+        "label": "Call in the Hold's debts of honour",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "reputation": {
+              "faction": "HOLD_DURNVAR",
+              "min": 25
+            }
+          }
+        ]
+      },
+      {
+        "key": "GRUDGE",
+        "label": "Slam the grudge-book on the table and read Skragnak's name aloud",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "NORMAL"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The council rises as one. Ships, crews, and a chest of Ore for the war to come.",
+        "effects": [
+          {
+            "ore": 40,
+            "reputation": {
+              "HOLD_DURNVAR": 10,
+              "DURN_LEAGUE": 10
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "The council pledges ships. Not all of them, but enough to matter.",
+        "effects": [
+          {
+            "reputation": {
+              "HOLD_DURNVAR": 5,
+              "DURN_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "The council pledges a handful of ships, and only if the Kharr League stands with them.",
+        "effects": [
+          {
+            "reputation": {
+              "DURN_LEAGUE": 3
+            }
+          }
+        ]
+      },
+      "failure": {
+        "text": "They argue for a day and a night. In the end they pledge a few old ships, grudgingly, and make it clear they blame you for the raid.",
+        "effects": [
+          {
+            "reputation": {
+              "HOLD_DURNVAR": -5
+            }
+          }
+        ]
+      }
+    },
+    "outro_text": "The eldest councillor catches your arm on the way out. \"Durnvar alone is not enough. The Kharr League owes us nothing and hates us more. Win them over, and this becomes a real alliance.\"",
+    "on_complete": [
+      {
+        "reveal_system": "KHARR_HOLD",
+        "set_flag": {
+          "DURNVAR_PLEDGED": true
+        }
+      }
+    ],
+    "next": "A2_C2_OLD_RIVALS"
+  },
+  {
+    "key": "A2_C2_OLD_RIVALS",
+    "act": 2,
+    "thread": "C",
+    "trigger": "arrival",
+    "location": "KHARR_HOLD",
+    "title": "Old Rivals",
+    "goal": "Win over the Kharr League.",
+    "objective": "Win over the Kharr League at Kharr Hold.",
+    "intro_text": "Kharr Hold receives you coldly. The Kharr remember every slight the Durn League ever dealt them, and keep a long list. Their Kâhl hears you out, then names her price: a freebooter cutter has been bleeding Kharr convoys for months. Settle that grudge, and they will talk.",
+    "kin_notes": {
+      "IRONKIN": "The Kharr guards watch your frame with open suspicion. Kharr has never trusted Ironkin."
+    },
+    "routes": [
+      {
+        "key": "HUNT",
+        "label": "Settle their grudge for them: hunt down the cutter",
+        "encounter": "C2_PIRATE_CUTTER"
+      },
+      {
+        "key": "DUEL",
+        "label": "Face Kharr's champion in an honour duel instead",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "OATH",
+        "label": "Swear an oath of mutual defence before their ancestors",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "effects_always": [
+          {
+            "create_oath": "OATH_KHARR_DEFENCE"
+          }
+        ]
+      },
+      {
+        "key": "WERGILD",
+        "label": "Pay the old wergild the Durn League owes them (50 Ore)",
+        "auto_tier": "success",
+        "requirements": [
+          {
+            "ore": 50
+          }
+        ],
+        "effects_always": [
+          {
+            "ore": -50
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The Kâhl clasps your arm. 'Kharr stands with you. And with Durnvar, for your sake.'",
+        "effects": [
+          {
+            "reputation": {
+              "KHARR_LEAGUE": 20
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "Kharr agrees to stand with Durnvar. Grudgingly, but a Kharr oath is iron.",
+        "effects": [
+          {
+            "reputation": {
+              "KHARR_LEAGUE": 10
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "Kharr will send ships, but they want it written down that Durnvar asked first.",
+        "effects": [
+          {
+            "reputation": {
+              "KHARR_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "failure": {
+        "text": "The Kâhl is not impressed. Still, Kharr hates Orks more than it hates Durnvar. They will come. Late, and complaining.",
+        "effects": [
+          {
+            "reputation": {
+              "KHARR_LEAGUE": -5
+            }
+          }
+        ]
+      }
+    },
+    "outro_text": "As you leave, a Kharr scout-captain falls into step beside you. \"You want to really hurt Skragnak? There's an Ork called Urgrot who wants his job. We know where he hides.\"",
+    "on_complete": [
+      {
+        "reveal_system": "URGROT_CAMP"
+      },
+      {
+        "reveal_system": "SNAZRIK_HAVEN"
+      }
+    ],
+    "next": "A2_C3_ENEMY_OF_MY_ENEMY"
+  },
+  {
+    "key": "A2_C3_ENEMY_OF_MY_ENEMY",
+    "act": 2,
+    "thread": "C",
+    "trigger": "arrival",
+    "location": "URGROT_CAMP",
+    "title": "The Enemy of My Enemy",
+    "goal": "Decide whether to make a deal with Boss Urgrot.",
+    "objective": "Meet Boss Urgrot at his hidden camp.",
+    "intro_text": "Boss Urgrot is smaller than Skragnak, smarter than most Orks, and very, very ambitious. He leans on a captured Kin anvil and grins. \"So. Da stunties want Skragnak gone. So do I. Let's talk.\"",
+    "kin_notes": {
+      "IRONKIN": "Urgrot taps your frame with a claw. 'Shiny. Don't worry, I ain't gonna loot ya. Yet.'"
+    },
+    "routes": [
+      {
+        "key": "DEAL",
+        "label": "Strike a deal: back his challenge, and he turns on Skragnak",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "BIGGER",
+        "label": "Show Urgrot you are the bigger boss here",
+        "roll": {
+          "stat": "grit",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "WARRIOR": 3
+        }
+      },
+      {
+        "key": "CUNNING",
+        "label": "Feed him exactly enough to start an Ork civil war",
+        "roll": {
+          "stat": "wits",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 2,
+          "ARTIFICER": 2
+        }
+      },
+      {
+        "key": "REFUSE",
+        "label": "Refuse. Some allies cost too much.",
+        "auto_tier": "success",
+        "outcomes": {
+          "success": {
+            "text": "You walk away. Urgrot laughs. \"Yer loss, stunty.\" The League will fight this war the honest way.",
+            "effects": [
+              {
+                "hearthfire": 5
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "Urgrot spits in his palm and holds it out. You shake it. When the Waaagh! comes, Urgrot's ships will turn on Skragnak.",
+        "effects": [
+          {
+            "story_reward": "ALLIES_URGROT",
+            "create_oath": "PACT_URGROT"
+          }
+        ]
+      },
+      "success": {
+        "text": "The deal is struck. Ork honour is a strange thing, but Urgrot wants Skragnak dead more than he wants you dead.",
+        "effects": [
+          {
+            "story_reward": "ALLIES_URGROT",
+            "create_oath": "PACT_URGROT"
+          }
+        ]
+      },
+      "partial": {
+        "text": "Urgrot agrees, but wants tribute up front. 'Fer da boyz.'",
+        "effects": [
+          {
+            "story_reward": "ALLIES_URGROT",
+            "create_oath": "PACT_URGROT",
+            "ore": -30
+          }
+        ]
+      },
+      "failure": {
+        "text": "Urgrot decides you're more fun as a joke than an ally and throws you out. His boyz shoot at your ship for sport as you leave.",
+        "effects": [
+          {
+            "hull": -3
+          }
+        ]
+      }
+    },
+    "outro_text": "Whatever you decided, the alliance against Skragnak is as strong as it is going to get. The League ships are gathering.",
+    "on_complete": [
+      {
+        "complete_thread": "C"
+      }
+    ],
+    "next": null
+  },
+  {
+    "key": "A2_D1_BURN_THE_OUTPOSTS",
+    "act": 2,
+    "thread": "D",
+    "trigger": "arrival",
+    "location": "GRIMHOLT_BELT",
+    "title": "Burn the Outposts",
+    "goal": "Break the warband raiding the Grimholt mining stations.",
+    "objective": "Break the Ork warband in the Grimholt Belt.",
+    "intro_text": "Grimholt's mining stations are burning. An Ork warband has taken the biggest one and is stripping it for parts while the Kin miners hold out in the ore silos.",
+    "kin_notes": {
+      "KIN": "The station air is thin and full of smoke. Every breath costs you."
+    },
+    "routes": [
+      {
+        "key": "ASSAULT",
+        "label": "Land and break the warband yourself",
+        "encounter": "D1_WARBAND"
+      },
+      {
+        "key": "SABOTAGE",
+        "label": "Rig their stolen drill-charges to blow",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "RALLY",
+        "label": "Arm the miners and lead them out of the silos",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        }
+      },
+      {
+        "key": "FLANK",
+        "label": "Lead your crew through the maintenance tunnels and hit them from behind",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The warband breaks and runs. The miners pour out of the silos cheering your name, and press salvaged ore into your hands.",
+        "effects": [
+          {
+            "waaagh": -5,
+            "add_cargo": {
+              "key": "ORE_CRATES",
+              "qty": 2
+            },
+            "reputation": {
+              "DURN_LEAGUE": 5
+            },
+            "hearthfire": 5
+          }
+        ]
+      },
+      "success": {
+        "text": "The warband breaks. The Orks will think twice about raiding Grimholt again.",
+        "effects": [
+          {
+            "waaagh": -5,
+            "reputation": {
+              "DURN_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You drive them off, at a cost.",
+        "effects": [
+          {
+            "waaagh": -5,
+            "health": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "The Orks withdraw on their own terms, taking their loot. The miners are alive. That is something.",
+        "effects": [
+          {
+            "health": -3,
+            "hearthfire": -5
+          }
+        ]
+      }
+    },
+    "outro_text": "A grey-bearded miner limps up to you. \"They took our people. Dozens. Carted them off to Rustmaw, past the Scrapfield. Bring them home.\"",
+    "on_complete": [
+      {
+        "reveal_system": "GITZBOLT_SCRAPFIELD"
+      },
+      {
+        "reveal_system": "RUSTMAW"
+      }
+    ],
+    "next": "A2_D2_SLAVE_CAMP"
+  },
+  {
+    "key": "A2_D2_SLAVE_CAMP",
+    "act": 2,
+    "thread": "D",
+    "trigger": "arrival",
+    "location": "RUSTMAW",
+    "title": "The Slave Camp",
+    "goal": "Free the captured Kin miners.",
+    "objective": "Free the Kin prisoners at Rustmaw.",
+    "intro_text": "Rustmaw is a camp built from stolen mining rigs, ringed with welded scrap. The Kin prisoners work the pits under the whips of Gutrip's guards. They look up when your ship passes overhead.",
+    "routes": [
+      {
+        "key": "STORM",
+        "label": "Storm the camp",
+        "encounter": "D2_SLAVE_CAMP"
+      },
+      {
+        "key": "SNEAK",
+        "label": "Slip in at night and cut the chains",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        }
+      },
+      {
+        "key": "FIRE",
+        "label": "Set their fuel dump burning and free the prisoners in the chaos",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        }
+      },
+      {
+        "key": "BUY",
+        "label": "Buy the prisoners as 'workers' (40 Ore)",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "requirements": [
+          {
+            "ore": 40
+          }
+        ],
+        "effects_always": [
+          {
+            "ore": -40
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        }
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "Every prisoner walks out. A broad miner named Brokka picks up a hammer and says, 'I'm coming with you.'",
+        "effects": [
+          {
+            "add_crew": "BROKKA",
+            "hearthfire": 15,
+            "waaagh": -5,
+            "reputation": {
+              "DURN_LEAGUE": 10
+            }
+          }
+        ]
+      },
+      "success": {
+        "text": "Most of them make it out. Brokka, the biggest of them, joins your crew.",
+        "effects": [
+          {
+            "add_crew": "BROKKA",
+            "hearthfire": 10,
+            "waaagh": -5,
+            "reputation": {
+              "DURN_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "partial": {
+        "text": "You free them, but it turns into a running fight to the ship.",
+        "effects": [
+          {
+            "add_crew": "BROKKA",
+            "hearthfire": 5,
+            "health": -3
+          }
+        ]
+      },
+      "failure": {
+        "text": "Only a few get out. It is not enough. It will have to be.",
+        "effects": [
+          {
+            "hearthfire": -5,
+            "health": -3
+          }
+        ]
+      }
+    },
+    "outro_text": "The freed miners talk about a place called Da Pit, where Skragnak's champion fights all comers. \"Beat him in front of the warband,\" one says, \"and every Ork in the Reach will know your name.\"",
+    "on_complete": [
+      {
+        "reveal_system": "DA_PIT"
+      }
+    ],
+    "next": "A2_D3_FIGHTING_PIT"
+  },
+  {
+    "key": "A2_D3_FIGHTING_PIT",
+    "act": 2,
+    "thread": "D",
+    "trigger": "arrival",
+    "location": "DA_PIT",
+    "title": "The Fighting Pit",
+    "goal": "Beat Skragnak's champion in front of the warband.",
+    "objective": "Enter the fighting pit at Da Pit.",
+    "intro_text": "Da Pit is a crater ringed with ten thousand roaring Orks. You walk down into the dust. On the far side, a gate rattles open, and out stomps a very familiar Nob in very new armour.",
+    "kin_notes": {
+      "IRONKIN": "The crowd chants something. It takes you a moment: 'SHINY! SHINY! SHINY!'"
+    },
+    "routes": [
+      {
+        "key": "FIGHT",
+        "label": "Fight. That is what you came here for.",
+        "encounter": "D3_PIT"
+      },
+      {
+        "key": "OUTLAST",
+        "label": "Dodge and weave until the champion tires himself out",
+        "roll": {
+          "stat": "nerve",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "PATHFINDER": 3
+        },
+        "effects_always": [
+          {
+            "grizzgut": "PIT_OUTLASTED"
+          }
+        ]
+      },
+      {
+        "key": "GATE",
+        "label": "Rig the pit's gate mechanism to drop on the champion mid-fight",
+        "roll": {
+          "stat": "craft",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "ARTIFICER": 3
+        },
+        "effects_always": [
+          {
+            "grizzgut": "PIT_TRICKED"
+          }
+        ]
+      },
+      {
+        "key": "CROWD",
+        "label": "Work the crowd until they cheer for you instead",
+        "roll": {
+          "stat": "silver_tongue",
+          "difficulty": "HARD"
+        },
+        "class_bonus": {
+          "SPEAKER": 3
+        },
+        "effects_always": [
+          {
+            "grizzgut": "PIT_CROWD"
+          }
+        ]
+      },
+      {
+        "key": "CONSOLE",
+        "label": "Use your console action",
+        "console_action": {
+          "difficulty": "HARD"
+        },
+        "effects_always": [
+          {
+            "grizzgut": "PIT_ACTION"
+          }
+        ]
+      }
+    ],
+    "outcomes": {
+      "critical": {
+        "text": "The champion falls and the crater goes silent. Then ten thousand Orks roar your name. Somewhere, Skragnak is hearing about this.",
+        "effects": [
+          {
+            "waaagh": -10,
+            "hearthfire": 15
+          }
+        ]
+      },
+      "success": {
+        "text": "You win. The Orks are furious, delighted, and above all impressed.",
+        "effects": [
+          {
+            "waaagh": -8,
+            "hearthfire": 10
+          }
+        ]
+      },
+      "partial": {
+        "text": "You win, barely, and you will feel it for a week.",
+        "effects": [
+          {
+            "waaagh": -5,
+            "health": -4
+          }
+        ]
+      },
+      "failure": {
+        "text": "You lose. But you lasted long enough that the Orks respect it. Some of them don't want to fight you any more.",
+        "effects": [
+          {
+            "waaagh": -3,
+            "health": -4
+          }
+        ]
+      }
+    },
+    "outro_text": "On your way out of the pit, Grizzgut is sitting in the dust, nursing a dented helmet. He doesn't get up. \"Next time, stunty,\" he mutters. \"Next time.\"",
+    "on_complete": [
+      {
+        "complete_thread": "D"
+      }
+    ],
+    "next": null
+  }
+]

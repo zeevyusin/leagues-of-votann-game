@@ -2,10 +2,69 @@
   {
     "key": "ORK_RAIDER",
     "display_name": "Ork Raider 'Da Big Bash'",
-    "hull": 10,
+    "hull": 8,
     "reactor_pips": 6,
-    "allocation_weights": { "weapons": 4, "shields": 1, "engines": 1 },
-    "system_caps": { "weapons": 4, "shields": 3, "engines": 3 },
-    "defense_difficulty": 12
+    "allocation_weights": {
+      "weapons": 4,
+      "shields": 1,
+      "engines": 1
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 3,
+      "engines": 3
+    },
+    "defense_difficulty": 11
+  },
+  {
+    "key": "ORK_SCOUT",
+    "display_name": "Ork scout 'Speedy Gitz'",
+    "hull": 6,
+    "reactor_pips": 6,
+    "allocation_weights": {
+      "weapons": 2,
+      "shields": 1,
+      "engines": 3
+    },
+    "system_caps": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 4
+    },
+    "defense_difficulty": 10
+  },
+  {
+    "key": "PIRATE_CUTTER",
+    "display_name": "Freebooter cutter 'Red Tally'",
+    "hull": 8,
+    "reactor_pips": 6,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 1
+    },
+    "system_caps": {
+      "weapons": 3,
+      "shields": 3,
+      "engines": 3
+    },
+    "defense_difficulty": 11
+  },
+  {
+    "key": "ORK_LOOTA_SHIP",
+    "display_name": "Ork loota ship",
+    "hull": 7,
+    "reactor_pips": 6,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 1
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 3,
+      "engines": 2
+    },
+    "defense_difficulty": 11
   }
 ]

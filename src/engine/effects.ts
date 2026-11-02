@@ -9,10 +9,12 @@ import {
   itemOf,
   loreOf,
   maxHealth,
+  messageOf,
   oathOf,
   relicOf,
   signed,
   systemOf,
+  threadOf,
   xpToNext,
   type Ctx,
 } from './rules';
@@ -108,10 +110,7 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
 
   if (e.set_flag) Object.assign(state.story.flags, e.set_flag);
 
-  if (e.add_message && !state.inbox.some((m) => m.key === e.add_message)) {
-    state.inbox.unshift({ key: e.add_message, read: false, day: state.day });
-    out.push({ text: 'New message on Comms.', tone: 'teal' });
-  }
+  if (e.add_message) out.push(...receiveMessage(state, ctx, e.add_message));
 
   if (e.add_crew && !state.crew.includes(e.add_crew)) {
     state.crew.push(e.add_crew);
@@ -153,7 +152,7 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
   if (e.set_core_status) state.story.core_status = e.set_core_status;
   if (e.set_hrolla_status) state.story.hrolla_status = e.set_hrolla_status;
   if (e.grizzgut) {
-    state.story.grizzgut_encounters.push({ beat: state.story.current_beat ?? 'UNKNOWN', outcome: e.grizzgut });
+    state.story.grizzgut_encounters.push({ beat: state.story.playing_beat ?? 'UNKNOWN', outcome: e.grizzgut });
     const grudge = cfg.GRIZZGUT_GRUDGE;
     if (state.story.grizzgut_encounters.length >= cfg.GRIZZGUT_GRUDGE_AFTER && !state.grudges.some((g) => g.key === grudge))
       out.push(...applyEffect(state, ctx, { create_grudge: grudge }, opts));
@@ -167,8 +166,58 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
   if (e.complete_act !== undefined && !state.story.acts_completed.includes(e.complete_act))
     state.story.acts_completed.push(e.complete_act);
 
+  for (const key of [e.activate_beat ?? []].flat()) activateBeat(state, key);
+  if (e.deactivate_beat) state.story.active_beats = state.story.active_beats.filter((k) => k !== e.deactivate_beat);
+
+  if (e.remove_cargo) {
+    const slot = state.cargo.find((c) => c.key === e.remove_cargo!.key);
+    const qty = Math.min(slot?.qty ?? 0, e.remove_cargo.qty);
+    if (slot && qty > 0) {
+      slot.qty -= qty;
+      state.cargo = state.cargo.filter((c) => c.qty > 0);
+      note(`-${qty} ${itemOf(ctx.data, e.remove_cargo.key).display_name}`, false);
+    }
+  }
+
+  if (e.upgrade_module) {
+    const m = e.upgrade_module;
+    if (state.ship.modules[m] < cfg.MODULE_MAX_LEVEL) {
+      state.ship.modules[m]++;
+      if (m === 'cargo_hold') state.ship.cargo_capacity += cfg.CARGO_CAPACITY_PER_HOLD_LEVEL;
+      out.push({ text: `${moduleLabel(m)} upgraded to level ${state.ship.modules[m]}.`, tone: 'good' });
+    }
+  }
+
+  if (e.complete_thread && !state.story.threads_completed.includes(e.complete_thread)) {
+    const thread = threadOf(ctx.data, e.complete_thread);
+    state.story.threads_completed.push(thread.key);
+    if (!state.story.story_rewards.includes(thread.reward)) state.story.story_rewards.push(thread.reward);
+    out.push({ text: `Thread complete: ${thread.title}`, tone: 'accent' });
+    out.push({ text: thread.reward_text, tone: 'teal' });
+    out.push(...grantXp(state, ctx, cfg.XP_THREAD));
+  }
+
+  if (e.story_reward && !state.story.story_rewards.includes(e.story_reward)) state.story.story_rewards.push(e.story_reward);
+
   if (e.xp) out.push(...grantXp(state, ctx, e.xp));
   return out;
+}
+
+export function activateBeat(state: GameState, key: string): void {
+  const done = state.story.completed_beats.some((b) => b.key === key);
+  if (!done && !state.story.active_beats.includes(key)) state.story.active_beats.push(key);
+}
+
+/** Adds a message to the inbox (once) and applies its on_receive effects. */
+export function receiveMessage(state: GameState, ctx: Ctx, key: string): Line[] {
+  if (state.inbox.some((m) => m.key === key)) return [];
+  state.inbox.unshift({ key, read: false, day: state.day });
+  const msg = messageOf(ctx.data, key);
+  return [{ text: `New message on Comms: ${msg.subject}`, tone: 'teal' }, ...applyEffects(state, ctx, msg.on_receive)];
+}
+
+export function moduleLabel(m: string): string {
+  return m.replace('_', ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
 
 export function cargoSpace(state: GameState): number {

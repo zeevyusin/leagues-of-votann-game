@@ -364,8 +364,14 @@ export function newGame(data: GameData, draft: CreationDraft, seed: number): Gam
     inbox: [{ key: cfg.FIRST_MESSAGE, read: false, day: cfg.START_DAY }],
     story: {
       act: 1,
-      current_beat: data.messages.find((m) => m.key === cfg.FIRST_MESSAGE)?.beat ?? null,
+      active_beats: [data.messages.find((m) => m.key === cfg.FIRST_MESSAGE)?.beat].filter((b): b is string => !!b),
+      playing_beat: null,
       completed_beats: [],
+      threads_completed: [],
+      story_rewards: [],
+      events_seen: [],
+      act_events_shown: [],
+      deferred_beats: [],
       waaagh_meter: null,
       flags: { [`STAKE_${sub.key}`]: true },
       core_status: 'IN_VAULT',
@@ -375,6 +381,8 @@ export function newGame(data: GameData, draft: CreationDraft, seed: number): Gam
     },
     grace_journeys: 0,
     self_maintenance_used: false,
+    haggle_active: false,
+    safe_route_charted: false,
     scenes: [
       { type: 'hub', tab: 'comms' },
       {

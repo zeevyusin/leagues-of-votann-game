@@ -222,11 +222,22 @@ incoming_base = enemy.weapon_pips
 
 All values `[TUNABLE]`. The key idea: **engines decide the exchange, weapons decide what you deal, shields decide what you absorb.** Every point in one system is a point not in another, so the allocation matters.
 
+**Enemy systems matter `[DECIDED]` (Milestone 2):** the enemy's allocation works the same way as yours.
+- The enemy's **engine pips add to its `defense_difficulty`** for that round.
+- The enemy's **shield pips reduce the damage you deal** (`max(0, damage - enemy_shield_pips)`, applied after the critical multiplier).
+- This makes the Scanner hint a real decision: heavy enemy shields favor a defensive round, heavy enemy engines favor putting pips into your own engines. Enemy ship Hull values are lowered to keep fights at 2 to 5 rounds.
+
 ### 4.4 Ending a ship fight
 
 - **Enemy Hull reaches 0:** the enemy ship is **disabled** and the player picks an authored follow-up: loot it, spare it, tow it, or (Phase 3) board it.
 - **Player Hull reaches 0:** the ship is **crippled** and the player is incapacitated (section 7).
 - **Withdraw option (Phase 2):** spend a round with maximum Engines to try to flee.
+
+### 4.4.1 Withdraw `[DECIDED]` (Milestone 2)
+Only encounters with `allow_withdraw: true` offer it (story-critical fights usually don't).
+- **Personal:** roll Nerve vs the enemy's `defense_difficulty`. Success or better: you escape. Partial: you escape but take the Partial damage. Failure: you take Failure damage and the fight goes on.
+- **Ship:** the round's allocation is forced to maximum Engines (the rest into Shields). Roll Nerve + engine pips vs the enemy's `defense_difficulty` + enemy engine pips, with the same results.
+- Escaping uses the encounter's `withdrew` outcome: no loot, no defeat costs, no XP. If the fight belonged to a story beat, the beat still completes, with the `withdrew` result.
 
 ### 4.5 Phase 1 ship scope
 
@@ -435,6 +446,36 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 - All numbers come from config or data, none hardcoded.
 
 ### Phase 2: Depth and class identity
+
+`[DECIDED]` Milestone 2 builds items 1, 2, 7, and enemy shields/engines (section 4.3). Items 3, 4, 5, 6, and 8 come later.
+
+**Console actions in combat (Milestone 2):** once per fight, the player may use their subclass console action instead of picking a stance or allocation. It takes the round's choice but no roll is made against the player that round. Ironkin pay the action's Wear cost. Effects `[TUNABLE]`, stored as `combat` on each subclass's `console_action`:
+
+| Console action | Combat effect |
+|---|---|
+| Muster the Hearth | +2 to all your rolls for the rest of the fight, +5 Hearthfire. Ironkin: also -10 Wear. |
+| Boarding Lead | +3 to your next two personal-combat rolls. Personal combat only. |
+| Blood-Rage | +4 to all rolls for the rest of the fight, costs 2 Health. Ironkin: +8 instead, +25 Wear. |
+| Chart Safe Route | Ship only: your next Withdraw succeeds automatically, even if the encounter does not normally allow it. |
+| Long-Range Scan and Strike | Reveals every enemy intent for the rest of the fight and deals 2 damage at once. |
+| Jury-Rig | Ship only: restore 4 Hull. Ironkin: also -15 Wear. |
+| Evaluate Relic | No combat use. |
+| Swear an Oath | +2 to all rolls for the rest of the fight; +10 Hearthfire on victory, -10 on defeat. |
+| Haggle | +3 to Negotiate for the rest of the fight. Personal combat only. |
+| Calculate the Odds | Reveals every enemy intent for the rest of the fight and shows your odds on each option. |
+
+**Subclass traits in combat (Milestone 2)** `[TUNABLE]`, stored as `combat` on each subclass's `trait`:
+
+| Trait | Combat effect |
+|---|---|
+| Shield-Oath | Defend reduces damage by 1 more. |
+| Old Guard | Defeat does not cost Hearthfire. |
+| Tunnel-Born | +2 to all rolls in encounters tagged `cramped`. |
+| Lay of the Land | +2 to all rolls in encounters tagged `surface`. |
+| Patient Hunter | A successful Defend also grants Advantage. |
+| Forge-Wise | No combat effect. Module upgrades cost 20% less at port markets (`game-overview.md` section 4.5). |
+| Eye for Ore | +25% Ore from encounter victory effects. |
+| Others | No combat effect. |
 
 1. **Console actions in combat:** Muster the Hearth, Boarding Lead, Blood-Rage (with the Ironkin variants and Wear costs), Long-Range Scan and Strike, Calculate the Odds, Jury-Rig, and the rest, as round modifiers.
 2. **Subclass traits** that affect combat (Shield-Oath, Tunnel-Born, Patient Hunter, and so on).

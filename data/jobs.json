@@ -1,0 +1,196 @@
+{
+  "messages": [
+    {
+      "key": "JOBMSG_MEDICAE",
+      "from": "Karrak Station medicae guild",
+      "subject": "Contract: medicae run to Hold Durnvar",
+      "body": "Two crates of medicae supplies for the wounded at Hold Durnvar. Twenty days. We load the crates; you fly them.",
+      "job": {
+        "ports": [
+          "KARRAK_STATION"
+        ],
+        "requirements": [
+          {
+            "flag": "ACT2_STARTED"
+          }
+        ],
+        "on_accept": [
+          {
+            "create_oath": "JOB_MEDICAE"
+          },
+          {
+            "add_cargo": {
+              "key": "JOB_MEDICAE_CRATES",
+              "qty": 2
+            }
+          }
+        ],
+        "reward_text": "60 Ore on delivery, and reputation with Durnvar."
+      }
+    },
+    {
+      "key": "JOBMSG_SCRAP",
+      "from": "Hold Durnvar forge-masters",
+      "subject": "Contract: Ork scrap for the forges",
+      "body": "Ork scrap makes good Kin steel, once it has been beaten into shape. Bring three loads to the forges at Karrak Station within thirty days.",
+      "job": {
+        "ports": [
+          "HOLD_DURNVAR"
+        ],
+        "requirements": [
+          {
+            "flag": "ACT2_STARTED"
+          }
+        ],
+        "on_accept": [
+          {
+            "create_oath": "JOB_SCRAP"
+          }
+        ],
+        "reward_text": "90 Ore on delivery."
+      }
+    },
+    {
+      "key": "JOBMSG_BOUNTY",
+      "from": "Karrak Station bounty board",
+      "subject": "Bounty: the freebooter cutter Red Tally",
+      "body": "The freebooter cutter Red Tally has been hitting ore haulers in the Grimholt Belt. 100 Ore to whoever disables it. Twenty-five days.",
+      "job": {
+        "ports": [
+          "KARRAK_STATION"
+        ],
+        "requirements": [
+          {
+            "flag": "ACT2_STARTED"
+          }
+        ],
+        "on_accept": [
+          {
+            "create_oath": "JOB_BOUNTY_CUTTER"
+          },
+          {
+            "activate_beat": "JB_CUTTER_HUNT"
+          },
+          {
+            "reveal_system": "GRIMHOLT_BELT"
+          }
+        ],
+        "reward_text": "100 Ore when the Red Tally is disabled."
+      }
+    },
+    {
+      "key": "JOBMSG_CRATE",
+      "from": "Kaptin Snazrik",
+      "subject": "A little job, no questions",
+      "body": "One crate, sealed. Take it to Karrak Station. Don't open it, don't drop it, don't ask. Fifteen days.",
+      "job": {
+        "ports": [
+          "SNAZRIK_HAVEN"
+        ],
+        "requirements": [
+          {
+            "flag": "ACT2_STARTED"
+          }
+        ],
+        "on_accept": [
+          {
+            "create_oath": "JOB_SEALED_CRATE"
+          },
+          {
+            "add_cargo": {
+              "key": "SEALED_CRATE",
+              "qty": 1
+            }
+          }
+        ],
+        "reward_text": "80 Ore and Snazrik's goodwill."
+      }
+    }
+  ],
+  "beats": [
+    {
+      "key": "JB_CUTTER_HUNT",
+      "act": 2,
+      "trigger": "arrival",
+      "location": "GRIMHOLT_BELT",
+      "title": "Bounty: the Red Tally",
+      "goal": "Disable the freebooter cutter.",
+      "objective": "Hunt the Red Tally in the Grimholt Belt (bounty).",
+      "intro_text": "There she is: the Red Tally, lurking behind a big asteroid, waiting for an ore hauler. Her kaptin hasn't seen you yet.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Attack",
+          "encounter": "JB_CUTTER_HUNT"
+        },
+        {
+          "key": "SURRENDER",
+          "label": "Hail her and talk her kaptin into surrendering",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "DISABLE",
+          "label": "Sneak up and disable her engines with a single shot",
+          "roll": {
+            "stat": "nerve",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The Red Tally strikes her colours without a shot fired.",
+          "effects": [
+            {
+              "keep_oath": "JOB_BOUNTY_CUTTER"
+            },
+            {
+              "ore": 20
+            }
+          ]
+        },
+        "success": {
+          "text": "The Red Tally is out of action. Karrak will pay.",
+          "effects": [
+            {
+              "keep_oath": "JOB_BOUNTY_CUTTER"
+            }
+          ]
+        },
+        "partial": {
+          "text": "You disable her, but she gets a few shots off first.",
+          "effects": [
+            {
+              "keep_oath": "JOB_BOUNTY_CUTTER"
+            },
+            {
+              "hull": -4
+            }
+          ]
+        },
+        "failure": {
+          "text": "She spots you and runs. The bounty is lost.",
+          "effects": [
+            {
+              "break_oath": "JOB_BOUNTY_CUTTER"
+            },
+            {
+              "hull": -2
+            }
+          ]
+        }
+      },
+      "on_complete": [],
+      "next": null
+    }
+  ]
+}

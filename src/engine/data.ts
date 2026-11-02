@@ -17,6 +17,12 @@ import enemies from '../../data/enemies.json';
 import enemyShips from '../../data/enemy_ships.json';
 import combatEncounters from '../../data/combat_encounters.json';
 import storyBeats from '../../data/story_beats.json';
+import storyBeatsAct2 from '../../data/story_beats_act2.json';
+import travelEvents from '../../data/travel_events.json';
+import jobs from '../../data/jobs.json';
+import storyThreads from '../../data/story_threads.json';
+import actEvents from '../../data/act_events.json';
+import markets from '../../data/markets.json';
 import { validateGameData, type GameData } from './schema';
 
 export function rawGameData() {
@@ -33,12 +39,17 @@ export function rawGameData() {
     relics,
     oaths,
     grudges,
-    messages,
+    // Job offers are Comms messages; they live in their own file to keep messages.json readable.
+    messages: [...messages, ...jobs.messages],
     lore,
     enemies,
     enemy_ships: enemyShips,
     combat_encounters: combatEncounters,
-    story_beats: storyBeats,
+    // Act 1, Act 2, travel events, and job beats all share the beat format.
+    story_beats: [...storyBeats, ...storyBeatsAct2, ...travelEvents, ...jobs.beats],
+    story_threads: storyThreads,
+    act_events: actEvents,
+    markets,
   };
 }
 

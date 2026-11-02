@@ -1,9 +1,10 @@
 // The story engine: beats, routes, and how fights feed back into the story. story.md section 10.
 import { applyDefeat } from './defeat';
-import { applyEffects, grantXp } from './effects';
+import { activateBeat, applyEffects, grantXp, receiveMessage } from './effects';
 import { lockedReason } from './conditions';
 import { describeRoll, roll, titleCase, type Modifier, type RollResult } from './roll';
 import {
+  actEventOf,
   beatOf,
   consoleActionFor,
   encounterOf,
@@ -11,12 +12,14 @@ import {
   recordRoll,
   resolveText,
   statLabel,
+  subclassOf,
+  threadOf,
   type Ctx,
 } from './rules';
 import type { Route } from './schema';
 import type { CombatResult } from './combat';
 import { startCombat } from './combat';
-import type { CombatState, GameState, Line, Scene, StatKey, Tier } from './types';
+import type { BeatResult, CombatState, GameState, Line, Scene, StatKey, Tier } from './types';
 
 export interface RoutePlan {
   stat: StatKey | null;
@@ -60,6 +63,18 @@ function popScene(state: GameState, type: Scene['type']): void {
   state.scenes.pop();
 }
 
+export function canDefer(ctx: Ctx, key: string): boolean {
+  const beat = beatOf(ctx.data, key);
+  return beat.trigger === 'arrival' && (beat.deferrable ?? beat.act >= 2);
+}
+
+/** 'Not now': close the beat; it waits until the player leaves and comes back. */
+export function deferBeat(state: GameState, ctx: Ctx, key: string): void {
+  if (!canDefer(ctx, key)) return;
+  popScene(state, 'beat');
+  if (!state.story.deferred_beats.includes(key)) state.story.deferred_beats.push(key);
+}
+
 export function startBeat(state: GameState, ctx: Ctx, key: string): void {
   beatOf(ctx.data, key);
   state.scenes.push({ type: 'beat', key });
@@ -71,6 +86,7 @@ export function chooseRoute(state: GameState, ctx: Ctx, beatKey: string, routeKe
   if (!route) throw new Error(`Unknown route ${routeKey}`);
   const lock = routeLock(state, ctx, route);
   if (lock) throw new Error(lock);
+  state.story.playing_beat = beatKey;
 
   const lines: Line[] = [{ text: route.console_action ? consoleActionFor(ctx.data, state.character).name : route.label, tone: 'heading' }];
   lines.push(...applyEffects(state, ctx, route.effects_always, { nonLethal: true }));
@@ -100,7 +116,8 @@ export function chooseRoute(state: GameState, ctx: Ctx, beatKey: string, routeKe
   lines.push({ text: '' }, { text: resolveText(outcome.text, state) });
   lines.push(...applyEffects(state, ctx, outcome.effects, { nonLethal: true }));
   if (tier === 'failure' && result) lines.push(...grantXp(state, ctx, ctx.data.config.XP_FAILED_ROLL));
-  if (tier === 'failure' && state.story.waaagh_meter !== null)
+  // Failing a main story beat feeds the Waaagh!; failing a travel event does not.
+  if (tier === 'failure' && state.story.waaagh_meter !== null && beat.trigger !== 'event')
     lines.push(...applyEffects(state, ctx, [{ waaagh: ctx.data.config.WAAAGH_PER_FAILED_BEAT }]));
 
   popScene(state, 'beat');
@@ -117,45 +134,70 @@ export function finishEncounter(state: GameState, ctx: Ctx, combat: CombatState,
   popScene(state, 'combat');
   const enc = encounterOf(ctx.data, combat.encounter);
   const outcome =
-    result === 'victory_negotiated' ? enc.outcomes.victory_negotiated ?? enc.outcomes.victory_broken : enc.outcomes[result];
+    result === 'victory_negotiated'
+      ? enc.outcomes.victory_negotiated ?? enc.outcomes.victory_broken
+      : result === 'withdrew'
+        ? enc.outcomes.withdrew ?? enc.outcomes.victory_broken
+        : enc.outcomes[result];
+  const traitCombat = subclassOf(ctx.data, state.character.subclass).trait.combat;
 
   const lines: Line[] = [...roundLines, { text: '' }];
-  lines.push({ text: result === 'defeat' ? 'DEFEAT' : 'VICTORY', tone: result === 'defeat' ? 'bad' : 'good' });
+  const banner = result === 'defeat' ? 'DEFEAT' : result === 'withdrew' ? 'WITHDRAWN' : 'VICTORY';
+  lines.push({ text: banner, tone: result === 'defeat' ? 'bad' : result === 'withdrew' ? 'accent' : 'good' });
   lines.push({ text: resolveText(outcome.text, state) });
   if (result === 'defeat') {
-    lines.push(...applyDefeat(state, ctx, { cause: 'combat', overridesDefaultCosts: enc.outcomes.defeat.overrides_default_costs }));
-  } else {
+    lines.push(
+      ...applyDefeat(state, ctx, {
+        cause: 'combat',
+        overridesDefaultCosts: enc.outcomes.defeat.overrides_default_costs,
+        keepHearthfire: traitCombat?.no_defeat_hearthfire,
+      }),
+    );
+    if (combat.buffs.defeat_hearthfire) lines.push(...applyEffects(state, ctx, [{ hearthfire: combat.buffs.defeat_hearthfire }]));
+  } else if (result !== 'withdrew') {
     lines.push(...grantXp(state, ctx, result === 'victory_negotiated' ? cfg.XP_FIGHT_NEGOTIATED : cfg.XP_FIGHT_BROKEN));
+    if (combat.buffs.victory_hearthfire) lines.push(...applyEffects(state, ctx, [{ hearthfire: combat.buffs.victory_hearthfire }]));
   }
-  lines.push(...applyEffects(state, ctx, outcome.effects, { nonLethal: true }));
+  // Eye for Ore: victory Ore rewards are worth more.
+  const effects = structuredClone(outcome.effects);
+  const oreMult = result.startsWith('victory') ? traitCombat?.victory_ore_multiplier : undefined;
+  if (oreMult) for (const e of effects) if (e.ore && e.ore > 0) e.ore = Math.round(e.ore * oreMult);
+  lines.push(...applyEffects(state, ctx, effects, { nonLethal: true }));
 
   if (combat.then) completeBeat(state, ctx, combat.then.beat, combat.then.route, result, lines);
-  else state.scenes.push({ type: 'notice', title: result === 'defeat' ? 'Defeat' : 'Victory', lines });
+  else state.scenes.push({ type: 'notice', title: banner.charAt(0) + banner.slice(1).toLowerCase(), lines });
 }
 
 /** Records the beat, applies its outro, and queues what comes next. */
-function completeBeat(
-  state: GameState,
-  ctx: Ctx,
-  beatKey: string,
-  routeKey: string,
-  tier: GameState['story']['completed_beats'][number]['tier'],
-  lines: Line[],
-): void {
+function completeBeat(state: GameState, ctx: Ctx, beatKey: string, routeKey: string, tier: BeatResult, lines: Line[]): void {
   const cfg = ctx.data.config;
   const beat = beatOf(ctx.data, beatKey);
-  state.story.completed_beats.push({ key: beatKey, route: routeKey, tier });
+  state.story.playing_beat = beatKey;
   if (beat.outro_text) lines.push({ text: '' }, { text: resolveText(beat.outro_text, state) });
+
+  if (beat.trigger === 'event') {
+    // Travel events are side scenes: they never move the story pointer.
+    if (!state.story.events_seen.includes(beatKey)) state.story.events_seen.push(beatKey);
+    lines.push(...applyEffects(state, ctx, beat.on_complete, { nonLethal: true }));
+    lines.push(...grantXp(state, ctx, cfg.XP_EVENT));
+    state.story.playing_beat = null;
+    state.scenes.push({ type: 'notice', title: beat.title, lines });
+    return;
+  }
+
+  state.story.active_beats = state.story.active_beats.filter((k) => k !== beatKey);
+  state.story.completed_beats.push({ key: beatKey, route: routeKey, tier });
   const actsBefore = state.story.acts_completed.length;
   lines.push(...applyEffects(state, ctx, beat.on_complete, { nonLethal: true }));
   lines.push(...grantXp(state, ctx, cfg.XP_BEAT));
+  state.story.playing_beat = null;
 
-  state.story.current_beat = beat.next;
   const next = beat.next ? beatOf(ctx.data, beat.next) : null;
+  if (next) activateBeat(state, next.key);
 
   // Pushed in reverse display order: the last push is shown first.
-  if (next && (next.trigger === 'auto' || (next.trigger === 'arrival' && next.location === state.location)))
-    state.scenes.push({ type: 'beat', key: next.key });
+  // Arrival beats at the current system start from afterChoice once the player is back at the console.
+  if (next?.trigger === 'auto') state.scenes.push({ type: 'beat', key: next.key });
   const newAct = state.story.acts_completed.length > actsBefore ? state.story.acts_completed[state.story.acts_completed.length - 1] : null;
   if (newAct !== null) {
     state.story.act = newAct + 1;
@@ -167,17 +209,48 @@ function completeBeat(
   state.scenes.push({ type: 'notice', title: beat.title, lines });
 }
 
-/** The beat waiting at the current location, if any (for arrival triggers). */
+/** The first active beat waiting at the current location, if any (for arrival triggers). */
 export function arrivalBeat(state: GameState, ctx: Ctx): string | null {
-  const key = state.story.current_beat;
-  if (!key) return null;
-  const beat = beatOf(ctx.data, key);
-  return beat.trigger === 'arrival' && beat.location === state.location ? key : null;
+  for (const key of state.story.active_beats) {
+    if (state.story.deferred_beats.includes(key)) continue;
+    const beat = beatOf(ctx.data, key);
+    if (beat.trigger === 'arrival' && beat.location === state.location) return key;
+  }
+  return null;
 }
 
-export function currentObjective(state: GameState, ctx: Ctx): string {
-  const key = state.story.current_beat;
-  if (key) return beatOf(ctx.data, key).objective;
-  if (state.story.acts_completed.length) return 'Act 1 complete. Act 2 is not built yet.';
-  return '';
+/** One line per active beat. Thread beats are prefixed with the thread title. */
+export function currentObjectives(state: GameState, ctx: Ctx): string[] {
+  const out: string[] = [];
+  for (const key of state.story.active_beats) {
+    const beat = beatOf(ctx.data, key);
+    const thread = beat.thread ? threadOf(ctx.data, beat.thread).title : null;
+    out.push(thread ? `${thread}: ${beat.objective}` : beat.objective);
+  }
+  if (!out.length && state.story.acts_completed.length) out.push('Free play. Fly where you like.');
+  return out;
+}
+
+/** Story milestones checked whenever the player is back at the console. Returns true if a screen was queued. */
+export function progressChecks(state: GameState, ctx: Ctx): boolean {
+  const cfg = ctx.data.config;
+  const s = state.story;
+  if (s.acts_completed.includes(1) && !s.flags.ACT2_STARTED) {
+    s.flags.ACT2_STARTED = true;
+    const lines: Line[] = [];
+    for (const m of cfg.ACT2_THREAD_MESSAGES) lines.push(...receiveMessage(state, ctx, m));
+    return showActEvent(state, ctx, 'ACT2_STARTED', lines);
+  }
+  if (s.threads_completed.length >= cfg.THREADS_REQUIRED && !s.act_events_shown.includes('ACT3_UNLOCKED'))
+    return showActEvent(state, ctx, 'ACT3_UNLOCKED');
+  if ((s.waaagh_meter ?? 0) >= cfg.WAAAGH_LAUNCH && !s.act_events_shown.includes('WAAAGH_LAUNCHED'))
+    return showActEvent(state, ctx, 'WAAAGH_LAUNCHED');
+  return false;
+}
+
+function showActEvent(state: GameState, ctx: Ctx, key: string, extra: Line[] = []): boolean {
+  state.story.act_events_shown.push(key);
+  const ev = actEventOf(ctx.data, key);
+  state.scenes.push({ type: 'notice', title: ev.title, lines: [{ text: resolveText(ev.text, state) }, ...(extra.length ? [{ text: '' }, ...extra] : [])] });
+  return true;
 }

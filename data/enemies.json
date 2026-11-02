@@ -6,13 +6,24 @@
     "defense_difficulty": 10,
     "damage_bonus": 0,
     "read_difficulty": 8,
-    "intent_weights": { "aggressive": 6, "guarded": 2, "evasive": 2 },
+    "intent_weights": {
+      "aggressive": 6,
+      "guarded": 2,
+      "evasive": 2
+    },
     "negotiable": false,
     "negotiation_difficulty": 99,
     "telegraphs": {
-      "aggressive": ["The Boyz roar and surge forward in a wall of choppas.", "A big one bellows 'WAAAGH!' and the mob charges."],
-      "guarded": ["The Boyz crouch behind a toppled ore cart, shooting wildly."],
-      "evasive": ["The mob scatters between the drill rigs, looking for a better angle."]
+      "aggressive": [
+        "The Boyz roar and surge forward in a wall of choppas.",
+        "A big one bellows 'WAAAGH!' and the mob charges."
+      ],
+      "guarded": [
+        "The Boyz crouch behind a toppled ore cart, shooting wildly."
+      ],
+      "evasive": [
+        "The mob scatters between the drill rigs, looking for a better angle."
+      ]
     }
   },
   {
@@ -22,13 +33,257 @@
     "defense_difficulty": 11,
     "damage_bonus": 0,
     "read_difficulty": 9,
-    "intent_weights": { "aggressive": 5, "guarded": 3, "evasive": 2 },
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
     "negotiable": true,
     "negotiation_difficulty": 13,
     "telegraphs": {
-      "aggressive": ["Grizzgut lowers his head and revs his choppa. 'OI! YOU! STAND STILL!'"],
-      "guarded": ["Grizzgut hunkers behind a slab of stolen hull plate, grinning."],
-      "evasive": ["Grizzgut sidles toward the vault tunnels, eyeing the loot behind him."]
+      "aggressive": [
+        "Grizzgut lowers his head and revs his choppa. 'OI! YOU! STAND STILL!'"
+      ],
+      "guarded": [
+        "Grizzgut hunkers behind a slab of stolen hull plate, grinning."
+      ],
+      "evasive": [
+        "Grizzgut sidles toward the vault tunnels, eyeing the loot behind him."
+      ]
+    }
+  },
+  {
+    "key": "GROT_SCAVENGERS",
+    "display_name": "Grot scavengers",
+    "resolve": 4,
+    "defense_difficulty": 9,
+    "damage_bonus": -1,
+    "read_difficulty": 7,
+    "intent_weights": {
+      "aggressive": 2,
+      "guarded": 3,
+      "evasive": 5
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 10,
+    "telegraphs": {
+      "aggressive": [
+        "A grot waves a stolen cutting torch at you, screeching."
+      ],
+      "guarded": [
+        "The grots hide behind a pile of vault rubble, peering out."
+      ],
+      "evasive": [
+        "The grots scatter into the dark corridors, giggling."
+      ]
+    }
+  },
+  {
+    "key": "ORK_JAILERS",
+    "display_name": "Ork jailers",
+    "resolve": 5,
+    "defense_difficulty": 11,
+    "damage_bonus": 0,
+    "read_difficulty": 9,
+    "intent_weights": {
+      "aggressive": 4,
+      "guarded": 4,
+      "evasive": 2
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "The jailers rattle their keys and charge."
+      ],
+      "guarded": [
+        "The jailers slam a cell door and wait behind the bars."
+      ],
+      "evasive": [
+        "A jailer backs toward the alarm klaxon."
+      ]
+    }
+  },
+  {
+    "key": "JAILER_NOB",
+    "display_name": "Nob Krugrot, the Jailer",
+    "resolve": 7,
+    "defense_difficulty": 12,
+    "damage_bonus": 0,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 14,
+    "telegraphs": {
+      "aggressive": [
+        "Krugrot swings a ring of keys the size of a shield. 'NOBODY LEAVES MY CELLS!'"
+      ],
+      "guarded": [
+        "Krugrot stands in the cell-block doorway, filling it."
+      ],
+      "evasive": [
+        "Krugrot edges toward the stunty prisoner, meaning to use her as a shield."
+      ]
+    }
+  },
+  {
+    "key": "RAID_NOB",
+    "display_name": "Raid Nob Zogbad",
+    "resolve": 7,
+    "defense_difficulty": 12,
+    "damage_bonus": 0,
+    "read_difficulty": 9,
+    "intent_weights": {
+      "aggressive": 6,
+      "guarded": 2,
+      "evasive": 2
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Zogbad roars and leaps off a mining rig at you."
+      ],
+      "guarded": [
+        "Zogbad hunkers behind a stolen ore hauler."
+      ],
+      "evasive": [
+        "Zogbad scrambles for his warbike."
+      ]
+    }
+  },
+  {
+    "key": "SLAVER_GUARDS",
+    "display_name": "Slaver guards",
+    "resolve": 5,
+    "defense_difficulty": 11,
+    "damage_bonus": 0,
+    "read_difficulty": 9,
+    "intent_weights": {
+      "aggressive": 4,
+      "guarded": 4,
+      "evasive": 2
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "The guards come at you with shock-prods crackling."
+      ],
+      "guarded": [
+        "The guards form up behind the camp gate."
+      ],
+      "evasive": [
+        "A guard runs for the prisoner pens to cut the chains."
+      ]
+    }
+  },
+  {
+    "key": "SLAVER_NOB",
+    "display_name": "Slaver Nob Gutrip",
+    "resolve": 8,
+    "defense_difficulty": 12,
+    "damage_bonus": 1,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 15,
+    "telegraphs": {
+      "aggressive": [
+        "Gutrip cracks a chain whip and charges."
+      ],
+      "guarded": [
+        "Gutrip plants his feet in front of the pens."
+      ],
+      "evasive": [
+        "Gutrip shoves a prisoner toward you and circles away."
+      ]
+    }
+  },
+  {
+    "key": "NOB_GRIZZGUT_2",
+    "display_name": "Nob Grizzgut (bigger)",
+    "resolve": 8,
+    "defense_difficulty": 12,
+    "damage_bonus": 1,
+    "read_difficulty": 10,
+    "intent_weights": {
+      "aggressive": 4,
+      "guarded": 4,
+      "evasive": 2
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 14,
+    "telegraphs": {
+      "aggressive": [
+        "Grizzgut bellows: 'REMEMBER ME?! I GOT NEW ARMOUR!' and charges."
+      ],
+      "guarded": [
+        "Grizzgut hunches behind his new plate. 'Not fallin' for dat again.'"
+      ],
+      "evasive": [
+        "Grizzgut circles the pit wall, playing to the crowd."
+      ]
+    }
+  },
+  {
+    "key": "PIT_CHAMPION",
+    "display_name": "Bonecrusha, pit champion",
+    "resolve": 10,
+    "defense_difficulty": 13,
+    "damage_bonus": 1,
+    "read_difficulty": 11,
+    "intent_weights": {
+      "aggressive": 6,
+      "guarded": 3,
+      "evasive": 1
+    },
+    "negotiable": false,
+    "negotiation_difficulty": 99,
+    "telegraphs": {
+      "aggressive": [
+        "Bonecrusha swings both fists overhead. The crowd roars."
+      ],
+      "guarded": [
+        "Bonecrusha waits, arms wide, inviting you to try."
+      ],
+      "evasive": [
+        "Bonecrusha stomps around the edge, letting the crowd chant."
+      ]
+    }
+  },
+  {
+    "key": "PIRATE_BOARDER",
+    "display_name": "Pirate boarders",
+    "resolve": 5,
+    "defense_difficulty": 11,
+    "damage_bonus": 0,
+    "read_difficulty": 8,
+    "intent_weights": {
+      "aggressive": 5,
+      "guarded": 3,
+      "evasive": 2
+    },
+    "negotiable": true,
+    "negotiation_difficulty": 12,
+    "telegraphs": {
+      "aggressive": [
+        "The boarders lower their shoulders and charge down the corridor."
+      ],
+      "guarded": [
+        "They brace behind a bulkhead door."
+      ],
+      "evasive": [
+        "One edges toward your cargo bay, eyes darting."
+      ]
     }
   }
 ]

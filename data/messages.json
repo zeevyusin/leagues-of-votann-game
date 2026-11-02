@@ -35,5 +35,64 @@
     "body": {
       "default": "Traffic out of the Reach is all one story: Orks heading for Skragnak, more every day. Freebooters say his Mek's got something new, something that glows. If you're planning on doing something about it, captain, do it soon. Ork weather's coming."
     }
+  },
+  {
+    "key": "A2_THREAD_A",
+    "from": "Hernkyn outrider Vessa",
+    "subject": "Raider wakes in Cinder Drift",
+    "body": "Captain. Thought you would want to know: there are fresh Ork engine wakes all through Cinder Drift, more than I have ever seen. They are heading somewhere together. Find out where, and you find the Waaagh!. Snazrik's freebooters know things too, if you can stand the smell.",
+    "on_receive": [
+      {
+        "reveal_system": "CINDER_DRIFT"
+      },
+      {
+        "reveal_system": "SNAZRIK_HAVEN"
+      },
+      {
+        "activate_beat": "A2_A1_COLD_TRAILS"
+      }
+    ]
+  },
+  {
+    "key": "A2_THREAD_B",
+    "from": "Old Dorrik",
+    "subject": "About the Ork scrap",
+    "body": "I have been picking through the scrap we pulled off our hull. This is Gitzbolt's work, and it is all built around a power source no Ork could make. He dumps his failures in a field past the Grimholt Belt. Take me there. I want to see what he is trying to build.",
+    "on_receive": [
+      {
+        "reveal_system": "GRIMHOLT_BELT"
+      },
+      {
+        "reveal_system": "GITZBOLT_SCRAPFIELD"
+      },
+      {
+        "activate_beat": "A2_B1_SCRAP_AUTOPSY"
+      }
+    ]
+  },
+  {
+    "key": "A2_THREAD_C",
+    "from": "Clerk of the Durnvar Council",
+    "subject": "The council will hear you",
+    "body": "Captain {name}. The Council of Hold Durnvar will hear your account of the raid on Kethra's Anvil. They are slow, but they are not blind. If you want ships, come and ask for them.",
+    "on_receive": [
+      {
+        "activate_beat": "A2_C1_SLOW_COUNCIL"
+      }
+    ]
+  },
+  {
+    "key": "A2_THREAD_D",
+    "from": "Grimholt Miners' Guild",
+    "subject": "HELP. Orks in the Belt.",
+    "body": "To any Kin ship: an Ork warband is raiding the Grimholt mining stations. We are holding out in the ore silos. We cannot hold for long. Please.",
+    "on_receive": [
+      {
+        "reveal_system": "GRIMHOLT_BELT"
+      },
+      {
+        "activate_beat": "A2_D1_BURN_THE_OUTPOSTS"
+      }
+    ]
   }
 ]

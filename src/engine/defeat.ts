@@ -7,6 +7,8 @@ export interface DefeatOptions {
   overridesDefaultCosts?: boolean;
   /** 'wear' = Ironkin at critical Wear: costs lean toward Supplies and Ore instead of cargo. */
   cause: 'combat' | 'wear';
+  /** Old Guard: defeat does not cost Hearthfire. */
+  keepHearthfire?: boolean;
 }
 
 /** Cheapest fuel cost from the current system to any neighbour. */
@@ -59,9 +61,13 @@ export function applyDefeat(state: GameState, ctx: Ctx, opts: DefeatOptions): Li
       }
     }
 
-    const before = r.hearthfire;
-    r.hearthfire = Math.max(0, r.hearthfire + cfg.DEFEAT_HEARTHFIRE_LOSS);
-    if (r.hearthfire !== before) lines.push({ text: `${r.hearthfire - before} Hearthfire`, tone: 'bad' });
+    if (opts.keepHearthfire) {
+      lines.push({ text: 'Old Guard: the crew holds firm. No Hearthfire lost.', tone: 'teal' });
+    } else {
+      const before = r.hearthfire;
+      r.hearthfire = Math.max(0, r.hearthfire + cfg.DEFEAT_HEARTHFIRE_LOSS);
+      if (r.hearthfire !== before) lines.push({ text: `${r.hearthfire - before} Hearthfire`, tone: 'bad' });
+    }
   }
 
   // Never strand the player: keep enough fuel to reach the nearest system.

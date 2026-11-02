@@ -30,24 +30,47 @@ import {
   subclassOf,
   baseClassOf,
   systemOf,
+  threadOf,
+  waaaghBand,
   wearBand,
   xpToNext,
   type Ctx,
 } from './rules';
 import { describeRoll, formatModifiers, resolveDifficulty, roll, tierChances, titleCase, TIER_LABEL, type RollEvent } from './roll';
 import { applyEffects, resolveOath } from './effects';
-import { availableRoutes, distressCall, isStranded, travel } from './travel';
-import { arrivalBeat, chooseRoute, currentObjective, finishEncounter, planRoute, routeLock, startBeat, tierTone } from './story';
+import { availableRoutes, distressCall, isStranded, routeFuel, travel } from './travel';
+import {
+  arrivalBeat,
+  canDefer,
+  chooseRoute,
+  currentObjectives,
+  deferBeat,
+  finishEncounter,
+  planRoute,
+  progressChecks,
+  routeLock,
+  startBeat,
+  tierTone,
+} from './story';
 import {
   STANCE_STAT,
+  buffModifiers,
+  combatActionLock,
   matchupModifier,
   personalRound,
+  personalWithdraw,
   readBonus,
   shipCaps,
   shipRound,
+  shipWithdraw,
+  useCombatAction,
   validShieldChoices,
   validWeaponChoices,
+  withdrawLock,
+  type RoundOutcome,
 } from './combat';
+import { currentMarket, marketChoice, marketOptions } from './market';
+import { lockedReason } from './conditions';
 import type {
   GameState,
   HubTab,
@@ -62,7 +85,7 @@ import type {
   View,
 } from './types';
 
-const TABS: HubTab[] = ['comms', 'nav', 'ship', 'logbook'];
+const TABS: HubTab[] = ['comms', 'nav', 'ship', 'logbook', 'market'];
 const STANCES: Stance[] = ['attack', 'defend', 'outmaneuver', 'negotiate'];
 
 function topScene(state: GameState): Scene {
@@ -93,14 +116,11 @@ export function applyChoiceWithRolls(
       hubChoice(state, ctx, scene, id);
       break;
     case 'message':
-      if (id === 'answer') {
-        const msg = messageOf(data, scene.key);
-        state.scenes.pop();
-        if (msg.beat && canAnswer(state, ctx, msg.beat)) startBeat(state, ctx, msg.beat);
-      } else if (id === 'back') state.scenes.pop();
+      messageChoice(state, ctx, scene.key, id);
       break;
     case 'beat':
       if (id.startsWith('route:')) chooseRoute(state, ctx, scene.key, id.slice(6));
+      else if (id === 'defer') deferBeat(state, ctx, scene.key);
       break;
     case 'combat':
       combatChoice(state, ctx, scene.combat, id);
@@ -137,9 +157,13 @@ export function applyChoiceWithRolls(
 
 /** Checks that run whenever the player lands back on the hub. */
 function afterChoice(state: GameState, ctx: Ctx): void {
-  if (topScene(state).type !== 'hub') return;
+  const top = topScene(state);
+  if (top.type !== 'hub') return;
+  // The Market tab only exists while docked at a port with a market.
+  if (top.tab === 'market' && !currentMarket(state, ctx)) top.tab = 'ship';
   if (state.character.stat_points > 0) state.scenes.push({ type: 'level_up' });
   else if (state.resources.hearthfire <= 0) state.scenes.push({ type: 'mutiny' });
+  else if (progressChecks(state, ctx)) return;
   else {
     const beat = arrivalBeat(state, ctx);
     if (beat) startBeat(state, ctx, beat);
@@ -147,15 +171,48 @@ function afterChoice(state: GameState, ctx: Ctx): void {
 }
 
 function canAnswer(state: GameState, ctx: Ctx, beatKey: string): boolean {
-  return state.story.current_beat === beatKey && beatOf(ctx.data, beatKey).trigger === 'comms';
+  return state.story.active_beats.includes(beatKey) && beatOf(ctx.data, beatKey).trigger === 'comms';
+}
+
+const jobFlag = (key: string) => `JOB_${key}`;
+
+function messageChoice(state: GameState, ctx: Ctx, key: string, id: string): void {
+  const msg = messageOf(ctx.data, key);
+  if (id === 'back') {
+    state.scenes.pop();
+  } else if (id === 'answer' && msg.beat && canAnswer(state, ctx, msg.beat)) {
+    state.scenes.pop();
+    startBeat(state, ctx, msg.beat);
+  } else if ((id === 'accept' || id === 'decline') && msg.job && !state.story.flags[jobFlag(key)]) {
+    state.story.flags[jobFlag(key)] = id === 'accept' ? 'ACCEPTED' : 'DECLINED';
+    state.scenes.pop();
+    if (id === 'accept') {
+      const lines: Line[] = [{ text: `Job accepted: ${msg.subject}` }, ...applyEffects(state, ctx, msg.job.on_accept)];
+      state.scenes.push({ type: 'notice', title: 'Contract', lines });
+    }
+  }
 }
 
 function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hub' }>, id: string): void {
   const [kind, arg] = splitId(id);
   switch (kind) {
     case 'tab':
-      if (TABS.includes(arg as HubTab)) scene.tab = arg as HubTab;
+      if (TABS.includes(arg as HubTab) && (arg !== 'market' || currentMarket(state, ctx))) scene.tab = arg as HubTab;
       return;
+    case 'mkt': {
+      const lines = marketChoice(state, ctx, arg);
+      if (lines) state.scenes.push({ type: 'notice', title: 'Market', lines });
+      return;
+    }
+    case 'safe_route': {
+      if (state.character.subclass !== ctx.data.config.SAFE_ROUTE_SUBCLASS || state.safe_route_charted) return;
+      state.safe_route_charted = true;
+      const action = consoleActionFor(ctx.data, state.character);
+      const lines: Line[] = [{ text: `${action.name}: your next journey costs less Fuel and runs into trouble less often.`, tone: 'good' }];
+      if (action.wearCost) lines.push(...applyEffects(state, ctx, [{ wear: action.wearCost }], { nonLethal: true }));
+      state.scenes.push({ type: 'notice', title: action.name, lines });
+      return;
+    }
     case 'msg': {
       const m = state.inbox.find((x) => x.key === arg);
       if (!m) return;
@@ -164,8 +221,10 @@ function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hu
       return;
     }
     case 'go': {
-      const lines = travel(state, ctx, arg);
+      const { lines, event } = travel(state, ctx, arg);
       state.scenes.push({ type: 'notice', title: `Arrived: ${systemOf(ctx.data, arg).display_name}`, lines });
+      // A travel event plays first, then the arrival log.
+      if (event) startBeat(state, ctx, event);
       return;
     }
     case 'distress':
@@ -200,9 +259,10 @@ function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hu
     case 'pay': {
       const oath = oathOf(ctx.data, arg);
       const entry = state.oaths.find((o) => o.key === arg && o.status === 'ACTIVE');
-      if (!entry || !oath.fulfil || !state.docked || state.resources.ore < oath.fulfil.ore) return;
-      state.resources.ore -= oath.fulfil.ore;
-      const lines: Line[] = [{ text: `-${oath.fulfil.ore} Ore`, tone: 'bad' }, ...resolveOath(state, ctx, arg, 'KEPT')];
+      const f = oath.fulfil;
+      if (!entry || !f || !('ore' in f) || !state.docked || state.resources.ore < f.ore) return;
+      state.resources.ore -= f.ore;
+      const lines: Line[] = [{ text: `-${f.ore} Ore`, tone: 'bad' }, ...resolveOath(state, ctx, arg, 'KEPT')];
       state.scenes.push({ type: 'notice', title: 'Debt paid', lines });
       return;
     }
@@ -301,11 +361,22 @@ function mutinyChoice(state: GameState, ctx: Ctx, id: string): void {
 
 function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipCombat, id: string): void {
   const [kind, arg] = splitId(id);
-  if (combat.mode === 'personal') {
-    if (kind !== 'stance' || !STANCES.includes(arg as Stance)) return;
-    const out = personalRound(state, ctx, combat, arg as Stance);
+  const settle = (out: RoundOutcome) => {
     if (out.result) finishEncounter(state, ctx, combat, out.result, out.lines);
     else combat.last = out.lines;
+  };
+  if (kind === 'action') {
+    if (!combatActionLock(state, ctx, combat)) settle(useCombatAction(state, ctx, combat));
+    return;
+  }
+  if (kind === 'withdraw') {
+    if (!withdrawLock(ctx, combat))
+      settle(combat.mode === 'personal' ? personalWithdraw(state, ctx, combat) : shipWithdraw(state, ctx, combat));
+    return;
+  }
+  if (combat.mode === 'personal') {
+    if (kind !== 'stance' || !STANCES.includes(arg as Stance)) return;
+    settle(personalRound(state, ctx, combat, arg as Stance));
     return;
   }
   if (kind === 'weapons' && combat.pending_weapons === null) {
@@ -318,9 +389,7 @@ function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipC
     if (!validShieldChoices(state, ctx, combat.pending_weapons).includes(s)) return;
     const pips = reactorPips(ctx.data.config, state.ship);
     const alloc = { weapons: combat.pending_weapons, shields: s, engines: pips - combat.pending_weapons - s };
-    const out = shipRound(state, ctx, combat, alloc);
-    if (out.result) finishEncounter(state, ctx, combat, out.result, out.lines);
-    else combat.last = out.lines;
+    settle(shipRound(state, ctx, combat, alloc));
   }
 }
 
@@ -332,7 +401,11 @@ export function buildView(state: GameState, data: GameData): View {
   const status = statusBar(state, ctx);
   switch (scene.type) {
     case 'hub':
-      return { ...hubView(state, ctx, scene.tab), status, tabs: { active: scene.tab, unread: state.inbox.filter((m) => !m.read).length } };
+      return {
+        ...hubView(state, ctx, scene.tab),
+        status,
+        tabs: { active: scene.tab, unread: state.inbox.filter((m) => !m.read).length, market: !!currentMarket(state, ctx) },
+      };
     case 'message':
       return { ...messageView(state, ctx, scene.key), status };
     case 'beat':
@@ -385,8 +458,14 @@ function statusBar(state: GameState, ctx: Ctx): StatusItem[] {
 }
 
 function hubView(state: GameState, ctx: Ctx, tab: HubTab): View {
-  const objective = currentObjective(state, ctx);
-  const head: Line[] = objective ? [{ text: `Objective: ${objective}`, tone: 'accent' }, { text: '' }] : [];
+  const objectives = currentObjectives(state, ctx);
+  const head: Line[] = [];
+  if (objectives.length === 1) head.push({ text: `Objective: ${objectives[0]}`, tone: 'accent' });
+  else if (objectives.length) {
+    head.push({ text: 'Objectives:', tone: 'accent' });
+    for (const o of objectives) head.push({ text: `  - ${o}`, tone: 'accent' });
+  }
+  if (head.length) head.push({ text: '' });
   const loc = systemOf(ctx.data, state.location);
   const subtitle = `${loc.display_name}${state.docked ? ' (docked)' : ' (in orbit)'}`;
   switch (tab) {
@@ -398,6 +477,10 @@ function hubView(state: GameState, ctx: Ctx, tab: HubTab): View {
       return shipScreenView(state, ctx, head, subtitle);
     case 'logbook':
       return logbookView(state, ctx, head, subtitle);
+    case 'market': {
+      const { body, options } = marketOptions(state, ctx);
+      return { kind: 'market', title: 'Market', subtitle, body: [...head, ...body], options: options.map((o) => ({ ...o, id: `mkt:${o.id}` })) };
+    }
   }
 }
 
@@ -407,10 +490,12 @@ function commsView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): 
   const options: Option[] = state.inbox.map((m) => {
     const msg = messageOf(ctx.data, m.key);
     const answerable = msg.beat && canAnswer(state, ctx, msg.beat);
+    const job = msg.job ? state.story.flags[jobFlag(m.key)] : undefined;
+    const jobNote = msg.job ? (job === 'ACCEPTED' ? '. Contract accepted.' : job === 'DECLINED' ? '. Declined.' : '. Job offer.') : '';
     return {
       id: `msg:${m.key}`,
       label: `${m.read ? '' : '[NEW] '}${msg.subject}`,
-      detail: `From ${msg.from}, day ${m.day}${answerable ? '. Awaiting your answer.' : ''}`,
+      detail: `From ${msg.from}, day ${m.day}${answerable ? '. Awaiting your answer.' : ''}${jobNote}`,
       tone: m.read ? 'muted' : 'accent',
     };
   });
@@ -427,16 +512,31 @@ function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): Vi
     const visited = state.visited_systems.includes(key) ? '' : ' (unvisited)';
     body.push({ text: `  ${s.display_name}${here}${visited}`, tone: key === state.location ? 'teal' : 'normal' });
   }
+  const waiting = new Set(
+    state.story.active_beats.map((k) => beatOf(ctx.data, k)).filter((b) => b.trigger === 'arrival').map((b) => b.location),
+  );
   const options: Option[] = availableRoutes(state, ctx).map((r) => {
     const s = systemOf(ctx.data, r.to);
     const faction = s.faction === 'NONE' ? 'unclaimed' : factionOf(ctx.data, s.faction).display_name;
+    const fuel = routeFuel(state, ctx, r.fuel);
     return {
       id: `go:${r.to}`,
-      label: `Set course: ${s.display_name}`,
-      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${r.fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${s.port ? ', port' : ''}.`,
-      locked: r.fuel > state.resources.fuel ? `Needs ${r.fuel} Fuel` : undefined,
+      label: `Set course: ${s.display_name}${waiting.has(r.to) ? '  [objective]' : ''}`,
+      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${s.port ? ', port' : ''}.`,
+      locked: fuel > state.resources.fuel ? `Needs ${fuel} Fuel` : undefined,
+      tone: waiting.has(r.to) ? 'accent' : undefined,
     };
   });
+  if (state.character.subclass === ctx.data.config.SAFE_ROUTE_SUBCLASS) {
+    const action = consoleActionFor(ctx.data, state.character);
+    options.push({
+      id: 'safe_route',
+      label: `${action.name} (console action)`,
+      detail: `Next journey: -${ctx.data.config.SAFE_ROUTE_FUEL_SAVING} Fuel and fewer travel events${action.wearCost ? `. +${action.wearCost} Wear` : ''}`,
+      locked: state.safe_route_charted ? 'Already charted' : undefined,
+      tone: 'accent',
+    });
+  }
   if (isStranded(state, ctx)) options.push({ id: 'distress', label: 'Send a distress call', detail: 'Someone will answer. They will want paying.', tone: 'accent' });
   return { kind: 'nav', title: 'Nav', subtitle, body, options };
 }
@@ -537,7 +637,19 @@ function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string)
 
   if (state.story.waaagh_meter !== null) {
     body.push({ text: '' }, { text: 'THE WAAAGH!', tone: 'heading' });
-    body.push({ text: `${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}. It grows with every journey.`, tone: 'accent' });
+    const band = waaaghBand(cfg, state.story.waaagh_meter);
+    body.push({ text: `${state.story.waaagh_meter}/${cfg.WAAAGH_LAUNCH}: ${titleCase(band.band)}. It grows with every journey.`, tone: 'accent' });
+  }
+
+  if (state.story.flags.ACT2_STARTED) {
+    body.push({ text: '' }, { text: 'THREADS', tone: 'heading' });
+    body.push({ text: `Finish ${cfg.THREADS_REQUIRED} to unlock Act 3. Done: ${state.story.threads_completed.length}.`, tone: 'muted' });
+    for (const t of ctx.data.story_threads) {
+      const done = t.beats.filter((b) => state.story.completed_beats.some((x) => x.key === b)).length;
+      const finished = state.story.threads_completed.includes(t.key);
+      body.push({ text: `${t.title}: ${done}/${t.beats.length}${finished ? ' (complete)' : ''}`, tone: finished ? 'good' : 'normal' });
+      if (finished) body.push({ text: `  ${t.reward_text}`, tone: 'muted' });
+    }
   }
 
   body.push({ text: '' }, { text: 'REPUTATION', tone: 'heading' });
@@ -553,11 +665,12 @@ function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string)
   const options: Option[] = [];
   for (const o of state.oaths) {
     const info = oathOf(ctx.data, o.key);
-    if (o.status !== 'ACTIVE' || !info.fulfil) continue;
+    const f = info.fulfil;
+    if (o.status !== 'ACTIVE' || !f || !('ore' in f)) continue;
     options.push({
       id: `pay:${o.key}`,
-      label: `Pay: ${info.title} (${info.fulfil.ore} Ore)`,
-      locked: !state.docked ? 'Dock at a port first' : state.resources.ore < info.fulfil.ore ? `Needs ${info.fulfil.ore} Ore` : undefined,
+      label: `Pay: ${info.title} (${f.ore} Ore)`,
+      locked: !state.docked ? 'Dock at a port first' : state.resources.ore < f.ore ? `Needs ${f.ore} Ore` : undefined,
     });
   }
   return { kind: 'logbook', title: 'Logbook', subtitle, body, options };
@@ -566,15 +679,19 @@ function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string)
 function messageView(state: GameState, ctx: Ctx, key: string): View {
   const msg = messageOf(ctx.data, key);
   const options: Option[] = [];
+  const body: Line[] = [{ text: resolveText(msg.body, state) }];
   if (msg.beat && canAnswer(state, ctx, msg.beat)) options.push({ id: 'answer', label: `Answer: ${beatOf(ctx.data, msg.beat).title}`, tone: 'accent' });
+  if (msg.job) {
+    body.push({ text: '' }, { text: `Pay: ${msg.job.reward_text}`, tone: 'teal' });
+    const decided = state.story.flags[jobFlag(key)];
+    if (decided) body.push({ text: decided === 'ACCEPTED' ? 'You accepted this contract.' : 'You turned this job down.', tone: 'muted' });
+    else {
+      options.push({ id: 'accept', label: 'Accept the contract', tone: 'accent', locked: lockedReason(state, ctx.data, msg.job.requirements) });
+      options.push({ id: 'decline', label: 'Turn it down' });
+    }
+  }
   options.push({ id: 'back', label: 'Back to Comms', tone: 'muted' });
-  return {
-    kind: 'message',
-    title: msg.subject,
-    subtitle: `From ${msg.from}`,
-    body: [{ text: resolveText(msg.body, state) }],
-    options,
-  };
+  return { kind: 'message', title: msg.subject, subtitle: `From ${msg.from}`, body, options };
 }
 
 function beatView(state: GameState, ctx: Ctx, key: string): View {
@@ -607,7 +724,9 @@ function beatView(state: GameState, ctx: Ctx, key: string): View {
     }
     return { id: `route:${route.key}`, label, detail, locked: lock };
   });
-  return { kind: 'beat', title: beat.title, subtitle: `Act ${beat.act}`, body, options };
+  if (canDefer(ctx, key)) options.push({ id: 'defer', label: 'Not now', detail: 'Come back on a later visit.', tone: 'muted' });
+  const subtitle = beat.trigger === 'event' ? 'Travel event' : beat.thread ? `Act ${beat.act}: ${threadOf(ctx.data, beat.thread).title}` : `Act ${beat.act}`;
+  return { kind: 'beat', title: beat.title, subtitle, body, options };
 }
 
 /** Calculate the Odds: Kin get a hint, Ironkin get exact percentages. */
@@ -642,16 +761,25 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
   if (readBonus(state, ctx)) active.push(`${passive.name} (+${readBonus(state, ctx)} read)`);
   if (combat.advantage) active.push(`Advantage +${cfg.COMBAT_ADVANTAGE_BONUS}`);
   if (combat.enemy_bonus) active.push(`Enemy repositioned (+${combat.enemy_bonus} to their defense)`);
+  const buffs = buffModifiers(state, ctx, combat, true);
+  for (const m of buffs) active.push(`${m.label} ${m.value > 0 ? '+' : ''}${m.value}`);
   if (active.length) body.push({ text: `Active modifiers: ${active.join(', ')}`, tone: 'muted' });
 
+  // Calculate the Odds, once used, shows the chances on every stance.
+  const showOdds = combat.buffs.reveal && c.subclass === cfg.ODDS_SUBCLASS;
   const options: Option[] = STANCES.map((stance) => {
     const stat = STANCE_STAT[stance];
     let detail = `${statLabel(ctx.data, stat)} ${c.stats[stat]}`;
+    const base = c.stats[stat] + sumMods(generalModifiers(state, ctx.data, stat, 'personal')) + sumMods(buffs) + (combat.advantage ? cfg.COMBAT_ADVANTAGE_BONUS : 0);
     if (stance === 'negotiate') {
-      if (enemy.negotiable) detail += ` vs ${enemy.negotiation_difficulty}. No damage taken.`;
+      if (enemy.negotiable) {
+        detail += ` vs ${enemy.negotiation_difficulty + combat.enemy_bonus}. No damage taken.`;
+        if (showOdds) detail += ` ${oddsText(ctx, base + combat.buffs.negotiate_bonus, enemy.negotiation_difficulty + combat.enemy_bonus, true)}`;
+      }
     } else {
       const m = matchupModifier(ctx, stance, combat.intent)!;
-      detail += ` vs ${enemy.defense_difficulty}. ${combat.read === 'clear' ? `${m.label}${m.value ? ` ${m.value > 0 ? '+' : ''}${m.value}` : ''}` : 'Matchup unclear'}`;
+      detail += ` vs ${enemy.defense_difficulty + combat.enemy_bonus}. ${combat.read === 'clear' ? `${m.label}${m.value ? ` ${m.value > 0 ? '+' : ''}${m.value}` : ''}` : 'Matchup unclear'}`;
+      if (showOdds) detail += `. ${oddsText(ctx, base + m.value, enemy.defense_difficulty + combat.enemy_bonus, true)}`;
     }
     return {
       id: `stance:${stance}`,
@@ -660,6 +788,7 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
       locked: stance === 'negotiate' && !enemy.negotiable ? 'Will not talk' : undefined,
     };
   });
+  options.push(...combatExtraOptions(state, ctx, combat));
   return { kind: 'combat', title: `Combat: ${enemy.display_name}`, subtitle: encounterOf(ctx.data, combat.encounter).mode === 'personal' ? 'Personal combat' : 'Ship combat', body, options };
 }
 
@@ -673,24 +802,53 @@ function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
   body.push({ text: combat.hint, tone: 'teal' });
   body.push({ text: `Reactor: ${pips} pips to spend. Caps: Weapons ${caps.weapons}, Shields ${caps.shields}, Engines ${caps.engines}.`, tone: 'muted' });
   body.push({ text: 'Weapons set the damage you deal. Shields absorb damage. Engines add to your roll.', tone: 'muted' });
-  const mods = formatModifiers(generalModifiers(state, ctx.data, 'nerve', 'ship'));
+  body.push({ text: 'Their shields soak your damage; their engines make them harder to hit.', tone: 'muted' });
+  const mods = formatModifiers([...generalModifiers(state, ctx.data, 'nerve', 'ship'), ...buffModifiers(state, ctx, combat, true)]);
   if (mods) body.push({ text: `Active modifiers: ${mods}`, tone: 'muted' });
 
   let options: Option[];
   if (combat.pending_weapons === null) {
     body.push({ text: '', tone: 'normal' }, { text: 'Step 1 of 2: set Weapons power.', tone: 'accent' });
     options = validWeaponChoices(state, ctx).map((w) => ({ id: `weapons:${w}`, label: `Weapons ${w}`, detail: `${w} damage on a hit` }));
+    options.push(...combatExtraOptions(state, ctx, combat));
   } else {
     const w = combat.pending_weapons;
     body.push({ text: '' }, { text: `Weapons ${w}. Step 2 of 2: set Shields power. Engines get the rest.`, tone: 'accent' });
     options = validShieldChoices(state, ctx, w).map((s) => ({
       id: `shields:${s}`,
       label: `Shields ${s}, Engines ${pips - w - s}`,
-      detail: `Nerve ${state.character.stats.nerve} + ${pips - w - s} engines vs ${enemy.defense_difficulty}`,
+      detail: `Nerve ${state.character.stats.nerve} + ${pips - w - s} engines vs ${enemy.defense_difficulty} + their engines`,
     }));
     options.push({ id: 'back', label: 'Change weapons', tone: 'muted' });
   }
   return { kind: 'combat', title: `Ship combat: ${enemy.display_name}`, subtitle: 'Ship combat', body, options };
+}
+
+function sumMods(mods: { value: number }[]): number {
+  return mods.reduce((s, m) => s + m.value, 0);
+}
+
+/** Console action and Withdraw, offered alongside the stances or the weapons step. */
+function combatExtraOptions(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipCombat): Option[] {
+  const action = consoleActionFor(ctx.data, state.character);
+  const effect = subclassOf(ctx.data, state.character.subclass).console_action.combat;
+  const wear = state.character.wear !== null && action.wearCost ? ` +${action.wearCost} Wear.` : '';
+  return [
+    {
+      id: 'action',
+      label: `${action.name} (console action)`,
+      detail: effect ? `Once per fight, uses this round.${wear}` : undefined,
+      locked: combatActionLock(state, ctx, combat),
+      tone: 'accent',
+    },
+    {
+      id: 'withdraw',
+      label: 'Withdraw',
+      detail: combat.buffs.auto_withdraw ? 'Your escape route is ready.' : combat.mode === 'ship' ? 'All power to engines and run.' : 'Nerve check to break away.',
+      locked: withdrawLock(ctx, combat),
+      tone: 'muted',
+    },
+  ];
 }
 
 function levelUpView(state: GameState, ctx: Ctx, status: StatusItem[]): View {

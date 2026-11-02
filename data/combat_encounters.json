@@ -3,41 +3,534 @@
     "key": "A1_DIG_SITE_RAID",
     "mode": "personal",
     "intro": "The dig site is chaos. Between you and the landing pad: a mob of Boyz, and behind them, a Nob with a very big choppa.",
-    "enemies": ["ORK_BOYZ_MOB", "NOB_GRIZZGUT_1"],
+    "enemies": [
+      "ORK_BOYZ_MOB",
+      "NOB_GRIZZGUT_1"
+    ],
     "outcomes": {
       "victory_broken": {
         "text": "Grizzgut staggers back, bleeding and furious. 'DIS AIN'T OVER, STUNTY!' He flees into the smoke, and the path to your ship is clear.",
-        "effects": [{ "grizzgut": "BROKEN", "hearthfire": 5 }]
+        "effects": [
+          {
+            "grizzgut": "BROKEN",
+            "hearthfire": 5
+          }
+        ]
       },
       "victory_negotiated": {
         "text": "Grizzgut squints at you, then at the tunnels. 'Bigger fight dat way? ...Fine. But I'm comin' back for ya.' He stomps off, and his Boyz follow.",
-        "effects": [{ "grizzgut": "NEGOTIATED", "set_flag": { "GRIZZGUT_TALKED_DOWN": true } }]
+        "effects": [
+          {
+            "grizzgut": "NEGOTIATED",
+            "set_flag": {
+              "GRIZZGUT_TALKED_DOWN": true
+            }
+          }
+        ]
       },
       "defeat": {
         "text": "The world goes dark. You wake on your own deck, Dorrik's iron hand on your shoulder. 'Dragged you out myself. Don't make a habit of it.'",
-        "effects": [{ "grizzgut": "PLAYER_DEFEATED" }],
+        "effects": [
+          {
+            "grizzgut": "PLAYER_DEFEATED"
+          }
+        ],
         "overrides_default_costs": false
       },
-      "withdrew": { "text": "You fall back.", "effects": [] }
-    }
+      "withdrew": {
+        "text": "You fall back.",
+        "effects": []
+      }
+    },
+    "tags": [
+      "surface"
+    ],
+    "allow_withdraw": false
   },
   {
     "key": "A1_RAIDER_ESCAPE",
     "mode": "ship",
     "intro": "An Ork raider swings across your bow, guns glowing. It is ugly, slow, and absolutely covered in weapons.",
-    "enemies": ["ORK_RAIDER"],
+    "enemies": [
+      "ORK_RAIDER"
+    ],
     "outcomes": {
       "victory_broken": {
         "text": "The raider's engines cough and die in a gout of black smoke. You don't stay to loot it. You burn hard for open space.",
-        "effects": [{ "hearthfire": 5 }]
+        "effects": [
+          {
+            "hearthfire": 5
+          }
+        ]
       },
-      "victory_negotiated": { "text": "The raider lets you pass.", "effects": [] },
+      "victory_negotiated": {
+        "text": "The raider lets you pass.",
+        "effects": []
+      },
       "defeat": {
         "text": "Your ship is crippled, venting air and spinning. The raider loses interest and turns back to the burning world. Dorrik patches the worst of it, at a cost.",
-        "effects": [{ "supplies": -4 }],
+        "effects": [
+          {
+            "supplies": -4
+          }
+        ],
         "overrides_default_costs": false
       },
-      "withdrew": { "text": "You break away.", "effects": [] }
+      "withdrew": {
+        "text": "You break away.",
+        "effects": []
+      }
+    },
+    "allow_withdraw": false
+  },
+  {
+    "key": "A2_SCOUT_FIGHT",
+    "mode": "ship",
+    "intro": "The Ork scout spots you and tries to bolt. It is fast, lightly armed, and carrying exactly what you need.",
+    "enemies": [
+      "ORK_SCOUT"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The scout spins out of control. You latch on, and Dorrik pulls its nav-cogitator out by the roots.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          },
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The scout guns you down and escapes. You limp back, but Ylsa caught its heading before it vanished.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          }
+        ],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You break off. Ylsa caught enough of its heading to piece the route together.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "NAV_DATA",
+              "qty": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "B2_VAULT_SCAVENGERS",
+    "mode": "personal",
+    "intro": "Grots are picking the vault clean. They have cutting torches, a lot of stolen tools, and no idea how to use either.",
+    "enemies": [
+      "GROT_SCAVENGERS"
+    ],
+    "tags": [
+      "cramped"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The grots flee squealing, dropping armfuls of looted vault plates.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "The grot boss trades you the vault plates for a tin of ration bars. 'Pleasure doin' bizness, stunty!'",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          },
+          {
+            "supplies": -1
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The grots swarm you and make off with your tools. They leave the vault plates behind. Grots can't read.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          }
+        ],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You back out and take rubbings from the outer walls instead. Not ideal, but readable.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "VAULT_RUBBINGS",
+              "qty": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "HROLLA_BOARDING",
+    "mode": "personal",
+    "intro": "The prison hulk stinks of rust and fungus. Somewhere ahead, past the jailers, Hrolla is shouting at someone.",
+    "enemies": [
+      "ORK_JAILERS",
+      "JAILER_NOB"
+    ],
+    "tags": [
+      "boarding",
+      "cramped"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Krugrot goes down hard. You find Hrolla in the last cell, chained, bloody, and grinning. 'Took your time, Captain.'",
+        "effects": [
+          {
+            "add_crew": "HROLLA_VASK",
+            "set_hrolla_status": "RESCUED",
+            "hearthfire": 15,
+            "reputation": {
+              "HOLD_DURNVAR": 15
+            }
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "Krugrot decides the stunty isn't worth dying for. 'Take 'er. She bites.' Hrolla limps out on her own feet.",
+        "effects": [
+          {
+            "add_crew": "HROLLA_VASK",
+            "set_hrolla_status": "RESCUED",
+            "hearthfire": 15,
+            "reputation": {
+              "HOLD_DURNVAR": 15
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "You're thrown out of an airlock and picked up by your own crew. Hrolla is still in there. The hulk will be on alert now.",
+        "effects": [],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You pull back before the whole hulk wakes up. Hrolla is still in there.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "C2_PIRATE_CUTTER",
+    "mode": "ship",
+    "intro": "The freebooter cutter that has been bleeding Kharr's convoys turns to meet you, gun ports open.",
+    "enemies": [
+      "PIRATE_CUTTER"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The cutter limps away trailing fire. Kharr will hear who did it.",
+        "effects": [
+          {
+            "reputation": {
+              "KHARR_LEAGUE": 10
+            },
+            "ore": 30
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The cutter mauls you and escapes. Kharr is unimpressed, but notes that you tried.",
+        "effects": [],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You break off. The cutter is still out there, and Kharr knows it.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "D1_WARBAND",
+    "mode": "personal",
+    "intro": "The warband has dug in around a captured mining station. The Kin miners are barricaded in the ore silos.",
+    "enemies": [
+      "ORK_BOYZ_MOB",
+      "RAID_NOB"
+    ],
+    "tags": [
+      "surface"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Zogbad and his boyz flee to their bikes. The miners come out of the silos cheering.",
+        "effects": [
+          {
+            "waaagh": -5,
+            "reputation": {
+              "DURN_LEAGUE": 5
+            },
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 1
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The warband drives you off. The miners hold out without you, barely.",
+        "effects": [],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You pull back. The warband stays.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "D2_SLAVE_CAMP",
+    "mode": "personal",
+    "intro": "The camp is a ring of welded scrap around pits full of Kin prisoners. There are guards everywhere.",
+    "enemies": [
+      "SLAVER_GUARDS",
+      "SLAVER_NOB"
+    ],
+    "tags": [
+      "boarding",
+      "cramped"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Gutrip falls. You break the chains one by one. A broad miner named Brokka picks up a hammer and says, 'I'm coming with you.'",
+        "effects": [
+          {
+            "add_crew": "BROKKA",
+            "hearthfire": 15,
+            "waaagh": -5,
+            "reputation": {
+              "DURN_LEAGUE": 10
+            }
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "Gutrip sells you the whole pit for a promise you have no intention of keeping. Brokka spits at him on the way out, then joins your crew.",
+        "effects": [
+          {
+            "add_crew": "BROKKA",
+            "hearthfire": 10,
+            "reputation": {
+              "DURN_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "Your crew drags you out of the camp. A handful of prisoners escape in the confusion.",
+        "effects": [
+          {
+            "reputation": {
+              "DURN_LEAGUE": 3
+            }
+          }
+        ],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You retreat. A few prisoners slip out with you.",
+        "effects": [
+          {
+            "hearthfire": 3
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": "D3_PIT",
+    "mode": "personal",
+    "intro": "The pit gates slam. First Grizzgut, back again and bigger. Then the champion. The crowd wants blood, and they don't much care whose.",
+    "enemies": [
+      "NOB_GRIZZGUT_2",
+      "PIT_CHAMPION"
+    ],
+    "tags": [
+      "cramped"
+    ],
+    "allow_withdraw": false,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Bonecrusha topples. The pit goes silent, then erupts. They are chanting your name. Badly, but it is your name.",
+        "effects": [
+          {
+            "grizzgut": "PIT_BROKEN",
+            "waaagh": -10,
+            "hearthfire": 10
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "You talk the champion into a draw in front of the whole warband. No Ork has ever seen anything like it. They will tell this story for years.",
+        "effects": [
+          {
+            "grizzgut": "PIT_TALKED",
+            "waaagh": -8,
+            "hearthfire": 10
+          }
+        ]
+      },
+      "defeat": {
+        "text": "You go down in the dust, but you went down fighting. The Orks respect that more than you expected.",
+        "effects": [
+          {
+            "grizzgut": "PIT_WON",
+            "waaagh": -3
+          }
+        ],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "There is no leaving the pit.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "EV_PIRATE_BOARDING",
+    "mode": "personal",
+    "intro": "Grapples clang onto your hull. Pirates are cutting through the cargo airlock.",
+    "enemies": [
+      "PIRATE_BOARDER"
+    ],
+    "tags": [
+      "boarding"
+    ],
+    "allow_withdraw": false,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The pirates flee back to their ship, leaving a few crates behind.",
+        "effects": [
+          {
+            "ore": 15
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "You convince the pirates that your cargo is mostly rocks. It is. They leave.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The pirates help themselves to your hold and leave you tied to a stanchion.",
+        "effects": [],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You seal the bulkheads and wait them out.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "EV_ORK_LOOTAS",
+    "mode": "ship",
+    "intro": "An Ork loota ship drops out of the dark, guns first. It doesn't want you. It wants your parts.",
+    "enemies": [
+      "ORK_LOOTA_SHIP"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The lootas go dark. You strip what you can before the wreck drifts away.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 2
+            },
+            "waaagh": -1
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The lootas strip some plating off your hull and roar away, delighted.",
+        "effects": [],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You burn away and lose them in the dark.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "JB_CUTTER_HUNT",
+    "mode": "ship",
+    "intro": "There she is: the freebooter cutter from Karrak's bounty board, lurking in the belt.",
+    "enemies": [
+      "PIRATE_CUTTER"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The cutter strikes its colours. Karrak will pay.",
+        "effects": [
+          {
+            "keep_oath": "JOB_BOUNTY_CUTTER"
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The cutter gets away. Karrak won't pay for a ship you didn't catch.",
+        "effects": [
+          {
+            "break_oath": "JOB_BOUNTY_CUTTER"
+          }
+        ],
+        "overrides_default_costs": false
+      },
+      "withdrew": {
+        "text": "You let her go. Karrak won't pay for a ship you didn't catch.",
+        "effects": [
+          {
+            "break_oath": "JOB_BOUNTY_CUTTER"
+          }
+        ]
+      }
     }
   }
 ]

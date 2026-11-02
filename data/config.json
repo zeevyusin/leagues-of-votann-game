@@ -1,11 +1,16 @@
 {
   "DIE_TYPE": "d20",
-  "DIFFICULTY": { "EASY": 8, "NORMAL": 11, "HARD": 14, "VERY_HARD": 17, "HEROIC": 20 },
+  "DIFFICULTY": {
+    "EASY": 8,
+    "NORMAL": 11,
+    "HARD": 14,
+    "VERY_HARD": 17,
+    "HEROIC": 20
+  },
   "TIER_CRIT_MARGIN": 5,
   "TIER_PARTIAL_MARGIN": 4,
   "NAT20_IS_CRIT": true,
   "NAT1_IS_FAILURE": true,
-
   "STARTING_STAT": 2,
   "STAT_MAX": 8,
   "ALLOW_BONUS_POINTS": true,
@@ -14,24 +19,41 @@
   "NAME_MIN_LENGTH": 1,
   "NAME_MAX_LENGTH": 24,
   "IRONKIN_GRIT_BONUS": 1,
-
   "WEAR_MODE": "ON_PUSH",
   "WEAR_START": 0,
   "WEAR_MAX": 100,
   "WEAR_PER_ACTION": 5,
   "WEAR_CONSTANT_PER_DAY": 2,
   "WEAR_BANDS": [
-    { "min": 0, "state": "NOMINAL", "penalty": 0 },
-    { "min": 40, "state": "STRAINED", "penalty": -1 },
-    { "min": 70, "state": "FAILING", "penalty": -2 },
-    { "min": 100, "state": "CRITICAL", "penalty": -3 }
+    {
+      "min": 0,
+      "state": "NOMINAL",
+      "penalty": 0
+    },
+    {
+      "min": 40,
+      "state": "STRAINED",
+      "penalty": -1
+    },
+    {
+      "min": 70,
+      "state": "FAILING",
+      "penalty": -2
+    },
+    {
+      "min": 100,
+      "state": "CRITICAL",
+      "penalty": -3
+    }
   ],
-  "WEAR_PENALTY_STATS": ["nerve", "craft"],
+  "WEAR_PENALTY_STATS": [
+    "nerve",
+    "craft"
+  ],
   "WEAR_MAINTENANCE_SUPPLIES": 4,
   "WEAR_MAINTENANCE_AMOUNT": 25,
   "WEAR_MAINTENANCE_DIFFICULTY": "NORMAL",
   "WORKSHOP_SUPPLY_DISCOUNT_PER_LEVEL": 1,
-
   "LEVEL_CAP": 10,
   "XP_PER_LEVEL_BASE": 100,
   "STAT_POINTS_PER_LEVEL": 1,
@@ -41,7 +63,6 @@
   "XP_FIGHT_NEGOTIATED": 35,
   "XP_DISCOVERY": 20,
   "XP_FAILED_ROLL": 5,
-
   "STARTING_KIT": {
     "fuel": 10,
     "ore": 100,
@@ -51,15 +72,38 @@
     "cargo_capacity": 10,
     "module_level": 1
   },
-  "STARTING_CARGO": [{ "key": "SURVEY_SAMPLES", "qty": 2 }],
-  "STARTING_CREW": ["DORRIK", "YLSA"],
-
+  "STARTING_CARGO": [
+    {
+      "key": "SURVEY_SAMPLES",
+      "qty": 2
+    }
+  ],
+  "STARTING_CREW": [
+    "DORRIK",
+    "YLSA"
+  ],
   "HEARTHFIRE_MAX": 100,
   "HEARTHFIRE_BANDS": [
-    { "min": 70, "band": "HIGH", "modifier": 1 },
-    { "min": 30, "band": "MID", "modifier": 0 },
-    { "min": 1, "band": "LOW", "modifier": -1 },
-    { "min": 0, "band": "ZERO", "modifier": -1 }
+    {
+      "min": 70,
+      "band": "HIGH",
+      "modifier": 1
+    },
+    {
+      "min": 30,
+      "band": "MID",
+      "modifier": 0
+    },
+    {
+      "min": 1,
+      "band": "LOW",
+      "modifier": -1
+    },
+    {
+      "min": 0,
+      "band": "ZERO",
+      "modifier": -1
+    }
   ],
   "SUPPLIES_PER_CREW_PER_DAY": 0.5,
   "STARVATION_HEARTHFIRE": -10,
@@ -75,23 +119,33 @@
   "MUTINY_RESET_HEARTHFIRE": 20,
   "DISTRESS_FUEL": 3,
   "DISTRESS_OATH": "DEBT_TOW",
-
   "CONSOLE_ACTION_BONUS": 3,
   "RELIC_EVALUATOR_SUBCLASS": "ARKANYST_EVALUATOR",
   "ODDS_SUBCLASS": "MEMNYR_STRATEGIST",
   "GRIZZGUT_GRUDGE": "GRUDGE_GRIZZGUT",
   "GRIZZGUT_GRUDGE_AFTER": 2,
-
   "COMBAT_STARTING_HEALTH_BASE": 10,
   "COMBAT_HEALTH_PER_GRIT": 2,
   "COMBAT_MATCHED_BONUS": 3,
   "COMBAT_BAD_MATCHUP_PENALTY": -2,
   "COMBAT_ADVANTAGE_BONUS": 2,
   "COMBAT_DAMAGE_TABLE": {
-    "critical": [3, 0],
-    "success": [2, 0],
-    "partial": [1, 1],
-    "failure": [0, 2]
+    "critical": [
+      3,
+      0
+    ],
+    "success": [
+      2,
+      0
+    ],
+    "partial": [
+      1,
+      1
+    ],
+    "failure": [
+      0,
+      2
+    ]
   },
   "COMBAT_ATTACK_DEALT_BONUS": 1,
   "COMBAT_ATTACK_TAKEN_PENALTY": 1,
@@ -103,7 +157,6 @@
   "SHARP_SENSES_READ_BONUS": 2,
   "SENSOR_SUITE_READ_BONUS": 3,
   "NEGOTIATE_FAILURE_ENEMY_BONUS": 2,
-
   "SHIP_BASE_REACTOR_PIPS": 6,
   "SHIP_BASE_HULL": 20,
   "MODULE_CAP_BASE": 2,
@@ -111,8 +164,10 @@
   "MODULE_MAX_LEVEL": 3,
   "SHIP_CRIT_MULTIPLIER": 2,
   "SHIP_FAILURE_EXTRA_DAMAGE": 1,
-
-  "DEFEAT_ORE_LOSS_RANGE": [0.2, 0.4],
+  "DEFEAT_ORE_LOSS_RANGE": [
+    0.2,
+    0.4
+  ],
   "DEFEAT_ORE_FLOOR": 25,
   "DEFEAT_HEARTHFIRE_LOSS": -10,
   "DEFEAT_CREW_LOSS_CHANCE": 0.1,
@@ -122,7 +177,6 @@
   "DEFEAT_WEAR_RESET": 50,
   "DEFEAT_GRACE": true,
   "PERMADEATH": false,
-
   "WAAAGH_START": 10,
   "WAAAGH_PER_JOURNEY": 1,
   "WAAAGH_PER_FAILED_BEAT": 5,
@@ -136,9 +190,79 @@
   "SHIP_NAME_MAX_LENGTH": 32,
   "CAMPAIGN_LENGTH": "MEDIUM",
   "ALLOW_POST_GAME": true,
-
   "START_SYSTEM": "KETHRAS_ANVIL",
   "START_DAY": 1,
   "FIRST_MESSAGE": "A1_OPENING",
-  "SAVE_SLOTS": 3
+  "SAVE_SLOTS": 3,
+  "XP_EVENT": 15,
+  "FUEL_MAX": 20,
+  "SUPPLIES_MAX": 40,
+  "WAAAGH_BANDS": [
+    {
+      "min": 0,
+      "band": "SCATTERED",
+      "ork_event_weight": 0.5,
+      "event_chance_bonus": -0.05,
+      "price_multiplier": 1
+    },
+    {
+      "min": 30,
+      "band": "GATHERING",
+      "ork_event_weight": 1,
+      "event_chance_bonus": 0,
+      "price_multiplier": 1
+    },
+    {
+      "min": 60,
+      "band": "RISING",
+      "ork_event_weight": 2,
+      "event_chance_bonus": 0.1,
+      "price_multiplier": 1.25
+    },
+    {
+      "min": 90,
+      "band": "IMMINENT",
+      "ork_event_weight": 2.5,
+      "event_chance_bonus": 0.15,
+      "price_multiplier": 1.25,
+      "warning": "Ork fleets on every lane. The Waaagh! is about to launch."
+    },
+    {
+      "min": 100,
+      "band": "LAUNCHED",
+      "ork_event_weight": 3,
+      "event_chance_bonus": 0.2,
+      "price_multiplier": 1.25,
+      "warning": "The Waaagh! has launched. Nowhere in the Reach is safe."
+    }
+  ],
+  "TRAVEL_EVENT_CHANCE": {
+    "LOW": 0.2,
+    "MEDIUM": 0.4,
+    "HIGH": 0.6
+  },
+  "SAFE_ROUTE_EVENT_MULTIPLIER": 0.5,
+  "SAFE_ROUTE_FUEL_SAVING": 1,
+  "SAFE_ROUTE_SUBCLASS": "HERNKYN_PIONEER",
+  "MODULE_UPGRADE_COST": {
+    "2": 120,
+    "3": 250
+  },
+  "CARGO_CAPACITY_PER_HOLD_LEVEL": 5,
+  "REPUTATION_DISCOUNT_AT": 20,
+  "REPUTATION_DISCOUNT": 0.1,
+  "REPUTATION_SURCHARGE_BELOW": 0,
+  "REPUTATION_SURCHARGE": 0.2,
+  "FEAST_COST": 30,
+  "FEAST_HEARTHFIRE": 15,
+  "FEAST_HEARTHFIRE_IRONKIN": 8,
+  "WITHDRAW_ENABLED": true,
+  "ACT2_THREAD_MESSAGES": [
+    "A2_THREAD_A",
+    "A2_THREAD_B",
+    "A2_THREAD_C",
+    "A2_THREAD_D"
+  ],
+  "DOCK_WORK_DAYS": 2,
+  "DOCK_WORK_ORE": 25
 }

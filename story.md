@@ -237,6 +237,22 @@ Hurt the Waaagh! directly and make the Orks know your name.
 
 **Act 3 reward:** `STRENGTH_RENOWN`: Skragnak accepts a **personal duel challenge** in Act 3 (section 7.3), and the Waaagh! meter drops sharply.
 
+#### 6.2.1 Where each beat happens `[DECIDED]` (Milestone 2)
+
+All four threads open together when Act 1 ends: four Comms messages arrive, each revealing the systems its thread needs. Every thread beat starts automatically when the player arrives at its system (systems from section 4.4). Several beats can be active at once, one per thread. If two are waiting in the same system, they play one after the other.
+
+| Thread | Beat 1 | Beat 2 | Beat 3 |
+|---|---|---|---|
+| A: The Muster | Cold Trails, Cinder Drift | The Scout Ship, Grimholt Belt | Skrapfang Rock, Skrapfang Rock |
+| B: The Mek's Machine | Scrap Autopsy, The Scrapfield | The Vault's Memory, Kethra's Anvil | The Counter-Key, Karrak Station |
+| C: Oaths and Bargains | The Slow Council, Hold Durnvar | Old Rivals, Kharr Hold | The Enemy of My Enemy, Urgrot's Camp |
+| D: Name Them in Fear | Burn the Outposts, Grimholt Belt | The Slave Camp, Rustmaw | The Fighting Pit, Da Pit |
+
+- **Rescue Hrolla** is at Skrapfang Rock (the prison ship in orbit). It opens after Thread A beat 3, or when the player buys the rumor at Snazrik's Haven.
+- Thread C beat 3 is optional and risky: the player can refuse Urgrot's deal and still finish the thread, earning `ALLIES_LEAGUE` without `ALLIES_URGROT`.
+- **Act 3 unlock:** when the second thread is finished, an "Act 3 unlocked" screen appears. In Milestone 2 Act 3 is not built, so the player keeps playing in free play and can finish the remaining threads.
+- **Early launch:** if the Waaagh! meter reaches 100 first, a "The Waaagh! has launched" screen appears instead, and the game continues in free play (section 6.6).
+
 ### 6.3 Optional beat: Rescue Hrolla
 
 Unlocked by Thread A beat 3, or by a rumor bought from Kaptin Snazrik.

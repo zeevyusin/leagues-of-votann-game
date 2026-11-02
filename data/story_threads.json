@@ -1,0 +1,46 @@
+[
+  {
+    "key": "A",
+    "title": "The Muster",
+    "reward": "INTEL_MUSTER",
+    "reward_text": "Act 3 reward: you will choose where the final battle begins, and strike first.",
+    "beats": [
+      "A2_A1_COLD_TRAILS",
+      "A2_A2_SCOUT_SHIP",
+      "A2_A3_SKRAPFANG"
+    ]
+  },
+  {
+    "key": "B",
+    "title": "The Mek's Machine",
+    "reward": "TECH_COUNTERKEY",
+    "reward_text": "Act 3 reward: the counter-key can shut down Gitzbolt's weapon and save the Core.",
+    "beats": [
+      "A2_B1_SCRAP_AUTOPSY",
+      "A2_B2_VAULTS_MEMORY",
+      "A2_B3_COUNTER_KEY"
+    ]
+  },
+  {
+    "key": "C",
+    "title": "Oaths and Bargains",
+    "reward": "ALLIES_LEAGUE",
+    "reward_text": "Act 3 reward: League ships will fight beside you in the final battle.",
+    "beats": [
+      "A2_C1_SLOW_COUNCIL",
+      "A2_C2_OLD_RIVALS",
+      "A2_C3_ENEMY_OF_MY_ENEMY"
+    ]
+  },
+  {
+    "key": "D",
+    "title": "Name Them in Fear",
+    "reward": "STRENGTH_RENOWN",
+    "reward_text": "Act 3 reward: Skragnak will accept your challenge to a personal duel.",
+    "beats": [
+      "A2_D1_BURN_THE_OUTPOSTS",
+      "A2_D2_SLAVE_CAMP",
+      "A2_D3_FIGHTING_PIT"
+    ]
+  }
+]

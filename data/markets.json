@@ -1,0 +1,112 @@
+[
+  {
+    "port": "KARRAK_STATION",
+    "buy_multiplier": 1,
+    "sell_multiplier": 1,
+    "fuel_price": 6,
+    "supplies_price": 3,
+    "upgrades": [
+      "weapons",
+      "shields",
+      "engine",
+      "reactor",
+      "cargo_hold",
+      "scanner"
+    ],
+    "sells": {
+      "ORE_CRATES": 10,
+      "MEDICAE_KITS": 16
+    },
+    "buys": {
+      "ORK_SCRAP": 1.2
+    },
+    "feast": true,
+    "rumors": []
+  },
+  {
+    "port": "HOLD_DURNVAR",
+    "buy_multiplier": 1.1,
+    "sell_multiplier": 0.9,
+    "fuel_price": 7,
+    "supplies_price": 2,
+    "upgrades": [
+      "shields",
+      "workshop",
+      "cargo_hold",
+      "reactor"
+    ],
+    "sells": {
+      "HOLD_ALE": 6
+    },
+    "buys": {
+      "ORE_CRATES": 1.5,
+      "MEDICAE_KITS": 0.8
+    },
+    "feast": true,
+    "rumors": []
+  },
+  {
+    "port": "KHARR_HOLD",
+    "buy_multiplier": 1.2,
+    "sell_multiplier": 1,
+    "fuel_price": 7,
+    "supplies_price": 3,
+    "upgrades": [
+      "weapons",
+      "engine",
+      "scanner"
+    ],
+    "sells": {},
+    "buys": {
+      "HOLD_ALE": 1.8,
+      "ORK_SCRAP": 1.1
+    },
+    "feast": false,
+    "rumors": []
+  },
+  {
+    "port": "SNAZRIK_HAVEN",
+    "buy_multiplier": 0.9,
+    "sell_multiplier": 1.1,
+    "fuel_price": 5,
+    "supplies_price": 4,
+    "upgrades": [
+      "weapons",
+      "engine"
+    ],
+    "sells": {
+      "ORK_SCRAP": 12
+    },
+    "buys": {
+      "MEDICAE_KITS": 1.5,
+      "HOLD_ALE": 1.3,
+      "SURVEY_SAMPLES": 1.5
+    },
+    "feast": false,
+    "rumors": [
+      {
+        "key": "HROLLA",
+        "label": "Buy word of where the Orks keep the Fleet-Theyn",
+        "price": 40,
+        "requirements": [
+          {
+            "hrolla_status": "CAPTIVE"
+          },
+          {
+            "not_flag": "HROLLA_RUMOR_DONE"
+          }
+        ],
+        "effects": [
+          {
+            "reveal_system": "SKRAPFANG_ROCK",
+            "activate_beat": "A2_HROLLA_RESCUE",
+            "set_flag": {
+              "HROLLA_RUMOR_DONE": true
+            }
+          }
+        ],
+        "text": "A one-eyed freebooter leans close. \"Prison hulk, high orbit over Skrapfang Rock. Lightly guarded. The Orks don't think anyone's stupid enough to try.\""
+      }
+    ]
+  }
+]

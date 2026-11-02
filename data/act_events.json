@@ -1,0 +1,17 @@
+[
+  {
+    "key": "ACT2_STARTED",
+    "title": "Act 2: Gathering Strength",
+    "text": "Karrak Station is your base now. Four leads have come in over Comms. Each one is a thread: follow any two to the end and you will be ready to face the Waaagh!. Follow more, and you will face it stronger. But every journey feeds the Waaagh!, so choose well."
+  },
+  {
+    "key": "ACT3_UNLOCKED",
+    "title": "Act 3 unlocked",
+    "text": "You have done enough. The alliance, the intelligence, the weapons, the fear: whatever you have built, it is ready.\n\nAct 3 is not built yet. You can keep playing: finish the other threads, take jobs, trade, and grow stronger for when it is."
+  },
+  {
+    "key": "WAAAGH_LAUNCHED",
+    "title": "The Waaagh! has launched",
+    "text": "Skragnak's fleet is moving. The Waaagh! is coming for Hold Durnvar, ready or not.\n\nAct 3 is not built yet. You can keep playing, but the Reach is now at its most dangerous."
+  }
+]

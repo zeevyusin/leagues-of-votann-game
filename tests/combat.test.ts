@@ -125,14 +125,25 @@ describe('ship combat', () => {
     expect(state.ship.hull).toBe(hull - 3);
   });
 
-  it('a critical deals double weapons and takes nothing', () => {
+  it('a critical deals double weapons, minus enemy shields, and takes nothing', () => {
     const state = gameFor('HERNKYN_PIONEER');
     const combat = startCombat(state, ctxWith(new ScriptedRng([0.5])), 'A1_RAIDER_ESCAPE', null) as ShipCombat;
     combat.enemy_alloc = { weapons: 4, shields: 1, engines: 1 };
     const hull = state.ship.hull;
     shipRound(state, ctxWith(new ScriptedRng([0.999])), combat, { weapons: 3, shields: 3, engines: 0 });
-    expect(combat.enemy.hull_max - combat.enemy.hull).toBe(6);
+    expect(combat.enemy.hull_max - combat.enemy.hull).toBe(3 * 2 - 1);
     expect(state.ship.hull).toBe(hull);
+  });
+
+  it("enemy engines raise the difficulty to hit them", () => {
+    const state = gameFor('HERNKYN_PIONEER');
+    const ctx = ctxWith(new ScriptedRng([0.5]));
+    const combat = startCombat(state, ctx, 'A1_RAIDER_ESCAPE', null) as ShipCombat;
+    combat.enemy_alloc = { weapons: 1, shields: 0, engines: 5 };
+    // die 11 + Nerve 2 + Ylsa 1 + 3 engines = 17 vs 11 + 5 = 16: a success, not a critical.
+    const rolls: unknown[] = [];
+    shipRound(state, { ...ctxWith(new ScriptedRng([0.5])), rolls: rolls as never[] }, combat, { weapons: 3, shields: 0, engines: 3 });
+    expect((rolls[0] as { difficulty: number }).difficulty).toBe(11 + 5);
   });
 
   it('rejects allocations that leave pips unspent or break a cap', () => {
