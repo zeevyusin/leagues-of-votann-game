@@ -250,8 +250,8 @@ All four threads open together when Act 1 ends: four Comms messages arrive, each
 
 - **Rescue Hrolla** is at Skrapfang Rock (the prison ship in orbit). It opens after Thread A beat 3, or when the player buys the rumor at Snazrik's Haven.
 - Thread C beat 3 is optional and risky: the player can refuse Urgrot's deal and still finish the thread, earning `ALLIES_LEAGUE` without `ALLIES_URGROT`.
-- **Act 3 unlock:** when the second thread is finished, an "Act 3 unlocked" screen appears. In Milestone 2 Act 3 is not built, so the player keeps playing in free play and can finish the remaining threads.
-- **Early launch:** if the Waaagh! meter reaches 100 first, a "The Waaagh! has launched" screen appears instead, and the game continues in free play (section 6.6).
+- **Act 3 unlock:** when the second thread is finished, an "Act 3 unlocked" screen appears. From then on the player chooses when Act 3 starts (section 6.7.1) and can keep working on the remaining threads first.
+- **Early launch:** if the Waaagh! meter reaches 100 first, a "The Waaagh! has launched" screen appears instead, and Act 3 starts at once (section 6.6).
 
 ### 6.3 Optional beat: Rescue Hrolla
 
@@ -276,24 +276,137 @@ Normal Comms jobs, trade, and travel events continue, but many have an Ork angle
 
 If the Waaagh! meter reaches 100 before the player has finished 2 threads, **Act 3 starts anyway**. Act 3 then runs in its hardest form, and the available endings depend on whatever partial progress the player made. This avoids an endless Act 2 and makes the meter matter.
 
+`[DECIDED]` (Milestone 3) The meter reaching 100 always starts Act 3 at once, whether or not Act 3 was unlocked. Wherever the player is, an emergency Comms message pulls the ship home: travel to the rally point takes no time and no Fuel. The hardest form means:
+- the Waaagh! fleet is at full strength (section 6.7.3), and
+- there is no breather between the first two waves.
+
 ---
 
 ### 6.7 Act 3: The Waaagh!
 
 The Waaagh! launches toward Hold Durnvar. Act 3 has three fixed beats, but each one changes based on Act 2 rewards.
 
-**Beat 3.1: The Gathering Storm**
-- Rally at Karrak Station or Hold Durnvar. Allies arrive (if earned). Last chance to repair, recruit, and settle side oaths.
-- With `INTEL_MUSTER`: choose to strike the muster world before the Waaagh! leaves, instead of defending the Hold.
+#### 6.7.1 Starting Act 3 `[DECIDED]` (Milestone 3)
 
-**Beat 3.2: The Void Battle**
-- A large ship combat (or a series of ship fights) against the Ork fleet.
-- Modifiers: allied League ships (`ALLIES_LEAGUE`), first strike (`INTEL_MUSTER`), weaker enemy fleet (low Waaagh! meter), Urgrot's ships switching sides mid-battle (`ALLIES_URGROT`).
-- Gitzbolt's super-weapon fires on the Votann fleet each round unless disabled with `TECH_COUNTERKEY`.
+- After Act 3 unlocks, a **Sound the muster** option appears on the hub whenever the ship is docked at Karrak Station or Hold Durnvar.
+- Choosing it opens a confirm screen that shows:
+  - the Act 2 rewards earned,
+  - the current Waaagh! band, and
+  - any open side oaths.
+- The confirm screen warns that this is the **point of no return**:
+  - Act 3 is a linear run with no star-map travel.
+  - Open job oaths (deliveries and bounties) are **broken** when the muster sounds, unless the player fulfils them first.
+  - Story oaths stay open and are settled in the epilogue.
+- The player can keep doing threads instead. The meter keeps rising, and at 100 Act 3 starts by force (section 6.6).
+- Act 3 beats give the normal main-beat XP (`game-overview.md` section 8.3).
 
-**Beat 3.3: The Warboss**
-- The player boards Skragnak's flagship. Grizzgut stands in the way one last time (section 8).
-- Final confrontation with Skragnak. The available resolutions depend on Act 2 (section 7).
+#### 6.7.2 Beat 3.1: The Gathering Storm
+
+The rally happens at **Hold Durnvar**, wherever the muster was sounded. It plays out like this:
+
+- **Allies arrive**, if earned. Each Act 2 reward the player holds gets a short arrival scene. If Hrolla was rescued, she gives the speech.
+- **Last port visit.** One final market visit, with repairs, buying and recruiting, at Hold Durnvar's prices. After this beat the market is closed for the rest of Act 3.
+- **Dorrik's oath.** Dorrik names the oath he swore in the last Ork war: "I will not leave a Kin behind to the greenskins again." The player can swear to honour it with him, which creates `OATH_DORRIK_VOW`:
+  - Kept if nobody on the crew is lost in Act 3.
+  - While sworn, Dorrik gives +2 to the boarding fight in beat 3.3.
+- **Ylsa's choice.** This scene appears only if Hearthfire is Low. Ylsa admits she is afraid, and the player chooses:
+  - Send her to the Hold with the evacuation ships. She is safe, but her pilot bonus is gone for Act 3.
+  - Keep her at the helm (see section 9.1).
+- **Where to strike.** This choice appears only with `INTEL_MUSTER`:
+  - **Defend the Hold:** the battle happens at Hold Durnvar.
+  - **Strike the muster:** the battle happens at Skrapfang Rock before the Waaagh! leaves. This opens **The Ambush** resolution and the first-strike bonus.
+
+#### 6.7.3 Beat 3.2: The Void Battle `[DECIDED]` (Milestone 3)
+
+The battle is fought in **three waves**, each one a ship fight. Hull carries over from wave to wave, Withdraw is not allowed, and the defeat grace period does not apply.
+
+| Wave | Enemy | Notes |
+|---|---|---|
+| 1 | Raider escorts | A fast, light pack. |
+| 2 | Gitzbolt's gunship | Carries the super-weapon and the Ancestor Core. |
+| 3 | The flagship's guard | Skragnak's Kill Kroozer and its escort. Beating this wave leads straight into the boarding of beat 3.3. |
+
+**Between waves, the player gets one breather choice** `[TUNABLE]`:
+- **Patch the hull:** Dorrik restores `ACT3_BREATHER_HULL` Hull, costing Supplies.
+- **Rally the crew:** `ACT3_BREATHER_HEARTHFIRE` Hearthfire.
+- **Press on:** +2 to the first roll of the next wave.
+
+If the meter launched early (section 6.6), there is no breather between waves 1 and 2.
+
+**Battle modifiers** `[TUNABLE]`:
+
+| Condition | Effect |
+|---|---|
+| `ALLIES_LEAGUE` | League ships take wave 1. It is narrated, not fought. |
+| `INTEL_MUSTER` and Strike the muster | First strike: each wave's enemy starts with `ACT3_FIRST_STRIKE_DAMAGE` Hull damage. |
+| `ALLIES_URGROT` | Urgrot's ships turn on Skragnak in wave 3, so the wave 3 enemy starts at half Hull. |
+| Waaagh! meter below 30 | Enemy Hull -25%. |
+| Waaagh! meter 60 or higher | Enemy Hull +25%. |
+| Meter launched early | Enemy Hull +50%, and no first breather. |
+
+**The super-weapon.** In waves 2 and 3, Gitzbolt's weapon fires at the end of every round and deals `SUPERWEAPON_DAMAGE` Hull damage, ignoring shields. There are two ways to stop it:
+- **Use the counter-key.** This needs `TECH_COUNTERKEY` and takes the round's choice, with no roll. It shuts the weapon down for the rest of the battle and keeps the Core intact.
+- **Disable the gunship in wave 2.** The weapon falls silent, and the player then chooses:
+  - **Board the gunship** (a boarding fight, `combat-system.md` Phase 3). Winning recovers the Core.
+  - **Let it drift.** Gitzbolt escapes with the Core, and the Core is **Lost**.
+
+**Losing the battle** `[DECIDED]`: if the player's Hull reaches 0 in any wave, the battle is lost.
+- The remaining waves are skipped and narrated.
+- The player wakes with Hull at `DEFEAT_RESTORE_FRACTION`.
+- The Hold's fate becomes **Evacuated** (section 7.4).
+- Beat 3.3 still happens, as a desperate strike on the flagship while the Hold empties. The boarding fight gets -2.
+
+#### 6.7.4 Beat 3.3: The Warboss
+
+**1. Boarding.** The player boards Skragnak's flagship and fights through a boarding fight.
+
+**2. Grizzgut stands in the way one last time** (section 8).
+- If he was broken through Negotiate at least once before, the player can talk him aside.
+- Otherwise he must be fought, using the grudge duel rules (`combat-system.md` Phase 3).
+
+**3. Hrolla.** If Hrolla was not rescued in Act 2, she is found chained aboard the flagship and freed. This counts as rescued for the epilogue.
+
+**4. The resolution.** The player picks a resolution from section 7.2. Locked resolutions stay visible with their requirements. Every resolution except The Unplugging ends in a personal fight with Skragnak:
+
+| Resolution | Fight |
+|---|---|
+| The Duel | A grudge duel at full strength, witnessed by the warband. |
+| The Usurper | Urgrot fights alongside the player. Skragnak's Resolve is lowered, and the fight ends with Urgrot standing over him. |
+| The Unplugging | A Craft or Wits route to shut the Core down, with a fallback. Then Skragnak, with lowered Resolve and defense. |
+| The Ambush | Skragnak caught unready at the muster, with lowered Resolve. |
+| Last Stand | Skragnak at full strength. |
+
+**5. Skragnak's fate.** Once he is broken, the player chooses execute, exile, or humiliate (section 7.2).
+
+**6. The Core.** If the Core is aboard and recoverable, the player chooses:
+- return it to the Hold,
+- keep it as a relic, or
+- destroy it (section 7.5).
+
+The Core is recoverable if the counter-key was used, or if the gunship was boarded and won.
+
+**Losing to Skragnak** `[DECIDED]` (no retry, the story continues worse):
+- Hrolla (or the allied boarders, if Hrolla was not freed) breaks him while the player lies wounded.
+- Skragnak is **exiled** by default, and the fate choice is taken from the player.
+- The grudge is **settled at great cost**.
+- The Hold's fate drops one step: Unbroken becomes Scarred, and Scarred becomes Evacuated.
+- If Hearthfire is Low, one crew member other than Dorrik is lost.
+
+Losing the boarding fight or the Grizzgut fight works the same way. The player still reaches the resolution step, but with -2 to the fight and the Hold's fate one step lower.
+
+#### 6.7.5 Epilogue `[DECIDED]` (Milestone 3)
+
+The epilogue is a sequence of text screens built from the three results in section 7.1:
+1. How the Warboss fell.
+2. The fate of Hold Durnvar.
+3. The Core.
+4. One screen of short lines:
+   - each crew member's fate (Dorrik, Ylsa, Hrolla, recruited crew),
+   - Grizzgut's fate,
+   - kept and broken oaths, including `OATH_DORRIK_VOW`,
+   - the subclass stake.
+
+A final **Saga record** screen shows the days taken, the player's level, the final Waaagh! meter, the threads completed, and the grudge settlement. Free-roam starts after it (section 7.6).
 
 ---
 
@@ -351,6 +464,14 @@ In line with the non-lethal combat design, Skragnak is **broken** by default, no
 
 `[DECIDED]` After the epilogue the player keeps playing in **free-roam**. The star map, Comms, trade, and travel events stay active. Unfinished Act 2 threads and side content remain available, and story state (Core fate, Skragnak's fate, Urgrot, crew, reputation) carries over and gates post-game content. The Waaagh! meter is retired. In the **Evacuated** ending, free-roam starts from the fleet instead of the Hold. Config flag `ALLOW_POST_GAME` (default `true`).
 
+`[DECIDED]` (Milestone 3) Post-game uses **existing content only**. No new story is added.
+- The Waaagh! meter is hidden and no longer changes.
+- Ork travel events become **remnant warband** events: the same events with a `remnant` text variant, weighted as in the Scattered band.
+- Threads that were not finished can still be played for XP, reputation and loot. Their Act 3 rewards no longer have an effect.
+- **Evacuated:** the player starts at Karrak Station with the refugee fleet, and Hold Durnvar's port stays closed.
+- **Unbroken or Scarred:** the player starts docked at Hold Durnvar.
+- Snazrik's Haven reopens if it closed during Act 2.
+
 ---
 
 ## 8. The Recurring Rival: Nob Grizzgut
@@ -361,7 +482,7 @@ Grizzgut shows how the Resolve system turns defeated enemies into story. Every t
 |---|---|---|
 | 1 | Beat 1.2, Fire on the Anvil | Standard Nob. Teaches personal combat. |
 | 2 | Act 2, random encounter or Thread D beat 3 | New armor, higher Resolve. Remembers the player's favorite stance and starts guarded against it. |
-| 3 | Beat 3.3, the flagship | Upgraded by Gitzbolt with looted Votann parts. Can be **turned**: if broken through Negotiate at least once before, he may stand aside or switch sides. |
+| 3 | Beat 3.3, the flagship | Upgraded by Gitzbolt with looted Votann parts. Can be **turned**: if broken through Negotiate at least once before, he may stand aside or switch sides. Otherwise he is fought as a grudge duel (`combat-system.md` Phase 3). |
 
 Grizzgut gets his own grudge entry (`GRUDGE_GRIZZGUT`) after the second meeting. Track his record in a flag `GRIZZGUT_ENCOUNTERS` with how each fight ended.
 
@@ -377,6 +498,17 @@ Two crew members survive the raid with the player. Both use the existing crew sy
 | **Ylsa** | Kin | Steady hands: piloting bonus | Her first expedition. Grows from scared to confident depending on Hearthfire and how the player treats her. Can die or leave if things go badly. |
 
 Both react to the player's choices, which gives a class-neutral "voice" in every scene.
+
+### 9.1 Crew fates `[DECIDED]` (Milestone 3)
+
+- **Ylsa can be lost only in Act 3**, and only in these cases:
+  - Her Hull reaches 0 in a void battle wave while Hearthfire is Low and she is at the helm.
+  - The player loses to Skragnak while Hearthfire is Low (section 6.7.4).
+
+  If Hull reaches 0 at Mid or High Hearthfire, she is hurt but survives.
+- **Warnings.** From Act 2 on, Ylsa sends a worried Comms line each time Hearthfire enters the Low band, so the risk is never a surprise. The rally beat (6.7.2) gives a last chance to send her to safety.
+- **Dorrik never dies.** His vow (`OATH_DORRIK_VOW`, section 6.7.2) is kept if no crew member is lost in Act 3, and broken otherwise. Either way it gets an epilogue line.
+- **Recruited crew**, such as the freed miners and Brokka, get one epilogue line each. A crew member lost in Act 3 is named in the epilogue.
 
 ---
 
@@ -456,6 +588,14 @@ hrolla_status         CAPTIVE | RESCUED | LOST
 grizzgut_encounters   list of { beat, outcome }
 core_status           STOLEN | RECOVERED | DESTROYED | LOST
 ship_name             string
+act3_site             HOLD_DURNVAR | SKRAPFANG_ROCK          # Milestone 3
+void_battle           { wave: 1..3, result: WON | LOST }     # Milestone 3
+warboss_resolution    DUEL | USURPER | UNPLUGGING | AMBUSH | LAST_STAND
+skragnak_fate         EXECUTED | EXILED | HUMILIATED
+grudge_settlement     BLOOD | CUNNING | ORK_HANDS | GREAT_COST
+hold_fate             UNBROKEN | SCARRED | EVACUATED
+crew_lost             list of crew keys lost in Act 3
+post_game             boolean
 ```
 
 ### 10.3 New config values
@@ -474,6 +614,13 @@ ORK_TONE = "GRIM_FUNNY"     # [DECIDED] flag
 ALLOW_SHIP_NAMING = true    # [DECIDED] flag
 CAMPAIGN_LENGTH = "MEDIUM"  # [DECIDED] flag
 ALLOW_POST_GAME = true      # [DECIDED] flag
+ACT3_BREATHER_HULL = 6          # Milestone 3
+ACT3_BREATHER_SUPPLIES = 2
+ACT3_BREATHER_HEARTHFIRE = 10
+ACT3_FIRST_STRIKE_DAMAGE = 3
+ACT3_WAVE_HULL_SCALE = { scattered: 0.75, gathering: 1.0, rising: 1.25, launched: 1.5 }
+SUPERWEAPON_DAMAGE = 3
+ACT3_DESPERATE_PENALTY = -2     # boarding after a lost battle, or after losing a 3.3 fight
 ```
 
 ---
@@ -484,7 +631,7 @@ ALLOW_POST_GAME = true      # [DECIDED] flag
 2. **Waaagh! meter:** state, config rates, Logbook display, band effects on travel event weights, and the early-launch trigger.
 3. **Act 1 content:** all four beats with every route, the 10 subclass opening variants, the main grudge and oath. This is the first playable slice.
 4. **Act 2 hub:** thread messages, thread progress, the 2-of-4 unlock check, and the Hrolla rescue beat.
-5. **Act 3 and endings:** the three beats, reward-based modifiers, and the ending builder (section 7.1).
+5. **Act 3 and endings:** the muster, the three beats, the void battle waves, reward-based modifiers, the ending builder (section 7.1), the epilogue and post-game (sections 6.7 and 7.6). Built in Milestone 3.
 6. **Grizzgut** recurring-rival logic.
 7. **Writing pass:** Kin/Ironkin and gender variants, and tone variants if `ORK_TONE` is kept.
 
@@ -510,3 +657,8 @@ ALLOW_POST_GAME = true      # [DECIDED] flag
 | Can Ylsa or Dorrik permanently die | Ylsa yes in bad outcomes. Dorrik no (needed for lore). |
 | Size of the campaign map | About 12 systems (section 4.4) |
 | First playable milestone | Act 1, all four beats (see `game-overview.md` section 11) |
+| How Act 3 starts | The player sounds the muster at Karrak Station or Hold Durnvar once 2 threads are done; Waaagh! 100 forces it (section 6.7.1) |
+| Void battle shape | Three ship-fight waves with Hull carried over and a breather between waves (section 6.7.3) |
+| Defeat in Act 3 | No retry. The story continues worse and every run reaches an ending (sections 6.7.3 and 6.7.4) |
+| When Ylsa can be lost | Act 3 only, at Low Hearthfire, with warnings beforehand (section 9.1) |
+| Post-game content | Existing content only; Ork events become remnant-warband events (section 7.6) |

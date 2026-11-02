@@ -120,6 +120,7 @@ Base kit: **Fuel 10, Ore 100, Supplies 20, Hearthfire 50, Hull 20, cargo capacit
 - **Docked at a port:** Health restores fully for free. Hull repairs cost Ore (`HULL_REPAIR_ORE_PER_POINT = 5`) or Supplies.
 - **Travelling:** Health regenerates `2` per day (`HEALTH_REGEN_PER_DAY`); Kin multiply this by **1.5** (Quick Recovery). Hull does not regenerate in travel.
 - **Ironkin:** Health regenerates as above, but Wear never falls on its own. It needs maintenance (Supplies or a Craft check, see `character-creation.md`).
+- **Injuries** `[DECIDED]` (Milestone 3) are lasting penalties from heavy hits. They do not heal with Health. Kin rest at a port for 3 days per injury, and Ironkin pay Ore for maintenance (`combat-system.md` section 3.8).
 - All values `[TUNABLE]`.
 
 ### 4.4.1 Fatigue `[DECIDED]`
@@ -383,6 +384,57 @@ The second milestone makes **Act 2 playable from the end of Act 1 until Act 3 un
 - Prices, events, and jobs come from data files; nothing new is hardcoded.
 - Tests cover the thread unlock, the market, travel events, withdraw, and the new combat modifiers.
 
+### 11.3 Milestone 3: Act 3, Endings, and Post-game `[DECIDED]`
+
+The third milestone finishes the campaign: from a save with Act 3 unlocked (or an early Waaagh! launch) to the epilogue and free-roam. It includes:
+
+1. **Starting Act 3** (`story.md` 6.6, 6.7.1):
+   - the Sound the muster option at Karrak Station and Hold Durnvar, with a point-of-no-return confirm screen;
+   - open job oaths break when the muster sounds;
+   - Waaagh! 100 forces the start, including the early-launch hardest form.
+2. **Beat 3.1, The Gathering Storm** (6.7.2): ally arrivals, the last port visit, Dorrik's vow, Ylsa's choice, and the Defend or Strike choice with `INTEL_MUSTER`.
+3. **Beat 3.2, The Void Battle** (6.7.3):
+   - three ship-fight waves with Hull carried over and breathers between them;
+   - Act 2 reward and Waaagh!-band modifiers;
+   - the super-weapon and the counter-key;
+   - boarding the gunship for the Core;
+   - a lost battle continuing to the Evacuated outcome.
+4. **Beat 3.3, The Warboss** (6.7.4):
+   - boarding the flagship and Grizzgut's third appearance;
+   - freeing Hrolla if she is still captive;
+   - the five resolutions, Skragnak's fate, and the Core choice;
+   - "story continues worse" on defeat.
+5. **Endings and epilogue** (`story.md` 7, 6.7.5): the ending builder from three results, the grudge settlement, crew fates, and the Saga record screen.
+6. **Crew fates** (`story.md` 9.1): Ylsa can be lost in Act 3 only, at Low Hearthfire, with Comms warnings from Act 2 on. Dorrik's vow.
+7. **Post-game free-roam** (`story.md` 7.6): Waaagh! retired, remnant-warband event variants, and the start location by ending. Existing content only.
+8. **Combat Phase 2, the rest** (`combat-system.md`):
+   - Negotiate leverage (3.6);
+   - misleading reads (3.2);
+   - injuries, with Rest and Maintenance at port markets (3.8);
+   - range bands (4.3.1);
+   - subsystem targeting (4.3.2).
+9. **Combat Phase 3, part:** grudge duels and the boarding handoff.
+10. **Writing:** Claude drafts all Act 3, epilogue and remnant text into the data files; the author reviews it later.
+
+**Not in Milestone 3:**
+- relic equipping and relic effects in combat;
+- the `GRIM` Ork tone variant set;
+- paged menus for screens with more than 10 options;
+- Hearthline commitments, objective-based fights, and battle oaths (combat Phase 3 items 1, 4, 5, 6);
+- a full XP and balance pass.
+
+**Done when:**
+- Every class and kin type can reach the epilogue and free-roam from a save with Act 3 unlocked, including:
+  - a run where every roll fails,
+  - an early-launch run with fewer than 2 threads, and
+  - runs with 2, 3, and 4 threads finished.
+- Tests reach every Warboss resolution, every Hold fate, and every Core fate.
+- Ylsa is never lost outside the conditions in `story.md` 9.1. Dorrik is never lost.
+- Save and load work in every Act 3 beat, between void battle waves, mid-boarding, and in the epilogue. Milestone 2 saves load through `migrateState`.
+- Free-roam after the ending has no soft-locks: the automated player can keep travelling, trading and finishing threads.
+- Tests cover leverage, misleading reads, injuries and recovery, range bands, targeting, duels, and boarding.
+- No new number or display name is hardcoded in engine logic.
+
 ## 12. Design Decisions Summary
 
 | Question | Decision |
@@ -411,3 +463,5 @@ The second milestone makes **Act 2 playable from the end of Act 1 until Act 3 un
 | Second milestone | Act 2 playable, with travel events, side jobs, a port market, and part of combat Phase 2 (section 11.2) |
 | Economy | Port market with per-port prices, reputation and class modifiers (section 4.5) |
 | Act 2 writing | Claude drafts, author reviews |
+| Third milestone | Act 3, endings, epilogue and post-game, plus the rest of combat Phase 2 and the grudge duel and boarding parts of Phase 3 (section 11.3) |
+| Act 3 writing | Claude drafts, author reviews |

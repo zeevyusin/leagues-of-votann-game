@@ -89,6 +89,13 @@ Each enemy template stores a weighted pattern for choosing intents, for example 
 
 For Phase 1, only **Clear** and **Vague** exist.
 
+**Misleading reads `[DECIDED]` (Milestone 3):**
+- Only enemies whose template has `deceptive: true` can mislead (for example Kommandos, Snazrik's freebooters, and Gitzbolt's grots).
+- When the read against a deceptive enemy would be **Vague**, there is a `MISLEAD_CHANCE` that the telegraph shows the text of a **wrong** intent instead.
+- A **Clear** read is never misleading.
+- Long-Range Scan and Strike and Calculate the Odds always show the true intent.
+- The only consequence is the bad matchup itself. The modifiers display never reveals that a read was false. After the round, the result text says what the enemy really did, so the player learns which enemies lie.
+
 ### 3.3 Player stances
 
 | Stance | Stat used | Counters | Core effect |
@@ -158,11 +165,37 @@ Negotiate lets Speakers have a real route through combat.
 - Negotiating gains bonuses from **leverage**: knowledge learned about the enemy (a grudge, a faction tie, a weakness from a scan, an oath they owe). Without leverage, negotiation against hardened enemies is harder.
 - The Logbook feeds this: if the player knows the enemy's grudge, that is leverage.
 
+`[DECIDED]` (Milestone 3):
+- **Leverage sources.** An enemy template lists them as `leverage: [{ requires, text }]`. `requires` uses the normal condition evaluator, for example:
+  - a grudge entry,
+  - a story flag or lore entry,
+  - reputation of Friendly or better with the enemy's faction,
+  - a scan made this fight.
+- **Bonus.** Each source the player meets gives +`LEVERAGE_BONUS` (2) to Negotiate, up to +`LEVERAGE_MAX` (4). The modifiers display names each source, for example "Leverage: you know Grizzgut's grudge +2".
+- **Hardened enemies.** Templates with `hardened: true` get +`HARDENED_NEGOTIATION_PENALTY` (3) to their `negotiation_difficulty` unless the player has at least one leverage source.
+
 ### 3.7 Ironkin and Wear in personal combat
 
 - Taking Health damage adds Wear to Ironkin `[TUNABLE]` (suggested `+2` Wear per point of Health damage).
 - Using a class console action adds Wear as already defined in `character-creation.md`.
 - Wear penalties (Strained, Failing) apply to Nerve and Craft rolls, which makes Outmaneuver weaker. Critical Wear (100) incapacitates the player (section 7).
+
+### 3.8 Injuries `[DECIDED]` (Milestone 3)
+
+Heavy hits leave lasting marks. Injuries are personal-combat only, and the ship has no equivalent.
+
+- **When.** The player gains an injury when either of these happens:
+  - they take `INJURY_HIT_THRESHOLD` (4) or more Health damage in a single round, after reductions, or
+  - they are defeated in personal combat.
+- **Which.** A random injury from `injuries.json` that the player does not already have.
+  - Each injury is a small penalty, for example "Cracked ribs: -1 Grit" or "Ringing skull: -1 Wits".
+  - Ironkin get damage-flavored variants of the same penalties, for example "Buckled servo: -1 Nerve".
+- **Limit.** At most `INJURY_MAX` (3) injuries at once. Further triggers add nothing.
+- **Recovery:**
+  - **Kin:** a **Rest** option at any port market costs `INJURY_REST_DAYS` (3) days docked and heals one injury.
+  - **Ironkin:** a **Maintenance** option at any port market costs `INJURY_REPAIR_ORE` (20) Ore and repairs one injury at once.
+  - Defeat recovery (section 7.1) does **not** clear injuries.
+- **Display.** Injuries appear on the Ship and Cargo screen and in the modifiers display. Penalties apply to every roll that uses the stat, not only in combat.
 
 ---
 
@@ -227,6 +260,34 @@ All values `[TUNABLE]`. The key idea: **engines decide the exchange, weapons dec
 - The enemy's **shield pips reduce the damage you deal** (`max(0, damage - enemy_shield_pips)`, applied after the critical multiplier).
 - This makes the Scanner hint a real decision: heavy enemy shields favor a defensive round, heavy enemy engines favor putting pips into your own engines. Enemy ship Hull values are lowered to keep fights at 2 to 5 rounds.
 
+### 4.3.1 Range bands `[DECIDED]` (Milestone 3)
+
+- **Choosing a band.** Each round the player also picks a preferred range: **Close**, **Medium**, or **Long**.
+- **Who gets their band:**
+  - If the player's engine pips are higher than the enemy's, the player's band is used.
+  - If they are equal, the range does not change.
+  - If the enemy's engines are higher, the enemy's `preferred_range` is used. This is a template field: brawlers want Close, gunships want Long.
+- **Starting band.** Fights start at Medium, unless the encounter sets `start_range`.
+
+| Band | Effect `[TUNABLE]` |
+|---|---|
+| Close | +`RANGE_CLOSE_DAMAGE` (1) damage dealt **and** taken, applied after shields. |
+| Medium | No change. |
+| Long | -`RANGE_LONG_DAMAGE` (1) damage dealt **and** taken (minimum 0). Withdraw rolls get +`RANGE_LONG_WITHDRAW` (3). |
+
+The band for the round is shown before the roll. The enemy's preferred band is part of the Scanner hint at Mid quality or better.
+
+### 4.3.2 Subsystem targeting `[DECIDED]` (Milestone 3)
+
+- **Choosing a target.** Each round the player may aim at an enemy **Weapons**, **Shields**, or **Engines** system instead of the hull. The default is the hull, with no change.
+- **Cost.** Targeting adds +`TARGET_DIFFICULTY` (3) to the round's difficulty.
+- **Effect.** On a hit, damage is dealt as normal, and the targeted system loses pips from the enemy's budget for the **next round**:
+  - Success: `TARGET_PIPS_SUCCESS` (1) pip.
+  - Critical: `TARGET_PIPS_CRIT` (2) pips.
+
+  The enemy's pattern spends the reduced budget. A system cannot go below 0.
+- **No effect on a miss.** Partial and Failure do not knock out any pips.
+
 ### 4.4 Ending a ship fight
 
 - **Enemy Hull reaches 0:** the enemy ship is **disabled** and the player picks an authored follow-up: loot it, spare it, tow it, or (Phase 3) board it.
@@ -241,7 +302,7 @@ Only encounters with `allow_withdraw: true` offer it (story-critical fights usua
 
 ### 4.5 Phase 1 ship scope
 
-Phase 1 ship combat is only: reactor, three-way allocation, the roll, the tier table, the Scanner hint, and victory/defeat. No range bands, no subsystem targeting, no boarding handoff, and no crew bonuses (all Phase 2 and later).
+Phase 1 ship combat is only: reactor, three-way allocation, the roll, the tier table, the Scanner hint, and victory/defeat. No range bands, no subsystem targeting, no boarding handoff, and no crew bonuses (all Phase 2 and later). Range bands, targeting and boarding arrive in Milestone 3 (sections 4.3.1, 4.3.2 and Phase 3).
 
 ---
 
@@ -411,6 +472,24 @@ DEFEAT_WEAR_RESET = 50          # Ironkin Wear after incapacitation
 DEFEAT_ORE_LOSS_RANGE = [0.2, 0.4]
 DEFEAT_GRACE = true      # [DECIDED] flag
 PERMADEATH = false       # already in game-overview.md
+# Milestone 3
+MISLEAD_CHANCE = 0.33
+LEVERAGE_BONUS = 2
+LEVERAGE_MAX = 4
+HARDENED_NEGOTIATION_PENALTY = 3
+INJURY_HIT_THRESHOLD = 4
+INJURY_MAX = 3
+INJURY_REST_DAYS = 3
+INJURY_REPAIR_ORE = 20
+RANGE_CLOSE_DAMAGE = 1
+RANGE_LONG_DAMAGE = 1
+RANGE_LONG_WITHDRAW = 3
+TARGET_DIFFICULTY = 3
+TARGET_PIPS_SUCCESS = 1
+TARGET_PIPS_CRIT = 2
+DUEL_HABIT_WEIGHT = 3
+DUEL_ADAPT_AFTER = 2
+DUEL_WITNESS_HEARTHFIRE = 10
 ```
 
 ---
@@ -447,7 +526,7 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 
 ### Phase 2: Depth and class identity
 
-`[DECIDED]` Milestone 2 builds items 1, 2, 7, and enemy shields/engines (section 4.3). Items 3, 4, 5, 6, and 8 come later.
+`[DECIDED]` Milestone 2 builds items 1, 2, 7, and enemy shields/engines (section 4.3). Milestone 3 builds items 3, 4, 5, and 8 (sections 3.6, 3.2, 3.8, 4.3.1 and 4.3.2). Item 6 (crew as roll modifiers) already exists through crew traits.
 
 **Console actions in combat (Milestone 2):** once per fight, the player may use their subclass console action instead of picking a stance or allocation. It takes the round's choice but no roll is made against the player that round. Ironkin pay the action's Wear cost. Effects `[TUNABLE]`, stored as `combat` on each subclass's `console_action`:
 
@@ -488,6 +567,26 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 
 ### Phase 3: Kin identity and connected systems
 
+`[DECIDED]` Milestone 3 builds items 2 and 3, because Act 3 depends on them. The others come later.
+
+**Grudge duel (Milestone 3).** An encounter with `duel: true` is a one-on-one personal fight in front of witnesses:
+- **No Withdraw.** Negotiate works only if the enemy template allows it in duels.
+- **The enemy knows your habits.** The game counts the stances the player uses across the whole campaign (`stance_counts`). A duelist's intent weights are shifted by `DUEL_HABIT_WEIGHT` toward the intent that makes the player's favorite stance a bad matchup.
+- **The enemy adapts.** If the player uses the same stance `DUEL_ADAPT_AFTER` (2) rounds in a row, the duelist's next intent is the one that counters it, and the telegraph hints at it: "He's seen that before."
+- **Witnessed.**
+  - Winning a duel gives `DUEL_WITNESS_HEARTHFIRE` Hearthfire and reputation with the watching faction.
+  - Losing one costs that Hearthfire.
+- **Used by:** Skragnak (The Duel resolution) and Grizzgut's third appearance (story.md section 8).
+
+**Boarding handoff (Milestone 3).**
+- **The offer.** A ship encounter can name a personal encounter in `boarding`. When the enemy ship is disabled, the follow-up list adds **Board her**, which starts that personal fight at once.
+- **Carried over.** The player's Health, injuries and console-action use carry over from the ship fight.
+- **Outcomes.** The boarding fight's outcome replaces the ship fight's loot outcome:
+  - victory gives the boarding loot,
+  - defeat uses the boarding fight's defeat outcome, and
+  - the ship counts as disabled either way.
+- **Used by:** the void battle's gunship (to recover the Core) and the flagship (beat 3.3). Any Act 2 ship encounter can also use it through data.
+
 1. **Oaths in combat:** swearing a battle oath for a bonus, with Hearthfire and reputation penalties if broken.
 2. **Grudge duels:** settling a grudge opens a special fight with its own rules (witnessed duel, an enemy who knows your habits).
 3. **Boarding handoff:** disabling a ship leads into a personal-combat boarding scene.
@@ -509,3 +608,7 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 | Grace period after defeat | Enabled (`DEFEAT_GRACE = true`) |
 | Can the player buy or craft healing items mid-fight | Not in Phase 1 |
 | Enemy attack rolls: separate from player roll | No. One roll per round decides the whole exchange (keeps rounds fast). |
+| Injuries | From a 4+ Health hit or a personal defeat; Kin rest 3 days at port, Ironkin pay Ore; max 3 (section 3.8) |
+| Range bands and targeting | Light version: three bands decided by engine pips, +3 difficulty to knock out enemy pips next round (sections 4.3.1, 4.3.2) |
+| Misleading reads | Only `deceptive` enemies, only when the read would be Vague (section 3.2) |
+| Phase 3 in Milestone 3 | Grudge duel and boarding handoff only |
