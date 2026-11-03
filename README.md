@@ -4,7 +4,7 @@ A text adventure played from the console of a Kin prospector's ship, in the Ashf
 
 ## Playing
 
-Open the game in a browser (see [Run it](#run-it) below, or the published GitHub Pages link once it is set up).
+**Play it in your browser: https://zeevyusin.github.io/leagues-of-votann-game/** (or run it locally, see [Run it](#run-it) below).
 
 - **Numbered menus.** Press 1 to 9, or 0 for the tenth option, or click. Long lists show 8 options at a time: 9 goes back a page, 0 goes forward.
 - **Tab** switches between the console screens: Comms, Nav, Ship, Logbook, and the Market while docked.
