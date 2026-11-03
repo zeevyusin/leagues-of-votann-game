@@ -111,7 +111,7 @@ Gender changes pronouns and dialogue variants only, as specified in `character-c
 
 ### 4.3 Ork tone
 
-`[DECIDED]` **The situation is grim and the Orks are funny.** Ork dialogue is loud, crude, and comedic. The danger is real and losses matter. Config flag `ORK_TONE` (`GRIM_FUNNY` default, `GRIM` alternate) selects between dialogue variant sets.
+`[DECIDED]` **The situation is grim and the Orks are funny.** Ork dialogue is loud, crude, and comedic. The danger is real and losses matter. `[DECIDED]` (Milestone 4) This is the only tone: the `GRIM` alternate and the `ORK_TONE` config flag are removed.
 
 ### 4.4 The Ashfall Reach star map
 
@@ -474,6 +474,45 @@ In line with the non-lethal combat design, Skragnak is **broken** by default, no
 
 ---
 
+### 7.7 Post-game quests `[DECIDED]` (Milestone 4)
+
+After the epilogue, free-roam offers **one quest chain picked by the Hold's fate**, and **Hunt Gitzbolt** if the Core was lost. Each chain arrives as a Comms message when free roam starts. It has three beats, plays like an Act 2 thread (arrival beats, class routes, a fallback route in every beat), and ends with a short closing screen. Rewards are reputation, Ore, XP (if any is left) and a relic. Claude drafts all the text.
+
+**Unbroken: The Council Seat**
+1. **The Seat** (Hold Durnvar): the council offers you a seat. Speaker routes shine; any route accepts it.
+2. **The Last Warband** (Rustmaw): break the last organised warband still raiding the belt (personal combat, or class routes).
+3. **Open Lanes** (Karrak Station): settle the new trade terms between the Hold, Karrak and Snazrik's freebooters.
+
+Reward: Hearthstone of Durn, reputation with Hold Durnvar.
+
+**Scarred: Rebuild the Outer Holdings**
+1. **Materials** (Karrak Station): gather Ore and Supplies for the rebuild, by buying, trading or a Craft route.
+2. **The Builders' Escort** (Grimholt Belt): protect the builder ships from remnant raiders (ship combat, or class routes).
+3. **Relight the Hearths** (Hold Durnvar): the ceremony. Your choices decide which settlement is rebuilt first.
+
+Reward: Hearthstone of Durn, reputation with Hold Durnvar.
+
+**Evacuated: A New Hearth**
+1. **Somewhere to Live** (Comms): the refugee fleet needs a home. Three candidates:
+   - **Kethra's Anvil:** rebuild at the dig site.
+   - **Kharr Hold:** accept the Kharr League's offer, with strings attached.
+   - **Skrapfang Rock:** reclaim the old muster world.
+2. **Clear the Ground** (the chosen system): what stands in the way depends on the choice: Ork squatters, a Kharr council vote, or the muster's wreckage.
+3. **The First Hearth** (the chosen system): the new home is founded. The chosen system becomes the fleet's home port. If it had no port it gets one, with a market based on Hold Durnvar's.
+
+Reward: Hearthstone of Durn, reputation with the new home's faction.
+
+**Hunt Gitzbolt** (only if the Core is LOST)
+1. **A Familiar Signal** (Cinder Drift): a scan picks up the Core's signature.
+2. **The Price of a Secret** (Snazrik's Haven): buy, trick or threaten the Mek's location out of Snazrik.
+3. **Da Workshop** (The Scrapfield): a ship fight against Gitzbolt's new gunship, then boarding. Winning recovers the Core and replays the Core choice (return, keep, destroy). Losing lets him escape again, and the quest can be retried.
+
+Reward: Gitzbolt's kustom field, and the Core.
+
+Story state: `post_quests_completed` (list of chain keys). The Logbook shows quest progress like Act 2 threads. Completing every quest available to the run shows a final "The saga is complete" screen. Free roam continues after it.
+
+---
+
 ## 8. The Recurring Rival: Nob Grizzgut
 
 Grizzgut shows how the Resolve system turns defeated enemies into story. Every time the player breaks him, he comes back **bigger and with a new trick**.
@@ -613,7 +652,6 @@ WAAAGH_PER_WARBAND_BROKEN = -5
 WAAAGH_LAUNCH = 100
 THREADS_REQUIRED = 2
 BEATS_PER_THREAD = 3
-ORK_TONE = "GRIM_FUNNY"     # [DECIDED] flag
 ALLOW_SHIP_NAMING = true    # [DECIDED] flag
 CAMPAIGN_LENGTH = "MEDIUM"  # [DECIDED] flag
 ALLOW_POST_GAME = true      # [DECIDED] flag
@@ -639,7 +677,8 @@ POST_GAME_START = { UNBROKEN: HOLD_DURNVAR, SCARRED: HOLD_DURNVAR, EVACUATED: KA
 4. **Act 2 hub:** thread messages, thread progress, the 2-of-4 unlock check, and the Hrolla rescue beat.
 5. **Act 3 and endings:** the muster, the three beats, the void battle waves, reward-based modifiers, the ending builder (section 7.1), the epilogue and post-game (sections 6.7 and 7.6). Built in Milestone 3.
 6. **Grizzgut** recurring-rival logic.
-7. **Writing pass:** Kin/Ironkin and gender variants, and tone variants if `ORK_TONE` is kept.
+7. **Writing pass:** Kin/Ironkin and gender variants.
+8. **Post-game quests** (section 7.7): built in Milestone 4.
 
 **Acceptance checks:**
 - Every beat can be finished by every class and kin type (there is always a fallback route).
@@ -654,7 +693,7 @@ POST_GAME_START = { UNBROKEN: HOLD_DURNVAR, SCARRED: HOLD_DURNVAR, EVACUATED: KA
 
 | Question | Decision |
 |---|---|
-| Ork tone | Grim situation, funny Orks (`ORK_TONE = GRIM_FUNNY`) |
+| Ork tone | Grim situation, funny Orks. The only tone; the `GRIM` option was dropped in Milestone 4. |
 | Campaign length | Medium, about 4 to 6 hours |
 | Threads required for Act 3 | 2 of 4 |
 | Skragnak's fate after being broken | Player chooses: execute, exile, or humiliate |
@@ -667,4 +706,4 @@ POST_GAME_START = { UNBROKEN: HOLD_DURNVAR, SCARRED: HOLD_DURNVAR, EVACUATED: KA
 | Void battle shape | Three ship-fight waves with Hull carried over and a breather between waves (section 6.7.3) |
 | Defeat in Act 3 | No retry. The story continues worse and every run reaches an ending (sections 6.7.3 and 6.7.4) |
 | When Ylsa can be lost | Act 3 only, at Low Hearthfire, with warnings beforehand (section 9.1) |
-| Post-game content | Existing content only; Ork events become remnant-warband events (section 7.6) |
+| Post-game content | Existing content, plus (Milestone 4) one quest chain per Hold fate and Hunt Gitzbolt if the Core was lost (section 7.7) |

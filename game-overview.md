@@ -139,6 +139,16 @@ Every port has a **Market** screen (a fifth console tab that appears only while 
 - **Class modifiers:** Haggle (Prospector-Trader console action) gives 15% better prices on buys and sells for the rest of the visit, once per visit (Ironkin pay Wear as usual). Eye for Ore (Prospector-Trader trait) sells goods for 10% more.
 - **Waaagh! pressure:** from the Rising band (60+), Fuel and Supplies cost 25% more everywhere, and Ork bribes cost more.
 - Prices are rounded to whole Ore and never drop below 1.
+- **Market sections `[DECIDED]` (Milestone 4):** the market opens on a short list of sections instead of one long list:
+  - **Fuel and Supplies**
+  - **Upgrades** (modules, including Armour)
+  - **Goods** (buy trade goods)
+  - **Sell cargo**
+  - **Services** (feast, rest and repairs for injuries, relic identification, rumors, dock work, Haggle)
+
+  Each section lists its own options plus **Back**. Any list that still has more than 10 options pages (section 9.0, Long menus).
+- **Armour module `[DECIDED]` (Milestone 4):** a new ship module, `armour`. Each level above 1 adds `ARMOUR_HULL_PER_LEVEL` (5) max Hull, so a fully armoured ship has 30. It is bought like the other modules (`MODULE_UPGRADE_COST`) at Karrak Station, Hold Durnvar and Kharr Hold. Buying a level also repairs the new Hull points.
+- **Relic identification `[DECIDED]` (Milestone 4):** Karrak Station and Hold Durnvar identify a relic for `RELIC_IDENTIFY_ORE` (40) Ore. Arkanyst Evaluators still do it for free with their console action.
 - **Dock work (safety valve):** every market offers "Take dock work": `2` days pass and the player earns `25` Ore (`DOCK_WORK_DAYS`, `DOCK_WORK_ORE`, `[TUNABLE]`). A broke captain can always earn enough Fuel to reach the next objective, so running out of Ore can never soft-lock the game.
 
 ### 4.6 Failure states
@@ -214,6 +224,33 @@ Sources of modifiers: Hearthfire band, Wear state (Ironkin), ship modules, crew 
 - Unidentified relics show only vague information. Arkanyst Evaluators can reveal the true effects before the player commits.
 - Relics can be equipped, sold, or traded. Some factions covet particular relics, which ties into reputation.
 
+#### 6.3.1 Equipping relics `[DECIDED]` (Milestone 4)
+- **Slots.** Up to `RELIC_SLOTS` (2) relics are equipped at a time, from the Ship and Cargo screen, at any time outside a fight. Equipping or unequipping is free.
+- **Effects.** An equipped relic applies both its benefit and its drawback. Unequipped relics do nothing.
+- **Unidentified relics** can be equipped. Their effects work, but the screen shows "unknown benefit, unknown drawback" until the relic is identified: by an Arkanyst Evaluator's console action, or for Ore at Karrak Station or Hold Durnvar (section 4.5).
+- **Selling.** Ports with a market buy relics for their `value`. Mission relics (the Ancestor Core) cannot be sold.
+- **Effect types** (data-driven, on `benefit_effects` and `drawback_effects` in `relics.json`) `[TUNABLE]`:
+  - a roll modifier on one stat, optionally only in one context (story, personal combat, ship combat);
+  - a modifier on all rolls in personal or ship combat;
+  - a Negotiate modifier, or a read bonus for enemy telegraphs;
+  - max Health, max Hull, or reactor pips;
+  - Fuel cost per journey, travel event chance, or Ork event weight;
+  - Hearthfire, Supplies, or Wear per journey;
+  - a reputation change with a faction while equipped (applied on equip, removed on unequip).
+
+**The relics** (about 8; names and numbers `[TUNABLE]`, Claude drafts the text):
+
+| Relic | Found | Benefit | Drawback |
+|---|---|---|---|
+| Lodestone of Khaz | Arkanyst starting kit | +1 Wits outside personal combat | Ork travel events x1.5 as likely |
+| The Ancestor Core | Act 3, if kept | +1 reactor pip, +1 to ship combat rolls | Kin: -2 Hearthfire per journey (the crew is uneasy). Ironkin: +5 Wear per journey |
+| Grudgehammer of Varn | Thread D (Fighting Pit, critical success) | +1 to personal combat rolls | -2 to Negotiate |
+| Hearthstone of Durn | Hold-fate quest reward | +2 Hearthfire per journey | -1 Nerve (homesick) |
+| Void-compass | Travel event: Derelict | -1 Fuel per journey (minimum 1) | +10% travel event chance |
+| Oathband of the Kâhl | Thread C (Old Rivals) | Kept oaths give +25% reputation | Broken oaths cost double Hearthfire |
+| Memnyr data-slate | Travel event or rumor at Snazrik's Haven | +2 to reading enemy telegraphs | -1 Silver Tongue |
+| Gitzbolt's kustom field | Hunt Gitzbolt quest | +1 Shields cap in ship combat | -10 reputation with Hold Durnvar while equipped |
+
 ### 6.4 Faction reputation
 - Each Kin faction/League and each outsider faction tracks its **own** standing.
 - Reputation changes from oaths, trades, combat choices, and dialogue.
@@ -248,6 +285,7 @@ Combat is deliberately abstract and text-driven. Detailed rules will be specced 
 - Crew can leave (low Hearthfire, broken oaths) or be lost in events.
 
 ### 8.3 Progression
+- **Pacing target `[DECIDED]` (Milestone 4):** the level cap is reached **around the end of Act 3**, not before. Targets for an average run: about level 3 after Act 1, level 6 to 8 when Act 3 unlocks, level 9 to 10 at the epilogue. The balance pass lowers the XP values below (or steepens the curve) until the automated playthroughs land in these ranges. The post-game has nothing left to level.
 - **Skill points per level** to improve stats. `[DECIDED]` **1 stat point per level-up** (`STAT_POINTS_PER_LEVEL = 1`), and no stat can exceed **8** (`STAT_MAX = 8`). Both `[TUNABLE]`.
 - **XP sources `[DECIDED]`: milestones plus deeds.** Suggested values `[TUNABLE]`, tuned so the player reaches about level 10 near the end of the campaign:
 
@@ -278,6 +316,12 @@ Keep the engine data-driven so story content can be added later without code cha
 - **Data:** JSON files under `data/`, validated against schemas at load time (fail loudly on a bad reference, for example a subclass pointing to a missing base class).
 - **Input:** **numbered menus only.** Every prompt is a numbered list; the player picks by number key or click. Locked options are shown with their requirement and cannot be picked. No text parser.
 - **Saving:** **autosave + 3 manual slots.** Autosave whenever the player returns to the console hub and after each story beat. Manual saves to 3 slots from the console. Saves live in browser storage (localStorage or IndexedDB), carry a `save_version` for migrations, and can be exported/imported as a JSON file. The state model still supports mid-combat saves (used by autosave on tab close).
+- **Long menus `[DECIDED]` (Milestone 4):** a list with more than 10 options pages. Each page shows up to 8 options, then **Previous page** (9) and **Next page** (0) where they apply. The market avoids most paging with sections (section 4.5). Paging is handled in the UI from the View's option list, so the engine stays unchanged.
+- **System menu additions `[DECIDED]` (Milestone 4):**
+  - **How to play:** keys, rolls and outcome tiers, the two combat modes, Hearthfire, Wear, injuries, the Waaagh! meter, oaths and grudges. Short pages, written for a first-time player.
+  - **Settings:** text size (small, medium, large), dice animation (normal, fast, off), and reduced motion. Saved per browser in localStorage, never in the save file.
+  - **About:** the fan-project disclaimer, the game version, and credits.
+- **Release `[DECIDED]` (Milestone 4):** the game is published as a static site on **GitHub Pages**. The repository is pushed to the author's GitHub account, and a GitHub Actions workflow builds and deploys `dist/` on every push to `main`. Saves stay in each player's browser. The version number in `package.json` becomes `1.0.0` at release and is shown on the title screen and the About page.
 - **Visual style:** a dark ship console in **Leagues of Votann colors**: dark background, **shades of blue and teal** for panels, text, and frames, with **orange** as the accent for highlights, warnings, and important prompts. Monospace font for console text. Keep colors as theme tokens (CSS variables) so they are easy to adjust. Starting palette `[TUNABLE]`:
 
 | Token | Use | Value |
@@ -339,6 +383,8 @@ This keeps story authoring separate from engine code.
 - Final balancing of level curve and XP values (cap, curve shape, and XP sources are decided in section 8.3)
 - Art and audio (the console's color theme is decided in section 9.0)
 - Player-selectable difficulty modes, localization (English only)
+- More campaigns and playable factions (possible later updates; the engine and data layout should not assume there will only ever be one campaign)
+- A serious-Orks tone option (the `GRIM` tone was dropped in Milestone 4)
 
 ## 11. Milestones
 
@@ -435,6 +481,42 @@ The third milestone finishes the campaign: from a save with Act 3 unlocked (or a
 - Tests cover leverage, misleading reads, injuries and recovery, range bands, targeting, duels, and boarding.
 - No new number or display name is hardcoded in engine logic.
 
+### 11.4 Milestone 4: Polish and Release `[DECIDED]`
+
+The fourth milestone makes the game **complete with one campaign**. It adds little new story and mostly polishes mechanics, balance and the interface. After it, the game is published as version 1.0.0.
+
+1. **Post-game quests** (`story.md` 7.7):
+   - one quest chain for the Hold's fate: **The Council Seat** (Unbroken), **Rebuild the Outer Holdings** (Scarred), or **A New Hearth** (Evacuated);
+   - **Hunt Gitzbolt**, only if the Core was lost.
+2. **Relics** (section 6.3.1): two equip slots, about 8 relics with real effects, identification for Ore at two ports, selling.
+3. **Combat Phase 3, more** (`combat-system.md` Phase 3):
+   - **battle oaths** (item 1);
+   - **Hearthline crew commitments** (item 4);
+   - **relic effects in combat** (item 6, through section 6.3.1);
+   - the **balance pass** (item 7).
+4. **Armour module** for max Hull (section 4.5).
+5. **Balance pass** to the "fair but tense" target (`combat-system.md` Phase 3, item 7), including the XP pacing target (section 8.3).
+6. **Interface:**
+   - market sections and paging for long lists (sections 4.5 and 9.0);
+   - How to play, Settings and About in the System menu (section 9.0).
+7. **Clean-up:**
+   - drop the `GRIM` Ork tone (`story.md` 4.3);
+   - bring stale spec sections up to date;
+   - a player-facing README.
+8. **Release** on GitHub Pages as version 1.0.0 (section 9.0).
+9. **Writing:** Claude drafts the quest, relic, help and About text; the author reviews it.
+
+**Not in Milestone 4:** objective-based fights (combat Phase 3 item 5), extra campaigns or factions, difficulty modes, audio.
+
+**Done when:**
+- Every class and kin type can play from a new game to the epilogue, then finish their post-game quest chain, with no soft-lock. This includes runs where every roll fails.
+- Every Hold fate opens its own quest chain, and Hunt Gitzbolt appears only when the Core was lost.
+- The automated playthroughs land inside the XP pacing targets (section 8.3) and the difficulty targets (`combat-system.md` Phase 3, item 7).
+- No screen offers more than 10 options at once.
+- Relics, battle oaths and crew commitments have unit tests, and their effects show in the modifiers display.
+- Milestone 3 saves load through `migrateState`.
+- The site builds and deploys from GitHub Actions, and the public link plays from a fresh browser.
+
 ## 12. Design Decisions Summary
 
 | Question | Decision |
@@ -465,3 +547,10 @@ The third milestone finishes the campaign: from a save with Act 3 unlocked (or a
 | Act 2 writing | Claude drafts, author reviews |
 | Third milestone | Act 3, endings, epilogue and post-game, plus the rest of combat Phase 2 and the grudge duel and boarding parts of Phase 3 (section 11.3) |
 | Act 3 writing | Claude drafts, author reviews |
+| Fourth milestone | Polish and release: post-game quests, relics, battle oaths, crew commitments, armour, balance, menus, help and settings, GitHub Pages (section 11.4) |
+| Post-game quests | One chain per Hold fate, plus Hunt Gitzbolt if the Core was lost |
+| Relic slots | 2 equipped at a time, about 8 relics |
+| Long menus | Market sections, plus paging (8 per page) for anything still over 10 |
+| XP pacing | Level cap reached around the end of Act 3 |
+| Difficulty | One mode, "fair but tense" |
+| Release | Static site on GitHub Pages, version 1.0.0 |

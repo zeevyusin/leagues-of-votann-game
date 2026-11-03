@@ -569,7 +569,48 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 
 ### Phase 3: Kin identity and connected systems
 
-`[DECIDED]` Milestone 3 builds items 2 and 3, because Act 3 depends on them. The others come later.
+`[DECIDED]` Milestone 3 builds items 2 and 3, because Act 3 depends on them. Milestone 4 builds items 1, 4, 6 and 7. Item 5 (objective-based fights) stays for a later update.
+
+**Battle oaths (Milestone 4).**
+- **When.** In round 1 of any fight, before the first choice, the player may swear one battle oath. Swearing does not use the round.
+- **The oaths** `[TUNABLE]`, in `data/battle_oaths.json`:
+
+| Oath | Bonus for the fight | Broken if |
+|---|---|---|
+| Oath of No Retreat | +1 to all rolls | you Withdraw or are defeated |
+| Oath of Mercy | +2 to Negotiate | the fight ends with the enemy broken by force (victory_broken) |
+| Oath of the Unbowed | +1 to all rolls, and +1 Resolve damage on a critical | your Health (or Hull) drops below half |
+
+- **Kept:** +`BATTLE_OATH_KEPT_HEARTHFIRE` (5) Hearthfire and +2 reputation with Hold Durnvar.
+- **Broken:** -`BATTLE_OATH_BROKEN_HEARTHFIRE` (10) Hearthfire and -5 reputation with Hold Durnvar. Unbreakable Word (Ironkin Speaker) and the Oathband of the Kâhl apply as for other oaths.
+- Battle oaths are not Logbook oaths: they last one fight and leave a single result line.
+
+**Hearthline crew commitments (Milestone 4).**
+- **The rule.** Each crew member with a commitment can be committed **once per fight**. Committing is a free action that changes **the current round** only, and is chosen before the stance or allocation.
+- **The commitments** `[TUNABLE]`, stored as `commitment` on each crew member in `crew.json`:
+
+| Crew | Mode | Effect this round |
+|---|---|---|
+| Old Dorrik | Ship | Emergency patch: restore 3 Hull |
+| Ylsa | Ship | Evasive burn: +3 to the roll |
+| Fleet-Theyn Hrolla Vask | Both | Fleet-Theyn's command: +2 to the roll; +5 Hearthfire if the fight is won |
+| Brokka | Personal | Hammer blow: +2 Resolve damage if the round's roll succeeds |
+
+- Crew lost or sent away cannot be committed. New crew added later only need a `commitment` entry.
+
+**Relic effects in combat (Milestone 4).** Equipped relics (`game-overview.md` 6.3.1) add their combat modifiers to every fight and show in the modifiers display under the relic's name.
+
+**Balance pass (Milestone 4)** `[DECIDED]`: one mode, "fair but tense". The pass tunes enemy numbers, module prices, the void battle waves and XP using the automated playthroughs. A **careful** test player (balanced allocation, uses the counter-key and crew commitments, repairs and treats injuries) must hit these targets, measured over at least 60 seeded runs:
+
+| Measure | Target |
+|---|---|
+| Act 1 and Act 2 fights lost | 15% to 30% |
+| Void battle won (2 threads, no early launch) | 70% to 90% |
+| Warboss fight won | 70% to 90% |
+| Fight length | 2 to 5 rounds on average (8 at most for Skragnak) |
+| Early launch with fewer than 2 threads | the battle is lost more often than won |
+
+The existing simple test player must still finish every run.
 
 **Grudge duel (Milestone 3).** An encounter with `duel: true` is a one-on-one personal fight in front of witnesses:
 - **No Withdraw and no Negotiate.** Not even Chart Safe Route opens a way out (encounter flag `inescapable`).
@@ -614,3 +655,5 @@ Goal: both combat modes work end to end with simple data, and defeat leads to a 
 | Range bands and targeting | Light version: three bands decided by engine pips, +3 difficulty to knock out enemy pips next round (sections 4.3.1, 4.3.2) |
 | Misleading reads | Only `deceptive` enemies, only when the read would be Vague (section 3.2) |
 | Phase 3 in Milestone 3 | Grudge duel and boarding handoff only |
+| Phase 3 in Milestone 4 | Battle oaths, Hearthline crew commitments, relic effects, balance pass. Objective fights later. |
+| Difficulty target | Fair but tense (balance pass targets in Phase 3) |

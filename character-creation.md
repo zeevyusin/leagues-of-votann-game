@@ -253,10 +253,9 @@ Example `subclasses.json` entry:
 7. Ensure gender never affects any numeric or mechanical outcome.
 8. Expose `ALLOW_BONUS_POINTS` and `WEAR_MODE` as config flags.
 
-## 7. Out of Scope (for now)
+## 7. Related specs
 
-- Story and narrative
-- Detailed combat rules
-- Ship modules, travel, and resource economy (Fuel, Ore, Supplies, Hearthfire)
-- Oaths, grudges, and per-faction reputation systems (only referenced where they interact with classes)
-- Level progression (decided in `game-overview.md` section 8.3: 1 stat point per level, stat max 8)
+This file covers characters and classes only. The rest is specced elsewhere:
+- Story and narrative: `story.md`
+- Combat rules: `combat-system.md`
+- Ship modules, travel, resources, oaths, grudges, reputation, relics and level progression: `game-overview.md`
