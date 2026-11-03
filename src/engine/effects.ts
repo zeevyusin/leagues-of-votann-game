@@ -12,6 +12,8 @@ import {
   messageOf,
   oathOf,
   relicOf,
+  relicProduct,
+  relicSum,
   signed,
   systemOf,
   threadOf,
@@ -133,9 +135,10 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
     if (qty < e.add_cargo.qty) out.push({ text: 'The cargo hold is full; some had to be left behind.', tone: 'muted' });
   }
 
-  if (e.add_relic) {
-    state.relics.push({ key: e.add_relic, identified: false });
-    out.push({ text: `Found a relic: ${relicOf(ctx.data, e.add_relic).unidentified_name}`, tone: 'accent' });
+  if (e.add_relic && !state.relics.some((r) => r.key === e.add_relic)) {
+    const info = relicOf(ctx.data, e.add_relic);
+    state.relics.push({ key: e.add_relic, identified: info.known, equipped: false });
+    out.push({ text: `Found a relic: ${info.known ? info.display_name : info.unidentified_name}. Equip it from the Ship screen.`, tone: 'accent' });
   }
 
   if (e.reveal_system && !state.discovered_systems.includes(e.reveal_system)) {
@@ -184,6 +187,11 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
     if (state.ship.modules[m] < cfg.MODULE_MAX_LEVEL) {
       state.ship.modules[m]++;
       if (m === 'cargo_hold') state.ship.cargo_capacity += cfg.CARGO_CAPACITY_PER_HOLD_LEVEL;
+      // Armour raises max Hull, and the new plates arrive in one piece.
+      if (m === 'armour') {
+        state.ship.hull_max += cfg.ARMOUR_HULL_PER_LEVEL;
+        state.ship.hull += cfg.ARMOUR_HULL_PER_LEVEL;
+      }
       out.push({ text: `${moduleLabel(m)} upgraded to level ${state.ship.modules[m]}.`, tone: 'good' });
     }
   }
@@ -206,6 +214,21 @@ function applyEffect(state: GameState, ctx: Ctx, e: Effect, opts: EffectOptions)
   if (e.next_fight) {
     state.pending_fight_mods.push({ label: e.next_fight.label, value: e.next_fight.value, rolls: e.next_fight.rolls ?? null });
     out.push({ text: `${e.next_fight.label}: ${signed(e.next_fight.value)} in the next fight.`, tone: 'teal' });
+  }
+  if (e.complete_quest && !state.story.post_quests_completed.includes(e.complete_quest)) {
+    const quest = ctx.data.post_quests.find((q) => q.key === e.complete_quest)!;
+    state.story.post_quests_completed.push(quest.key);
+    out.push({ text: `Quest complete: ${quest.title}`, tone: 'accent' }, { text: quest.reward_text, tone: 'teal' });
+    out.push(...grantXp(state, ctx, cfg.XP_THREAD));
+  }
+  if (e.set_home_port) {
+    state.story.home_port = e.set_home_port;
+    out.push({ text: `${systemOf(ctx.data, e.set_home_port).display_name} is the fleet's home port now.`, tone: 'good' });
+  }
+  if (e.set_core_choice) {
+    state.story.flags.CORE_CHOICE = e.set_core_choice;
+    state.story.core_status = e.set_core_choice === 'DESTROYED' ? 'DESTROYED' : 'RECOVERED';
+    if (state.story.ending) state.story.ending.core = e.set_core_choice;
   }
   if (e.move_to) {
     state.location = e.move_to;
@@ -257,18 +280,26 @@ export function resolveOath(state: GameState, ctx: Ctx, key: string, status: 'KE
   const oath = oathOf(ctx.data, key);
   if (status === 'BROKEN' && !oath.can_fail) return [];
   entry.status = status;
-  const effects = structuredClone(status === 'KEPT' ? oath.on_keep : oath.on_break);
-  // Unbreakable Word (Ironkin Speaker): kept oaths are worth more, broken ones cost more.
-  if (hasPassive(ctx.data, state.character, 'UNBREAKABLE_WORD')) {
-    for (const e of effects)
-      for (const f of Object.keys(e.reputation ?? {}))
-        e.reputation![f] = Math.round(e.reputation![f] * UNBREAKABLE_WORD_MULTIPLIER);
-  }
+  const effects = scaleOathEffects(state, ctx, status, status === 'KEPT' ? oath.on_keep : oath.on_break);
   const head: Line = {
     text: status === 'KEPT' ? `Oath kept: ${oath.title}` : `Oath broken: ${oath.title}`,
     tone: status === 'KEPT' ? 'good' : 'bad',
   };
   return [head, ...applyEffects(state, ctx, effects)];
+}
+
+/** Oath results scaled by Unbreakable Word (Ironkin Speaker) and relics: kept oaths can be worth
+ * more reputation, broken ones can cost more reputation and Hearthfire. Returns a copy. */
+export function scaleOathEffects(state: GameState, ctx: Ctx, status: 'KEPT' | 'BROKEN', source: Effect[]): Effect[] {
+  const effects = structuredClone(source);
+  let repMult = hasPassive(ctx.data, state.character, 'UNBREAKABLE_WORD') ? UNBREAKABLE_WORD_MULTIPLIER : 1;
+  if (status === 'KEPT') repMult *= 1 + relicSum(state, ctx.data, 'oath_reputation_bonus');
+  const hearthMult = status === 'BROKEN' ? relicProduct(state, ctx.data, 'broken_oath_hearthfire_multiplier') : 1;
+  for (const e of effects) {
+    for (const f of Object.keys(e.reputation ?? {})) e.reputation![f] = Math.round(e.reputation![f] * repMult);
+    if (e.hearthfire && e.hearthfire < 0) e.hearthfire = Math.round(e.hearthfire * hearthMult);
+  }
+  return effects;
 }
 
 /** Breaks any failable oath whose deadline has passed. */

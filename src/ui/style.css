@@ -30,6 +30,17 @@ body {
   line-height: 1.55;
 }
 
+/* Text size setting (src/ui/settings.ts). */
+html[data-text-size='small'],
+html[data-text-size='small'] body {
+  font-size: 13px;
+}
+
+html[data-text-size='large'],
+html[data-text-size='large'] body {
+  font-size: 17px;
+}
+
 body {
   min-height: 100vh;
   background:
@@ -570,6 +581,13 @@ button {
   .dice-die.rolling svg {
     animation: none;
   }
+}
+
+/* The Reduced motion setting does the same, whatever the system preference. */
+html[data-reduced-motion='on'] .dice-card,
+html[data-reduced-motion='on'] .dice-die.landed,
+html[data-reduced-motion='on'] .dice-die.rolling svg {
+  animation: none;
 }
 
 @media (max-width: 600px) {

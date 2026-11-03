@@ -2,7 +2,9 @@
 import type { GameData } from '../engine/schema';
 import { applyChoiceWithRolls, buildView } from '../engine/game';
 import type { RollEvent } from '../engine/roll';
-import { DiceOverlay, diceEnabled, setDiceEnabled } from './dice';
+import { DiceOverlay, diceEnabled } from './dice';
+import { ABOUT_LINES, HELP_PAGES, VERSION } from './help';
+import { DICE_SETTINGS, TEXT_SIZES, applySettings, cycle, loadSettings, saveSettings } from './settings';
 import { creationChoose, creationView, newDraft, newGame, type CreationDraft } from '../engine/creation';
 import { newSeed } from '../engine/rng';
 import type { GameState, HubTab, Line, Option, View } from '../engine/types';
@@ -12,6 +14,21 @@ type Mode =
   | { kind: 'title'; message?: string }
   | { kind: 'creation'; draft: CreationDraft }
   | { kind: 'game'; state: GameState; menu: boolean; message?: string };
+
+/** How to play, Settings and About open over the title screen or the System menu. */
+type Panel = { kind: 'help'; page: number } | { kind: 'settings' } | { kind: 'about' } | null;
+
+/** Lists longer than this page (game-overview.md 9.0). */
+const MAX_OPTIONS = 10;
+const PAGE_SIZE = 8;
+const PREV_ID = '__page:prev';
+const NEXT_ID = '__page:next';
+
+/** An option as shown on screen, with the key that picks it. */
+interface Shown {
+  opt: Option;
+  key: string;
+}
 
 const TAB_LABELS: Record<HubTab, string> = { comms: 'Comms', nav: 'Nav', ship: 'Ship', logbook: 'Logbook', market: 'Market' };
 
@@ -28,11 +45,16 @@ export class App {
   private dice = new DiceOverlay();
   /** Rolls from the last choice, animated after the next render. */
   private pendingRolls: RollEvent[] = [];
+  private panel: Panel = null;
+  /** Page of a long option list, reset whenever the screen changes. */
+  private page = 0;
+  private pageKey = '';
 
   constructor(
     private root: HTMLElement,
     private data: GameData,
   ) {
+    applySettings(loadSettings());
     document.addEventListener('keydown', (e) => this.onKey(e));
     this.render();
   }
@@ -50,10 +72,13 @@ export class App {
       options.push({ id: `load:${i}`, label: `Load slot ${i}`, detail: s?.summary, locked: s ? undefined : 'Empty' });
     }
     options.push({ id: 'import', label: 'Import save file', tone: 'muted' });
+    options.push({ id: 'panel:help', label: 'How to play', tone: 'muted' });
+    options.push({ id: 'panel:settings', label: 'Settings', tone: 'muted' });
+    options.push({ id: 'panel:about', label: 'About', tone: 'muted' });
     return {
       kind: 'title',
       title: 'Votann Command Console',
-      subtitle: 'A text adventure on a Kin prospector\'s bridge',
+      subtitle: `A text adventure on a Kin prospector's bridge. Version ${VERSION}`,
       body: [
         { text: 'The Ashfall Reach. A prospecting fleet. An ancestor vault that should have stayed sealed.' },
         { text: '' },
@@ -74,7 +99,9 @@ export class App {
       options.push({ id: `sys:save:${i}`, label: `Save to slot ${i}`, detail: s ? `Overwrites: ${s.summary}` : 'Empty' });
     }
     options.push({ id: 'sys:export', label: 'Export save to a file' });
-    options.push({ id: 'sys:dice', label: `Dice animation: ${diceEnabled() ? 'On' : 'Off'}`, detail: 'Press to switch' });
+    options.push({ id: 'panel:help', label: 'How to play' });
+    options.push({ id: 'panel:settings', label: 'Settings', detail: 'Text size, dice animation, reduced motion' });
+    options.push({ id: 'panel:about', label: 'About' });
     options.push({ id: 'sys:quit', label: 'Quit to title', detail: 'Your progress is autosaved.', tone: 'muted' });
     return {
       kind: 'system',
@@ -85,7 +112,50 @@ export class App {
     };
   }
 
+  private panelView(panel: NonNullable<Panel>): View {
+    if (panel.kind === 'about') return { kind: 'about', title: 'About', body: ABOUT_LINES, options: [{ id: 'panel:close', label: 'Back', tone: 'accent' }] };
+    if (panel.kind === 'settings') {
+      const st = loadSettings();
+      return {
+        kind: 'settings',
+        title: 'Settings',
+        subtitle: 'Saved in this browser only',
+        body: [{ text: 'Press an option to change it.', tone: 'muted' }],
+        options: [
+          { id: 'panel:set:text', label: `Text size: ${cap(st.textSize)}` },
+          { id: 'panel:set:dice', label: `Dice animation: ${cap(st.dice)}` },
+          { id: 'panel:set:motion', label: `Reduced motion: ${st.reducedMotion ? 'On' : 'Off'}`, detail: 'Skips the dice tumble and other movement' },
+          { id: 'panel:close', label: 'Back', tone: 'accent' },
+        ],
+      };
+    }
+    const page = HELP_PAGES[panel.page];
+    const options: Option[] = [];
+    if (panel.page + 1 < HELP_PAGES.length) options.push({ id: 'panel:help:next', label: `Next: ${HELP_PAGES[panel.page + 1].title}`, tone: 'accent' });
+    if (panel.page > 0) options.push({ id: 'panel:help:prev', label: `Back: ${HELP_PAGES[panel.page - 1].title}` });
+    options.push({ id: 'panel:close', label: 'Close the guide', tone: 'muted' });
+    return { kind: 'help', title: `How to play: ${page.title}`, subtitle: `Page ${panel.page + 1} of ${HELP_PAGES.length}`, body: page.lines, options };
+  }
+
+  private panelChoice(id: string): void {
+    const p = this.panel;
+    if (id === 'panel:help') this.panel = { kind: 'help', page: 0 };
+    else if (id === 'panel:settings') this.panel = { kind: 'settings' };
+    else if (id === 'panel:about') this.panel = { kind: 'about' };
+    else if (id === 'panel:close') this.panel = null;
+    else if (p?.kind === 'help' && id === 'panel:help:next') this.panel = { kind: 'help', page: Math.min(HELP_PAGES.length - 1, p.page + 1) };
+    else if (p?.kind === 'help' && id === 'panel:help:prev') this.panel = { kind: 'help', page: Math.max(0, p.page - 1) };
+    else if (id.startsWith('panel:set:')) {
+      const st = loadSettings();
+      if (id === 'panel:set:text') st.textSize = cycle(TEXT_SIZES, st.textSize);
+      if (id === 'panel:set:dice') st.dice = cycle(DICE_SETTINGS, st.dice);
+      if (id === 'panel:set:motion') st.reducedMotion = !st.reducedMotion;
+      saveSettings(st);
+    }
+  }
+
   private currentView(): View {
+    if (this.panel) return this.panelView(this.panel);
     switch (this.mode.kind) {
       case 'title':
         return this.titleView(this.mode.message);
@@ -99,6 +169,16 @@ export class App {
   // ---------- Choices ----------
 
   private choose(id: string, text?: string): void {
+    if (id === PREV_ID || id === NEXT_ID) {
+      this.page += id === NEXT_ID ? 1 : -1;
+      this.render();
+      return;
+    }
+    if (id.startsWith('panel:')) {
+      this.panelChoice(id);
+      this.render();
+      return;
+    }
     try {
       this.handle(id, text);
     } catch (e) {
@@ -163,9 +243,6 @@ export class App {
     } else if (id === 'sys:export') {
       exportSave(mode.state, this.data);
       mode.message = 'Save file exported.';
-    } else if (id === 'sys:dice') {
-      setDiceEnabled(!diceEnabled());
-      mode.message = `Dice animation ${diceEnabled() ? 'on' : 'off'}.`;
     } else if (id === 'sys:quit') this.mode = { kind: 'title' };
   }
 
@@ -190,6 +267,12 @@ export class App {
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
 
+    if (e.key === 'Escape' && this.panel) {
+      this.panel = null;
+      e.preventDefault();
+      this.render();
+      return;
+    }
     if (e.key === 'Escape' && this.mode.kind === 'game') {
       this.mode.menu = !this.mode.menu;
       this.mode.message = undefined;
@@ -209,11 +292,10 @@ export class App {
     }
 
     if (/^[0-9]$/.test(e.key)) {
-      const index = e.key === '0' ? 9 : Number(e.key) - 1;
-      const opt = view.options[index];
-      if (opt && !opt.locked) {
+      const shown = this.shownOptions(view).find((x) => x.key === e.key);
+      if (shown && !shown.opt.locked) {
         e.preventDefault();
-        this.choose(opt.id);
+        this.choose(shown.opt.id);
       }
     }
   }
@@ -231,7 +313,7 @@ export class App {
 
     const header = el('header', 'console-header');
     const emblem = document.createElement('img');
-    emblem.src = '/emblem.svg';
+    emblem.src = `${import.meta.env.BASE_URL}emblem.svg`;
     emblem.alt = '';
     emblem.className = 'emblem';
     header.append(emblem);
@@ -289,7 +371,7 @@ export class App {
     if (view.error || message) screen.append(el('div', 'screen-error', view.error ?? message ?? ''));
 
     if (view.input) screen.append(this.renderInput(view.input));
-    screen.append(this.renderOptions(view.options));
+    screen.append(this.renderOptions(this.shownOptions(view)));
     shell.append(screen);
     root.append(shell);
 
@@ -319,13 +401,32 @@ export class App {
     return form;
   }
 
-  private renderOptions(options: Option[]): HTMLElement {
+  /**
+   * The options as shown, with their keys. Up to 10 show as 1-9 and 0. Longer lists page:
+   * 8 options at a time, with 9 for the previous page and 0 for the next.
+   */
+  private shownOptions(view: View): Shown[] {
+    const opts = view.options;
+    const key = `${view.kind}|${view.title}|${view.subtitle ?? ''}`;
+    if (key !== this.pageKey) {
+      this.pageKey = key;
+      this.page = 0;
+    }
+    if (opts.length <= MAX_OPTIONS) return opts.map((opt, i) => ({ opt, key: i < 9 ? String(i + 1) : '0' }));
+    const pages = Math.ceil(opts.length / PAGE_SIZE);
+    this.page = Math.max(0, Math.min(pages - 1, this.page));
+    const shown: Shown[] = opts.slice(this.page * PAGE_SIZE, (this.page + 1) * PAGE_SIZE).map((opt, i) => ({ opt, key: String(i + 1) }));
+    if (this.page > 0) shown.push({ key: '9', opt: { id: PREV_ID, label: 'Previous page', detail: `Page ${this.page} of ${pages}`, tone: 'muted' } });
+    if (this.page < pages - 1) shown.push({ key: '0', opt: { id: NEXT_ID, label: 'Next page', detail: `Page ${this.page + 2} of ${pages}`, tone: 'muted' } });
+    return shown;
+  }
+
+  private renderOptions(options: Shown[]): HTMLElement {
     const list = el('ol', 'options');
-    options.forEach((opt, i) => {
+    options.forEach(({ opt, key }) => {
       const li = el('li');
       const b = el('button', `option ${toneClass(opt.tone)}${opt.locked ? ' locked' : ''}`) as HTMLButtonElement;
       b.disabled = !!opt.locked;
-      const key = i < 9 ? String(i + 1) : i === 9 ? '0' : '';
       b.append(el('span', 'option-key', key));
       const text = el('span', 'option-text');
       text.append(el('span', 'option-label', opt.label));
@@ -338,6 +439,10 @@ export class App {
     });
     return list;
   }
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function el(tag: string, className?: string, text?: string): HTMLElement {

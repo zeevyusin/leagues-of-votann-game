@@ -11,7 +11,15 @@
     },
     "repair_discount": 1,
     "roll_modifiers": [],
-    "protected": true
+    "protected": true,
+    "commitment": {
+      "name": "Emergency patch",
+      "description": "Dorrik restores 3 Hull.",
+      "modes": [
+        "ship"
+      ],
+      "heal_hull": 3
+    }
   },
   {
     "key": "YLSA",
@@ -31,7 +39,15 @@
       }
     ],
     "protected": false,
-    "act3_risk": true
+    "act3_risk": true,
+    "commitment": {
+      "name": "Evasive burn",
+      "description": "+3 to this round's roll.",
+      "modes": [
+        "ship"
+      ],
+      "roll": 3
+    }
   },
   {
     "key": "HROLLA_VASK",
@@ -50,7 +66,17 @@
         "value": 1
       }
     ],
-    "protected": true
+    "protected": true,
+    "commitment": {
+      "name": "Fleet-Theyn's command",
+      "description": "+2 to this round's roll, and +5 Hearthfire if the fight is won.",
+      "modes": [
+        "personal",
+        "ship"
+      ],
+      "roll": 2,
+      "victory_hearthfire": 5
+    }
   },
   {
     "key": "BROKKA",
@@ -69,6 +95,14 @@
         "value": 1
       }
     ],
-    "protected": false
+    "protected": false,
+    "commitment": {
+      "name": "Hammer blow",
+      "description": "+2 Resolve damage if this round's roll succeeds.",
+      "modes": [
+        "personal"
+      ],
+      "resolve_on_hit": 2
+    }
   }
 ]

@@ -172,7 +172,8 @@ describe('range bands and targeting', () => {
     combat.enemy_alloc = { weapons: 4, shields: 1, engines: 1 };
     const rolls: { difficulty: number }[] = [];
     shipRound(s, { ...ctx(0.5), rolls: rolls as never[] }, combat, { weapons: 3, shields: 2, engines: 1 });
-    expect(rolls[0].difficulty).toBe(11 + 1 + data.config.TARGET_DIFFICULTY);
+    const raider = data.enemy_ships.find((x) => x.key === 'ORK_RAIDER')!;
+    expect(rolls[0].difficulty).toBe(raider.defense_difficulty + 1 + data.config.TARGET_DIFFICULTY);
   });
 });
 
@@ -190,7 +191,7 @@ describe('duels', () => {
     combat.enemy.key = 'NOB_GRIZZGUT_2';
     const view = buildView({ ...s, scenes: [...s.scenes, { type: 'combat', combat }] }, data);
     expect(view.options.find((o) => o.id === 'stance:negotiate')?.locked).toBe('No talking in a duel');
-    expect(view.options.find((o) => o.id === 'withdraw')?.locked).toBeDefined();
+    expect(view.options.some((o) => o.id === 'withdraw')).toBe(false);
   });
 
   it('stances are counted across the campaign', () => {

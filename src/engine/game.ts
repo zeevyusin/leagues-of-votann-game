@@ -17,6 +17,7 @@ import {
   hasPassive,
   hearthfireBand,
   inAct3,
+  isPort,
   injuryName,
   itemOf,
   liveWaaagh,
@@ -26,7 +27,7 @@ import {
   messageOf,
   oathOf,
   passiveFor,
-  reactorPips,
+  shipPips,
   recordRoll,
   relicOf,
   resolveText,
@@ -45,6 +46,7 @@ import { applyEffects, resolveOath } from './effects';
 import { availableRoutes, distressCall, isStranded, routeFuel, travel } from './travel';
 import {
   arrivalBeat,
+  availableQuests,
   boardShip,
   canDefer,
   leaveShip,
@@ -94,7 +96,9 @@ import {
   withdrawLock,
   type RoundOutcome,
 } from './combat';
-import { currentMarket, marketChoice, marketOptions } from './market';
+import { MARKET_SECTIONS, currentMarket, marketChoice, marketOptions, type MarketSection } from './market';
+import { commitCrew, commitLock, commitments, oathLock, swearBattleOath } from './hearthline';
+import { equipLock, equipRelic, equippedCount, identifyRelic, relicLabel, unequipRelic } from './relics';
 import { lockedReason } from './conditions';
 import type {
   GameState,
@@ -240,9 +244,17 @@ function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hu
   const [kind, arg] = splitId(id);
   switch (kind) {
     case 'tab':
-      if (TABS.includes(arg as HubTab) && (arg !== 'market' || currentMarket(state, ctx))) scene.tab = arg as HubTab;
+      if (TABS.includes(arg as HubTab) && (arg !== 'market' || currentMarket(state, ctx))) {
+        scene.tab = arg as HubTab;
+        scene.section = null;
+      }
       return;
     case 'mkt': {
+      if (arg.startsWith('section:')) {
+        const section = arg.slice(8);
+        scene.section = (MARKET_SECTIONS as readonly string[]).includes(section) ? section : null;
+        return;
+      }
       const lines = marketChoice(state, ctx, arg);
       if (lines) state.scenes.push({ type: 'notice', title: 'Market', lines });
       return;
@@ -293,16 +305,16 @@ function hubChoice(state: GameState, ctx: Ctx, scene: Extract<Scene, { type: 'hu
     case 'evaluate': {
       const relic = state.relics[Number(arg)];
       if (!relic || relic.identified || !canEvaluate(state, ctx)) return;
-      relic.identified = true;
-      const info = relicOf(ctx.data, relic.key);
-      const lines: Line[] = [
-        { text: info.display_name, tone: 'heading' },
-        { text: `Benefit: ${info.benefit}`, tone: 'good' },
-        { text: `Drawback: ${info.drawback}`, tone: 'bad' },
-      ];
+      const lines = identifyRelic(state, ctx, Number(arg));
       const action = consoleActionFor(ctx.data, state.character);
       if (action.wearCost) lines.push(...applyEffects(state, ctx, [{ wear: action.wearCost }], { nonLethal: true }));
       state.scenes.push({ type: 'notice', title: action.name, lines });
+      return;
+    }
+    case 'equip':
+    case 'unequip': {
+      const lines = kind === 'equip' ? equipRelic(state, ctx, Number(arg)) : unequipRelic(state, ctx, Number(arg));
+      if (lines) state.scenes.push({ type: 'notice', title: 'Relics', lines });
       return;
     }
     case 'pay': {
@@ -418,6 +430,21 @@ function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipC
     if (!combatActionLock(state, ctx, combat)) settle(useCombatAction(state, ctx, combat));
     return;
   }
+  // Battle oaths and crew commitments open a short sub-list and never use the round.
+  if (kind === 'menu') {
+    combat.menu = arg === 'oath' || arg === 'crew' ? arg : null;
+    return;
+  }
+  if (kind === 'oath') {
+    const lines = swearBattleOath(ctx, combat, arg);
+    if (lines.length) combat.last = lines;
+    return;
+  }
+  if (kind === 'commit') {
+    const lines = commitCrew(state, ctx, combat, arg);
+    if (lines.length) combat.last = lines;
+    return;
+  }
   if (kind === 'withdraw') {
     if (!withdrawLock(ctx, combat))
       settle(combat.mode === 'personal' ? personalWithdraw(state, ctx, combat) : shipWithdraw(state, ctx, combat));
@@ -450,7 +477,7 @@ function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipC
   } else if (kind === 'shields' && combat.pending_weapons !== null) {
     const s = Number(arg);
     if (!validShieldChoices(state, ctx, combat.pending_weapons).includes(s)) return;
-    const pips = reactorPips(ctx.data.config, state.ship);
+    const pips = shipPips(state, ctx.data);
     const alloc = { weapons: combat.pending_weapons, shields: s, engines: pips - combat.pending_weapons - s };
     settle(shipRound(state, ctx, combat, alloc));
   }
@@ -465,7 +492,7 @@ export function buildView(state: GameState, data: GameData): View {
   switch (scene.type) {
     case 'hub':
       return {
-        ...hubView(state, ctx, scene.tab),
+        ...hubView(state, ctx, scene.tab, scene.section ?? null),
         status,
         tabs: { active: scene.tab, unread: state.inbox.filter((m) => !m.read).length, market: !!currentMarket(state, ctx) },
       };
@@ -551,7 +578,7 @@ function statusBar(state: GameState, ctx: Ctx): StatusItem[] {
   return items;
 }
 
-function hubView(state: GameState, ctx: Ctx, tab: HubTab): View {
+function hubView(state: GameState, ctx: Ctx, tab: HubTab, section: string | null = null): View {
   const objectives = currentObjectives(state, ctx);
   const head: Line[] = [];
   if (objectives.length === 1) head.push({ text: `Objective: ${objectives[0]}`, tone: 'accent' });
@@ -572,7 +599,7 @@ function hubView(state: GameState, ctx: Ctx, tab: HubTab): View {
     case 'logbook':
       return logbookView(state, ctx, head, subtitle);
     case 'market': {
-      const { body, options } = marketOptions(state, ctx);
+      const { body, options } = marketOptions(state, ctx, (section as MarketSection | null) ?? null);
       return { kind: 'market', title: 'Market', subtitle, body: [...head, ...body], options: options.map((o) => ({ ...o, id: `mkt:${o.id}` })) };
     }
   }
@@ -616,7 +643,7 @@ function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): Vi
     return {
       id: `go:${r.to}`,
       label: `Set course: ${s.display_name}${waiting.has(r.to) ? '  [objective]' : ''}`,
-      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${s.port ? ', port' : ''}.`,
+      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${isPort(ctx.data, state, r.to) ? ', port' : ''}.`,
       locked: fuel > state.resources.fuel ? `Needs ${fuel} Fuel` : undefined,
       tone: waiting.has(r.to) ? 'accent' : undefined,
     };
@@ -646,7 +673,7 @@ function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: stri
   const s = state.ship;
   const c = state.character;
   const body: Line[] = [...head, { text: s.name.toUpperCase(), tone: 'heading' }];
-  body.push({ text: `Hull ${s.hull}/${s.hull_max}. Reactor ${reactorPips(cfg, s)} power pips.` });
+  body.push({ text: `Hull ${s.hull}/${s.hull_max}. Reactor ${shipPips(state, ctx.data)} power pips.` });
   body.push({ text: 'Modules:', tone: 'muted' });
   const caps = shipCaps(state, ctx);
   for (const [m, lvl] of Object.entries(s.modules)) {
@@ -658,10 +685,12 @@ function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: stri
   if (!state.cargo.length) body.push({ text: '  (empty)', tone: 'muted' });
   for (const item of state.cargo) body.push({ text: `  ${item.qty} x ${itemOf(ctx.data, item.key).display_name}` });
   if (state.relics.length) {
-    body.push({ text: 'Relics:', tone: 'muted' });
+    body.push({ text: '' }, { text: `Relics (${equippedCount(state)}/${cfg.RELIC_SLOTS} equipped):`, tone: 'muted' });
     for (const r of state.relics) {
       const info = relicOf(ctx.data, r.key);
-      body.push({ text: `  ${r.identified ? info.display_name : info.unidentified_name}${r.identified ? '' : ' (unidentified)'}`, tone: 'accent' });
+      const tag = r.equipped ? ' [EQUIPPED]' : '';
+      body.push({ text: `  ${relicLabel(ctx, r)}${tag}`, tone: r.equipped ? 'teal' : 'accent' });
+      body.push({ text: r.identified ? `    ${info.benefit} Drawback: ${info.drawback}` : '    Unknown benefit, unknown drawback. Identify it at Karrak Station or Hold Durnvar.', tone: 'muted' });
     }
   }
   if (c.injuries.length) {
@@ -702,6 +731,10 @@ function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: stri
       locked: state.self_maintenance_used ? 'Once per journey' : undefined,
     });
   }
+  state.relics.forEach((r, i) => {
+    if (r.equipped) options.push({ id: `unequip:${i}`, label: `Unequip: ${relicLabel(ctx, r)}`, tone: 'muted' });
+    else options.push({ id: `equip:${i}`, label: `Equip: ${relicLabel(ctx, r)}`, locked: equipLock(state, ctx, i), tone: 'accent' });
+  });
   if (canEvaluate(state, ctx))
     state.relics.forEach((r, i) => {
       if (!r.identified) options.push({ id: `evaluate:${i}`, label: `${consoleActionFor(ctx.data, c).name}: ${relicOf(ctx.data, r.key).unidentified_name}`, tone: 'accent' });
@@ -762,6 +795,16 @@ function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string)
       const finished = state.story.threads_completed.includes(t.key);
       body.push({ text: `${t.title}: ${done}/${t.beats.length}${finished ? ' (complete)' : ''}`, tone: finished ? 'good' : 'normal' });
       if (finished) body.push({ text: `  ${t.reward_text}`, tone: 'muted' });
+    }
+  }
+
+  const quests = availableQuests(state, ctx);
+  if (state.story.post_game && quests.length) {
+    body.push({ text: '' }, { text: 'AFTER THE WAAAGH!', tone: 'heading' });
+    for (const q of quests) {
+      const done = q.beats.filter((b) => state.story.completed_beats.some((x) => x.key === b)).length;
+      const finished = state.story.post_quests_completed.includes(q.key);
+      body.push({ text: `${q.title}: ${done}/${q.beats.length}${finished ? ' (complete)' : ''}`, tone: finished ? 'good' : 'normal' });
     }
   }
 
@@ -852,9 +895,11 @@ function beatView(state: GameState, ctx: Ctx, key: string): View {
       ? 'Travel event'
       : beat.thread
         ? `Act ${beat.act}: ${threadOf(ctx.data, beat.thread).title}`
-        : beat.act === 3
-          ? 'Act 3: The Waaagh!'
-          : `Act ${beat.act}`;
+        : beat.quest
+          ? `After the Waaagh!: ${ctx.data.post_quests.find((q) => q.key === beat.quest)!.title}`
+          : beat.act === 3
+            ? 'Act 3: The Waaagh!'
+            : `Act ${beat.act}`;
   return { kind: 'beat', title: beat.title, subtitle, body, options };
 }
 
@@ -921,13 +966,14 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
     return { id: `stance:${stance}`, label: titleCase(stance), detail, locked: talkLock };
   });
   options.push(...combatExtraOptions(state, ctx, combat));
-  return { kind: 'combat', title: `Combat: ${enemy.display_name}`, subtitle: encounterOf(ctx.data, combat.encounter).mode === 'personal' ? 'Personal combat' : 'Ship combat', body, options };
+  const subtitle = encounterOf(ctx.data, combat.encounter).mode === 'personal' ? 'Personal combat' : 'Ship combat';
+  return { kind: 'combat', title: `Combat: ${enemy.display_name}`, subtitle, body, options: combatMenuView(state, ctx, combat) ?? options };
 }
 
 function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
   const cfg = ctx.data.config;
   const enemy = enemyShipOf(ctx.data, combat.enemy.key);
-  const pips = reactorPips(cfg, state.ship);
+  const pips = shipPips(state, ctx.data);
   const caps = shipCaps(state, ctx);
   const body: Line[] = [...combat.last, { text: '' }];
   body.push({ text: `ROUND ${combat.round}    ${state.ship.name} Hull ${state.ship.hull}/${state.ship.hull_max}    ${enemy.display_name} Hull ${combat.enemy.hull}/${combat.enemy.hull_max}`, tone: 'heading' });
@@ -972,19 +1018,54 @@ function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
     options.push({ id: 'target', label: `Target: ${titleCase(combat.target)}`, detail: 'Press to change. Does not use the round.', tone: 'muted' });
     options.push({ id: 'back', label: 'Change weapons', tone: 'muted' });
   }
-  return { kind: 'combat', title: `Ship combat: ${enemy.display_name}`, subtitle: 'Ship combat', body, options };
+  return { kind: 'combat', title: `Ship combat: ${enemy.display_name}`, subtitle: 'Ship combat', body, options: combatMenuView(state, ctx, combat) ?? options };
 }
 
 function sumMods(mods: { value: number }[]): number {
   return mods.reduce((s, m) => s + m.value, 0);
 }
 
-/** Console action and Withdraw, offered alongside the stances or the weapons step. */
+/** The battle oath or crew sub-list, when one is open. Null when the normal options show. */
+function combatMenuView(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipCombat): Option[] | null {
+  if (combat.menu === 'oath')
+    return [
+      ...ctx.data.battle_oaths.map((o) => ({ id: `oath:${o.key}`, label: o.name, detail: o.description, tone: 'accent' as const })),
+      { id: 'menu:', label: 'Back', tone: 'muted' as const },
+    ];
+  if (combat.menu === 'crew')
+    return [
+      ...commitments(state, ctx, combat).map(({ key, member }) => ({
+        id: `commit:${key}`,
+        label: `${member.display_name}: ${member.commitment!.name}`,
+        detail: `${member.commitment!.description} Once per fight; this round only.`,
+        locked: commitLock(state, ctx, combat, key),
+        tone: 'accent' as const,
+      })),
+      { id: 'menu:', label: 'Back', tone: 'muted' as const },
+    ];
+  return null;
+}
+
+/** Battle oath, crew, console action and Withdraw, offered alongside the stances or the weapons step. */
 function combatExtraOptions(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipCombat): Option[] {
   const action = consoleActionFor(ctx.data, state.character);
   const effect = subclassOf(ctx.data, state.character.subclass).console_action.combat;
   const wear = state.character.wear !== null && action.wearCost ? ` +${action.wearCost} Wear.` : '';
+  const extras: Option[] = [];
+  if (!oathLock(combat)) extras.push({ id: 'menu:oath', label: 'Swear a battle oath', detail: 'Before the first round only. A bonus for the fight, if you keep it.', tone: 'accent' });
+  const crew = commitments(state, ctx, combat);
+  if (crew.length)
+    extras.push({
+      id: 'menu:crew',
+      label: 'Hearthline: commit a crew member',
+      detail: 'Free action: changes this round only.',
+      locked: crew.every(({ key }) => combat.buffs.committed.includes(key)) ? 'Everyone has been committed this fight' : undefined,
+      tone: 'accent',
+    });
+  // Fights with no way out at all don't list Withdraw.
+  const inescapable = encounterOf(ctx.data, combat.encounter).inescapable;
   return [
+    ...extras,
     {
       id: 'action',
       label: `${action.name} (console action)`,
@@ -992,13 +1073,17 @@ function combatExtraOptions(state: GameState, ctx: Ctx, combat: PersonalCombat |
       locked: combatActionLock(state, ctx, combat),
       tone: 'accent',
     },
-    {
-      id: 'withdraw',
-      label: 'Withdraw',
-      detail: combat.buffs.auto_withdraw ? 'Your escape route is ready.' : combat.mode === 'ship' ? 'All power to engines and run.' : 'Nerve check to break away.',
-      locked: withdrawLock(ctx, combat),
-      tone: 'muted',
-    },
+    ...(inescapable
+      ? []
+      : [
+          {
+            id: 'withdraw',
+            label: 'Withdraw',
+            detail: combat.buffs.auto_withdraw ? 'Your escape route is ready.' : combat.mode === 'ship' ? 'All power to engines and run.' : 'Nerve check to break away.',
+            locked: withdrawLock(ctx, combat),
+            tone: 'muted' as const,
+          },
+        ]),
   ];
 }
 

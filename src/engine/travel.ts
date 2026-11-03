@@ -1,9 +1,9 @@
 // Travel, time, Supplies, recovery, fatigue, travel events, and docking (game-overview.md sections 4 and 7).
 import { applyDefeat } from './defeat';
 import { allMet } from './conditions';
-import { checkOathDeadlines, createOath, grantXp, receiveMessage, resolveOath } from './effects';
+import { applyEffects, checkOathDeadlines, createOath, grantXp, receiveMessage, resolveOath } from './effects';
 import { weightedPick } from './rng';
-import { clamp, inAct3, liveWaaagh, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
+import { isPort, relicProduct, relicSum, clamp, inAct3, liveWaaagh, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
 import type { GameState, Line } from './types';
 
 export function routeTo(state: GameState, ctx: Ctx, to: string) {
@@ -19,7 +19,8 @@ export function availableRoutes(state: GameState, ctx: Ctx) {
 
 /** Fuel a route costs right now (Chart Safe Route saves some). */
 export function routeFuel(state: GameState, ctx: Ctx, fuel: number): number {
-  return state.safe_route_charted ? Math.max(1, fuel - ctx.data.config.SAFE_ROUTE_FUEL_SAVING) : fuel;
+  const saved = (state.safe_route_charted ? ctx.data.config.SAFE_ROUTE_FUEL_SAVING : 0) - relicSum(state, ctx.data, 'fuel_per_journey');
+  return saved > 0 ? Math.max(1, fuel - saved) : fuel - saved;
 }
 
 export function isStranded(state: GameState, ctx: Ctx): boolean {
@@ -65,8 +66,9 @@ export function travel(state: GameState, ctx: Ctx, to: string): TravelResult {
     if (warning) lines.push({ text: `Comms: ${warning}`, tone: 'bad' });
   }
 
+  lines.push(...relicJourney(state, ctx));
   const event = pickTravelEvent(state, ctx, sys.danger);
-  if (sys.port) lines.push(...dock(state, ctx));
+  if (isPort(ctx.data, state, to)) lines.push(...dock(state, ctx));
 
   state.self_maintenance_used = false;
   state.safe_route_charted = false;
@@ -81,6 +83,14 @@ export function travel(state: GameState, ctx: Ctx, to: string): TravelResult {
   return { lines, event };
 }
 
+/** Per-journey relic effects: Hearthfire and Wear. */
+function relicJourney(state: GameState, ctx: Ctx): Line[] {
+  const hearthfire = relicSum(state, ctx.data, 'hearthfire_per_journey');
+  const wear = relicSum(state, ctx.data, 'wear_per_journey');
+  if (!hearthfire && !wear) return [];
+  return applyEffects(state, ctx, [{ hearthfire, wear }], { nonLethal: true });
+}
+
 /** Rolls for a travel event at the destination. Returns the event beat key, or null. */
 export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MEDIUM' | 'HIGH'): string | null {
   const cfg = ctx.data.config;
@@ -88,6 +98,7 @@ export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MED
   const meter = state.story.post_game ? 0 : state.story.waaagh_meter;
   const band = waaaghBand(cfg, meter);
   let chance = cfg.TRAVEL_EVENT_CHANCE[danger] + (meter === null ? 0 : band.event_chance_bonus);
+  chance += relicSum(state, ctx.data, 'event_chance');
   if (state.safe_route_charted) chance *= cfg.SAFE_ROUTE_EVENT_MULTIPLIER;
   if (ctx.rng.next() >= chance) return null;
 
@@ -98,7 +109,7 @@ export function pickTravelEvent(state: GameState, ctx: Ctx, danger: 'LOW' | 'MED
     if (ev.once && state.story.events_seen.includes(beat.key)) continue;
     if (ev.combat && state.grace_journeys > 0) continue;
     if (!allMet(state, ev.requirements)) continue;
-    const w = ev.weight * (ev.ork && meter !== null ? band.ork_event_weight : 1);
+    const w = ev.weight * (ev.ork && meter !== null ? band.ork_event_weight : 1) * (ev.ork ? relicProduct(state, ctx.data, 'ork_event_weight') : 1);
     if (w > 0) weights[beat.key] = w;
   }
   return Object.keys(weights).length ? weightedPick(ctx.rng, weights) : null;

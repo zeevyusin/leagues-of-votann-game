@@ -505,7 +505,9 @@ Reward: Hearthstone of Durn, reputation with the new home's faction.
 **Hunt Gitzbolt** (only if the Core is LOST)
 1. **A Familiar Signal** (Cinder Drift): a scan picks up the Core's signature.
 2. **The Price of a Secret** (Snazrik's Haven): buy, trick or threaten the Mek's location out of Snazrik.
-3. **Da Workshop** (The Scrapfield): a ship fight against Gitzbolt's new gunship, then boarding. Winning recovers the Core and replays the Core choice (return, keep, destroy). Losing lets him escape again, and the quest can be retried.
+3. **Da Workshop** (The Scrapfield): a ship fight against Gitzbolt's new gunship, then his lair: a boarding fight, or a Craft or Silver Tongue route to grab the Core. Winning replays the Core choice (return, keep, destroy). The gunship also has two roll routes, so the chain can be finished even if every roll fails.
+
+`[DECIDED]` **Retries.** Quest beats with a fight are marked `retry_on_defeat`: a lost or escaped fight leaves the beat waiting, and it starts again on the next visit to that system. Every such beat also has a roll route, which always moves the story on.
 
 Reward: Gitzbolt's kustom field, and the Core.
 
@@ -558,10 +560,11 @@ Story content uses the existing condition evaluator and effect applier. New file
 
 ```
 data/
-  story_beats.json      # every main beat, its routes and outcomes
+  story_beats.json, story_beats_act2.json, story_beats_act3.json   # main beats, act by act
   story_threads.json    # Act 2 threads, beat order, rewards
-  npcs.json             # named NPCs (story and crew)
+  crew.json             # named crew (Dorrik, Ylsa, Hrolla, Brokka); other NPCs live in the text
   endings.json          # ending pieces and the conditions that pick them
+  post_quests.json      # post-game quests (section 7.7)
   config.json           # add story [TUNABLE] values and flags (section 10.3)
 ```
 

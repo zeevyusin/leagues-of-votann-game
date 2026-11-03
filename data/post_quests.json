@@ -1,0 +1,1496 @@
+{
+  "quests": [
+    {
+      "key": "Q_COUNCIL",
+      "title": "The Council Seat",
+      "requirements": [
+        {
+          "hold_fate": "UNBROKEN"
+        }
+      ],
+      "message": "PQ_COUNCIL",
+      "beats": [
+        "PQ_C1_THE_SEAT",
+        "PQ_C2_LAST_WARBAND",
+        "PQ_C3_OPEN_LANES"
+      ],
+      "reward_text": "Hold Durnvar is safe, its lanes are open, and its council has a new voice: yours."
+    },
+    {
+      "key": "Q_REBUILD",
+      "title": "Rebuild the Outer Holdings",
+      "requirements": [
+        {
+          "hold_fate": "SCARRED"
+        }
+      ],
+      "message": "PQ_REBUILD",
+      "beats": [
+        "PQ_R1_MATERIALS",
+        "PQ_R2_BUILDERS_ESCORT",
+        "PQ_R3_RELIGHT"
+      ],
+      "reward_text": "The outer holdings burn with hearth-light again instead of fire."
+    },
+    {
+      "key": "Q_NEW_HEARTH",
+      "title": "A New Hearth",
+      "requirements": [
+        {
+          "hold_fate": "EVACUATED"
+        }
+      ],
+      "message": "PQ_NEW_HEARTH",
+      "beats": [
+        "PQ_N1_SOMEWHERE_TO_LIVE",
+        "PQ_N2_ANVIL",
+        "PQ_N2_KHARR",
+        "PQ_N2_SKRAPFANG",
+        "PQ_N3_FIRST_HEARTH"
+      ],
+      "reward_text": "The people of Durnvar have a home again."
+    },
+    {
+      "key": "Q_GITZBOLT",
+      "title": "Hunt Gitzbolt",
+      "requirements": [
+        {
+          "core_status": "LOST"
+        }
+      ],
+      "message": "PQ_GITZBOLT",
+      "beats": [
+        "PQ_G1_SIGNAL",
+        "PQ_G2_PRICE",
+        "PQ_G3_WORKSHOP",
+        "PQ_G4_LAIR",
+        "PQ_G5_CORE"
+      ],
+      "reward_text": "The Ancestor Core is back in Kin hands, and Gitzbolt is out of business. For now."
+    }
+  ],
+  "messages": [
+    {
+      "key": "PQ_COUNCIL",
+      "from": "The Council of Hold Durnvar",
+      "subject": "A seat at the table",
+      "body": "The council of Hold Durnvar requests your presence in the great hall. There is an empty seat at the table, and the elders have decided, after only three days of arguing, who should fill it.\n\nThere is other business too: a warband is still raiding the Grimholt mines from Rustmaw, and the trade lanes need new terms now that the Waaagh! is gone.",
+      "on_receive": [
+        {
+          "activate_beat": "PQ_C1_THE_SEAT"
+        }
+      ]
+    },
+    {
+      "key": "PQ_REBUILD",
+      "from": "Hold Durnvar, Office of Works",
+      "subject": "The outer holdings",
+      "body": "The Hold stands, but the outer holdings are ash. The Office of Works has plans to rebuild them, and no materials, no escorts and no hope of either without help.\n\nStart at Karrak Station: the builders need Ore and Supplies before anything else.",
+      "on_receive": [
+        {
+          "activate_beat": "PQ_R1_MATERIALS"
+        }
+      ]
+    },
+    {
+      "key": "PQ_NEW_HEARTH",
+      "from": "The refugee fleet",
+      "subject": "Somewhere to live",
+      "body": "Twelve thousand Kin of Durnvar are living in cargo holds and corridors, and the ships cannot carry them forever. The elders have three places in mind for a new home, and they want you to choose.\n\nAnswer when you are ready.",
+      "beat": "PQ_N1_SOMEWHERE_TO_LIVE",
+      "on_receive": [
+        {
+          "activate_beat": "PQ_N1_SOMEWHERE_TO_LIVE"
+        }
+      ]
+    },
+    {
+      "key": "PQ_GITZBOLT",
+      "from": "Old Dorrik",
+      "subject": "A familiar signal",
+      "body": "\"Captain. The long-range array picked something up in the Cinder Drift. Faint, but I'd know that hum anywhere.\" A pause. \"It's the Core. And where the Core is, that thieving Mek won't be far.\"",
+      "on_receive": [
+        {
+          "activate_beat": "PQ_G1_SIGNAL"
+        }
+      ]
+    }
+  ],
+  "beats": [
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_C1_THE_SEAT",
+      "quest": "Q_COUNCIL",
+      "trigger": "arrival",
+      "location": "HOLD_DURNVAR",
+      "title": "The Seat",
+      "goal": "Take your place on the council.",
+      "objective": "Answer the council at Hold Durnvar.",
+      "intro_text": "The great hall is full. Every elder of Hold Durnvar is here, and so, it seems, is half the Hold. At the end of the long table, one chair stands empty. The eldest of the council rises. \"We would hear you speak,\" she says, \"before we ask you to sit.\"",
+      "routes": [
+        {
+          "key": "SPEECH",
+          "label": "Speak to the hall about what the fleet did",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "RECORD",
+          "label": "Lay out the record of the war, plainly and in order",
+          "roll": {
+            "stat": "wits",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "DEED",
+          "label": "Say nothing. Set Skragnak's broken klaw on the table.",
+          "roll": {
+            "stat": "grit",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        },
+        {
+          "key": "GIFT",
+          "label": "Present the forges with salvaged Ork tech for the Hold",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        },
+        {
+          "key": "CONSOLE",
+          "label": "Use your console action",
+          "console_action": {
+            "difficulty": "NORMAL"
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The hall rises as one. You take the seat to the sound of a thousand Kin stamping their boots.",
+          "effects": [
+            {
+              "reputation": {
+                "HOLD_DURNVAR": 15
+              },
+              "hearthfire": 10
+            }
+          ]
+        },
+        "success": {
+          "text": "The elders nod, one by one. The seat is yours.",
+          "effects": [
+            {
+              "reputation": {
+                "HOLD_DURNVAR": 10
+              }
+            }
+          ]
+        },
+        "partial": {
+          "text": "Some of the elders grumble, but the seat is yours.",
+          "effects": [
+            {
+              "reputation": {
+                "HOLD_DURNVAR": 5
+              }
+            }
+          ]
+        },
+        "failure": {
+          "text": "It does not go well. They give you the seat anyway, mostly because nobody else wants it.",
+          "effects": []
+        }
+      },
+      "next": "PQ_C2_LAST_WARBAND"
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_C2_LAST_WARBAND",
+      "quest": "Q_COUNCIL",
+      "trigger": "arrival",
+      "location": "RUSTMAW",
+      "title": "The Last Warband",
+      "goal": "Break the last organised warband in the Reach.",
+      "objective": "Break the last warband at Rustmaw.",
+      "intro_text": "The last of Skragnak's warbands has dug in at Rustmaw, in the ruins of the old slave camp. Their Nob has painted \"DA NEW WAAAGH!\" on the gate in letters three metres high. It is spelt wrong.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Break them in the open",
+          "encounter": "PQ_LAST_WARBAND"
+        },
+        {
+          "key": "SNIPE",
+          "label": "Pick off their Nob from the ridgeline",
+          "roll": {
+            "stat": "nerve",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "TALK",
+          "label": "Tell them the truth: Skragnak is gone, and so is the Waaagh!",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "RIG",
+          "label": "Rig the camp's old generators to blow",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The warband scatters into the belt and does not come back. The Grimholt miners send you a crate of their best ale.",
+          "effects": [
+            {
+              "add_cargo": {
+                "key": "HOLD_ALE",
+                "qty": 2
+              },
+              "reputation": {
+                "DURN_LEAGUE": 10
+              }
+            }
+          ]
+        },
+        "success": {
+          "text": "The warband breaks. The mines are safe.",
+          "effects": [
+            {
+              "reputation": {
+                "DURN_LEAGUE": 5
+              }
+            }
+          ]
+        },
+        "partial": {
+          "text": "The warband breaks, but you take a beating doing it.",
+          "effects": [
+            {
+              "health": -3
+            }
+          ]
+        },
+        "failure": {
+          "text": "It is ugly and slow, and it costs you. But by the end, the warband is gone.",
+          "effects": [
+            {
+              "health": -4,
+              "hull": -3
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_C3_OPEN_LANES"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "complete_quest": "Q_COUNCIL"
+        },
+        {
+          "add_relic": "HEARTHSTONE_OF_DURN"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_C3_OPEN_LANES",
+      "quest": "Q_COUNCIL",
+      "trigger": "arrival",
+      "location": "KARRAK_STATION",
+      "title": "Open Lanes",
+      "goal": "Settle new trade terms for the Reach.",
+      "objective": "Settle the trade terms at Karrak Station.",
+      "intro_text": "The station master has booked the biggest room on Karrak Station, and it is still too small. Hold Durnvar wants fair prices. Karrak wants its cut. And sitting in the corner with his boots on the table, invited by nobody, is Kaptin Snazrik.",
+      "routes": [
+        {
+          "key": "BARGAIN",
+          "label": "Hammer out a deal everyone can live with",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "NUMBERS",
+          "label": "Show them the numbers: open lanes make everyone rich",
+          "roll": {
+            "stat": "wits",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "GUARANTEE",
+          "label": "Offer the fleet as escort for the new lanes",
+          "roll": {
+            "stat": "grit",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        },
+        {
+          "key": "PAY",
+          "label": "Smooth it over with your own Ore (60)",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "ore": -60
+            }
+          ],
+          "requirements": [
+            {
+              "ore": 60
+            }
+          ]
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The terms are signed by everyone, even Snazrik, who signs \"X\" and then, after some thought, a second \"X\".",
+          "effects": [
+            {
+              "reputation": {
+                "KARRAK_STATION": 15,
+                "FREEBOOTERS": 10
+              },
+              "ore": 80
+            }
+          ]
+        },
+        "success": {
+          "text": "The terms are signed. The lanes of the Reach are open.",
+          "effects": [
+            {
+              "reputation": {
+                "KARRAK_STATION": 10
+              },
+              "ore": 40
+            }
+          ]
+        },
+        "partial": {
+          "text": "The terms are signed, after a lot of shouting.",
+          "effects": [
+            {
+              "reputation": {
+                "KARRAK_STATION": 5
+              }
+            }
+          ]
+        },
+        "failure": {
+          "text": "Nobody is happy with the terms. That, the station master says, is how you know they are fair.",
+          "effects": []
+        }
+      },
+      "outro_text": "Back at the Hold, the council presents you with a warm stone from the great hearth of Durnvar. \"So you never forget where home is,\" the eldest says.",
+      "next": null
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_R1_MATERIALS",
+      "quest": "Q_REBUILD",
+      "trigger": "arrival",
+      "location": "KARRAK_STATION",
+      "title": "Materials",
+      "goal": "Gather Ore and Supplies for the rebuild.",
+      "objective": "Gather building materials at Karrak Station.",
+      "intro_text": "The builders need stone-steel, rations for the work crews, and a hundred other things. Karrak Station has all of it, at Karrak Station prices.",
+      "routes": [
+        {
+          "key": "BUY",
+          "label": "Pay for it outright (80 Ore)",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "ore": -80
+            }
+          ],
+          "requirements": [
+            {
+              "ore": 80
+            }
+          ]
+        },
+        {
+          "key": "ORE",
+          "label": "Hand over a hold full of ore crates",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "remove_cargo": {
+                "key": "ORE_CRATES",
+                "qty": 3
+              }
+            }
+          ],
+          "requirements": [
+            {
+              "has_cargo": "ORE_CRATES"
+            }
+          ]
+        },
+        {
+          "key": "HAGGLE",
+          "label": "Talk the traders down to something sensible",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "SALVAGE",
+          "label": "Salvage the materials from battle wreckage instead",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        },
+        {
+          "key": "LABOUR",
+          "label": "Put the crew to work loading cargo in exchange",
+          "roll": {
+            "stat": "grit",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The materials are loaded, and there is enough left over for a feast.",
+          "effects": [
+            {
+              "hearthfire": 10
+            }
+          ]
+        },
+        "success": {
+          "text": "The materials are loaded and on their way.",
+          "effects": []
+        },
+        "partial": {
+          "text": "You get most of what the builders need. It will have to do.",
+          "effects": [
+            {
+              "supplies": -3
+            }
+          ]
+        },
+        "failure": {
+          "text": "It takes days of work, and you pay for half of it yourself in the end.",
+          "effects": [
+            {
+              "ore": -30
+            }
+          ]
+        }
+      },
+      "next": "PQ_R2_BUILDERS_ESCORT"
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_R2_BUILDERS_ESCORT",
+      "quest": "Q_REBUILD",
+      "trigger": "arrival",
+      "location": "GRIMHOLT_BELT",
+      "title": "The Builders' Escort",
+      "goal": "Protect the builder ships from remnant raiders.",
+      "objective": "Escort the builders through the Grimholt Belt.",
+      "intro_text": "The builder ships crawl through the Grimholt Belt, fat and slow and loaded to the hatches. You are halfway through when a remnant raider drops out of the rocks, guns already firing.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Put yourself between the raider and the builders",
+          "encounter": "PQ_BUILDERS_ESCORT"
+        },
+        {
+          "key": "LEAD",
+          "label": "Lead the builders through the rocks where the raider cannot follow",
+          "roll": {
+            "stat": "nerve",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "DECOY",
+          "label": "Rig a decoy beacon to draw the raider off",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "Not a single builder ship is scratched. The crews cheer you on the open channel the whole way home.",
+          "effects": [
+            {
+              "hearthfire": 10,
+              "reputation": {
+                "HOLD_DURNVAR": 10
+              }
+            }
+          ]
+        },
+        "success": {
+          "text": "The builders make it through.",
+          "effects": [
+            {
+              "reputation": {
+                "HOLD_DURNVAR": 5
+              }
+            }
+          ]
+        },
+        "partial": {
+          "text": "The builders make it through, but one ship loses half its cargo.",
+          "effects": []
+        },
+        "failure": {
+          "text": "Two builder ships are damaged. The work will be slower, but it will go on.",
+          "effects": [
+            {
+              "hull": -4
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_R3_RELIGHT"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "complete_quest": "Q_REBUILD"
+        },
+        {
+          "add_relic": "HEARTHSTONE_OF_DURN"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_R3_RELIGHT",
+      "quest": "Q_REBUILD",
+      "trigger": "arrival",
+      "location": "HOLD_DURNVAR",
+      "title": "Relight the Hearths",
+      "goal": "Choose which settlement is rebuilt first.",
+      "objective": "Relight the hearths at Hold Durnvar.",
+      "intro_text": "The first new hearth is ready to be lit, and the whole Hold has come out to watch. But there are three settlements to rebuild and materials for one, for now. The Office of Works has left the choice to you.",
+      "routes": [
+        {
+          "key": "MINE",
+          "label": "The mining holding: the Hold runs on its ore",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "ore": 60,
+              "reputation": {
+                "DURN_LEAGUE": 10
+              }
+            }
+          ]
+        },
+        {
+          "key": "FORGE",
+          "label": "The forge holding: build the tools to build everything else",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "upgrade_module": "workshop"
+            }
+          ]
+        },
+        {
+          "key": "HOMES",
+          "label": "The hab holding: people first",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "hearthfire": 20,
+              "reputation": {
+                "HOLD_DURNVAR": 10
+              }
+            }
+          ]
+        }
+      ],
+      "outro_text": "The Office of Works gives you a stone from the very first hearth. It is still warm.",
+      "next": null,
+      "outcomes": {
+        "critical": {
+          "text": "The hearth catches, and the crowd roars. It is a small fire, but it is the first.",
+          "effects": []
+        },
+        "success": {
+          "text": "The hearth catches, and the crowd roars. It is a small fire, but it is the first.",
+          "effects": []
+        },
+        "partial": {
+          "text": "The hearth catches, and the crowd roars. It is a small fire, but it is the first.",
+          "effects": []
+        },
+        "failure": {
+          "text": "The hearth catches, and the crowd roars. It is a small fire, but it is the first.",
+          "effects": []
+        }
+      }
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_N1_SOMEWHERE_TO_LIVE",
+      "quest": "Q_NEW_HEARTH",
+      "trigger": "comms",
+      "title": "Somewhere to Live",
+      "goal": "Choose a new home for the people of Durnvar.",
+      "objective": "Answer the refugee fleet on Comms.",
+      "intro_text": "The elders have three candidates.\n\nKethra's Anvil, where this all began: the dig site could be rebuilt into a Hold.\n\nKharr Hold: the Kharr League has offered space in its lower halls, but it wants a vote on your council in return.\n\nSkrapfang Rock: the old muster world is empty now, and the Orks dug a lot of very good tunnels.",
+      "routes": [
+        {
+          "key": "ANVIL",
+          "label": "Kethra's Anvil: rebuild where it all began",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_flag": {
+                "NEW_HOME": "KETHRAS_ANVIL"
+              }
+            }
+          ],
+          "next": "PQ_N2_ANVIL"
+        },
+        {
+          "key": "KHARR",
+          "label": "Kharr Hold: accept the League's offer",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_flag": {
+                "NEW_HOME": "KHARR_HOLD"
+              }
+            }
+          ],
+          "next": "PQ_N2_KHARR"
+        },
+        {
+          "key": "SKRAPFANG",
+          "label": "Skrapfang Rock: take the Orks' tunnels for our own",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_flag": {
+                "NEW_HOME": "SKRAPFANG_ROCK"
+              }
+            }
+          ],
+          "next": "PQ_N2_SKRAPFANG"
+        }
+      ],
+      "next": null,
+      "outcomes": {
+        "critical": {
+          "text": "The elders accept your choice. The fleet turns toward its new home.",
+          "effects": []
+        },
+        "success": {
+          "text": "The elders accept your choice. The fleet turns toward its new home.",
+          "effects": []
+        },
+        "partial": {
+          "text": "The elders accept your choice. The fleet turns toward its new home.",
+          "effects": []
+        },
+        "failure": {
+          "text": "The elders accept your choice. The fleet turns toward its new home.",
+          "effects": []
+        }
+      }
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "set_home_port": "KETHRAS_ANVIL"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_N2_ANVIL",
+      "quest": "Q_NEW_HEARTH",
+      "trigger": "arrival",
+      "location": "KETHRAS_ANVIL",
+      "title": "Clear the Ground",
+      "goal": "Clear the Ork squatters out of Kethra's Anvil.",
+      "objective": "Clear the ground at Kethra's Anvil.",
+      "intro_text": "The dig site is not empty. A band of grots and a few stray Boyz have moved into the old vault, and they have put up a sign: \"OURS NOW\".",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Clear them out",
+          "encounter": "PQ_ANVIL_SQUATTERS"
+        },
+        {
+          "key": "BRIBE",
+          "label": "Pay them to leave: grots love shiny things",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "SMOKE",
+          "label": "Smoke them out through the old ventilation shafts",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The squatters leave, taking only the sign.",
+          "effects": [
+            {
+              "hearthfire": 5
+            }
+          ]
+        },
+        "success": {
+          "text": "The squatters are gone.",
+          "effects": []
+        },
+        "partial": {
+          "text": "The squatters are gone, but they wrecked half the vault on the way out.",
+          "effects": [
+            {
+              "supplies": -3
+            }
+          ]
+        },
+        "failure": {
+          "text": "It takes three tries, and a lot of patience. They are gone.",
+          "effects": [
+            {
+              "health": -3
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_N3_FIRST_HEARTH"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "set_home_port": "KHARR_HOLD"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_N2_KHARR",
+      "quest": "Q_NEW_HEARTH",
+      "trigger": "arrival",
+      "location": "KHARR_HOLD",
+      "title": "Clear the Ground",
+      "goal": "Win the Kharr council vote.",
+      "objective": "Win the vote at Kharr Hold.",
+      "intro_text": "The Kharr council will vote on whether to let twelve thousand Durnvar Kin into their lower halls. They are proud, suspicious, and very fond of voting.",
+      "routes": [
+        {
+          "key": "SPEAK",
+          "label": "Speak for Durnvar before the Kharr council",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "LEDGER",
+          "label": "Show them how many Kharr ships your fleet saved",
+          "roll": {
+            "stat": "wits",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "LABOUR",
+          "label": "Offer Durnvar's miners to work the Kharr deep seams",
+          "roll": {
+            "stat": "grit",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        },
+        {
+          "key": "OATH",
+          "label": "Invoke your oath of mutual defence",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "reputation": {
+                "KHARR_LEAGUE": 10
+              }
+            }
+          ],
+          "requirements": [
+            {
+              "story_reward": "ALLIES_LEAGUE"
+            }
+          ]
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The vote is unanimous. Even the Kâhl votes yes, which nobody can remember happening before.",
+          "effects": [
+            {
+              "reputation": {
+                "KHARR_LEAGUE": 15
+              }
+            }
+          ]
+        },
+        "success": {
+          "text": "The vote passes.",
+          "effects": [
+            {
+              "reputation": {
+                "KHARR_LEAGUE": 5
+              }
+            }
+          ]
+        },
+        "partial": {
+          "text": "The vote passes by one, after a recount, and a second recount.",
+          "effects": []
+        },
+        "failure": {
+          "text": "The vote passes, but only after you promise the Kharr a great deal of Durnvar ore.",
+          "effects": [
+            {
+              "ore": -40
+            }
+          ]
+        }
+      },
+      "next": "PQ_N3_FIRST_HEARTH"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "set_home_port": "SKRAPFANG_ROCK"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_N2_SKRAPFANG",
+      "quest": "Q_NEW_HEARTH",
+      "trigger": "arrival",
+      "location": "SKRAPFANG_ROCK",
+      "title": "Clear the Ground",
+      "goal": "Clear the muster world for the settlers.",
+      "objective": "Clear the ground at Skrapfang Rock.",
+      "intro_text": "Skrapfang Rock is empty of Orks, mostly. A loota ship has been picking over the muster's wreckage, and its crew does not want to share.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Drive off the loota ship",
+          "encounter": "PQ_SKRAPFANG_LOOTAS"
+        },
+        {
+          "key": "CLEAR",
+          "label": "Ignore the lootas and clear the wreckage from the tunnels",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        },
+        {
+          "key": "SCOUT",
+          "label": "Map the tunnels and seal the ones the lootas use",
+          "roll": {
+            "stat": "wits",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The tunnels are clear, the lootas are gone, and the Ork-dug halls turn out to be even better than you hoped.",
+          "effects": [
+            {
+              "hearthfire": 10
+            }
+          ]
+        },
+        "success": {
+          "text": "The ground is clear.",
+          "effects": []
+        },
+        "partial": {
+          "text": "The ground is clear, after some unpleasant surprises in the deep tunnels.",
+          "effects": [
+            {
+              "health": -3
+            }
+          ]
+        },
+        "failure": {
+          "text": "It is slow, filthy work. But it is done.",
+          "effects": [
+            {
+              "supplies": -4
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_N3_FIRST_HEARTH"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "complete_quest": "Q_NEW_HEARTH"
+        },
+        {
+          "add_relic": "HEARTHSTONE_OF_DURN"
+        },
+        {
+          "reputation": {
+            "HOLD_DURNVAR": 20
+          }
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_N3_FIRST_HEARTH",
+      "quest": "Q_NEW_HEARTH",
+      "trigger": "auto",
+      "title": "The First Hearth",
+      "goal": "Found the new home.",
+      "objective": "Light the first hearth.",
+      "intro_text": "The first settler ships touch down, and twelve thousand Kin of Durnvar step out onto their new home. Somebody has carried a single coal all the way from the old Hold's great hearth, in a sealed box, through the whole war. They hand it to you.",
+      "routes": [
+        {
+          "key": "LIGHT",
+          "label": "Light the first hearth",
+          "auto_tier": "success",
+          "effects_always": []
+        }
+      ],
+      "outro_text": "The elders press a stone into your hands: the first stone of the new hearth, cut from the very spot where it burns.",
+      "next": null,
+      "outcomes": {
+        "critical": {
+          "text": "The coal catches. The Kin of Durnvar have a hearth again, and so they have a Hold again.",
+          "effects": []
+        },
+        "success": {
+          "text": "The coal catches. The Kin of Durnvar have a hearth again, and so they have a Hold again.",
+          "effects": []
+        },
+        "partial": {
+          "text": "The coal catches. The Kin of Durnvar have a hearth again, and so they have a Hold again.",
+          "effects": []
+        },
+        "failure": {
+          "text": "The coal catches. The Kin of Durnvar have a hearth again, and so they have a Hold again.",
+          "effects": []
+        }
+      }
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_G1_SIGNAL",
+      "quest": "Q_GITZBOLT",
+      "trigger": "arrival",
+      "location": "CINDER_DRIFT",
+      "title": "A Familiar Signal",
+      "goal": "Trace the Core's signal.",
+      "objective": "Trace the Core's signal in the Cinder Drift.",
+      "intro_text": "The signal is faint and keeps moving, bouncing off the Drift's cinder clouds. Somewhere out there, the Core is humming to itself.",
+      "routes": [
+        {
+          "key": "SCAN",
+          "label": "Run a slow, careful sweep of the Drift",
+          "roll": {
+            "stat": "wits",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "TUNE",
+          "label": "Retune the array to the Core's own frequency",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        },
+        {
+          "key": "CHASE",
+          "label": "Fly the signal down, no matter where it leads",
+          "roll": {
+            "stat": "nerve",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        },
+        {
+          "key": "CONSOLE",
+          "label": "Use your console action",
+          "console_action": {
+            "difficulty": "NORMAL"
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The signal leads to a freebooter supply drop, and the drop's manifest has Snazrik's mark on it. Gitzbolt is buying from Snazrik.",
+          "effects": []
+        },
+        "success": {
+          "text": "The trail leads to Snazrik. Whatever Gitzbolt is doing, the freebooters know about it.",
+          "effects": []
+        },
+        "partial": {
+          "text": "You lose the signal, but not before it points toward Snazrik's Haven.",
+          "effects": []
+        },
+        "failure": {
+          "text": "You chase the signal for days and lose it. But everyone in the Drift says the same thing: ask Snazrik.",
+          "effects": [
+            {
+              "supplies": -3
+            }
+          ]
+        }
+      },
+      "next": "PQ_G2_PRICE"
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_G2_PRICE",
+      "quest": "Q_GITZBOLT",
+      "trigger": "arrival",
+      "location": "SNAZRIK_HAVEN",
+      "title": "The Price of a Secret",
+      "goal": "Get Gitzbolt's location from Snazrik.",
+      "objective": "Get Gitzbolt's location at Snazrik's Haven.",
+      "intro_text": "Kaptin Snazrik is delighted to see you, which is never a good sign. \"Da Mek? Oh, I know where 'e is,\" he says. \"Question is, wot's it worth?\"",
+      "routes": [
+        {
+          "key": "PAY",
+          "label": "Pay him (80 Ore)",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "ore": -80
+            }
+          ],
+          "requirements": [
+            {
+              "ore": 80
+            }
+          ]
+        },
+        {
+          "key": "TRICK",
+          "label": "Convince him Gitzbolt has been cheating him",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "NORMAL"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        },
+        {
+          "key": "THREATEN",
+          "label": "Remind him who just broke a Waaagh!",
+          "roll": {
+            "stat": "grit",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "WARRIOR": 3
+          }
+        },
+        {
+          "key": "STEAL",
+          "label": "Slice his nav-logs while he is busy gloating",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "Snazrik tells you everything, and throws in Gitzbolt's door codes for free. \"Never liked 'im,\" he says.",
+          "effects": [
+            {
+              "reputation": {
+                "FREEBOOTERS": 5
+              }
+            }
+          ]
+        },
+        "success": {
+          "text": "Snazrik gives you the location: a workshop deep in the Scrapfield.",
+          "effects": []
+        },
+        "partial": {
+          "text": "Snazrik gives you the location, but he'll warn Gitzbolt you're coming. He always does.",
+          "effects": []
+        },
+        "failure": {
+          "text": "You get the location in the end, and Snazrik gets a grudge. He will remember this.",
+          "effects": [
+            {
+              "reputation": {
+                "FREEBOOTERS": -10
+              }
+            }
+          ]
+        }
+      },
+      "next": "PQ_G3_WORKSHOP"
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_G3_WORKSHOP",
+      "quest": "Q_GITZBOLT",
+      "trigger": "arrival",
+      "location": "GITZBOLT_SCRAPFIELD",
+      "title": "Da Workshop",
+      "goal": "Break through Gitzbolt's new gunship.",
+      "objective": "Find Gitzbolt's workshop in the Scrapfield.",
+      "intro_text": "Gitzbolt's new workshop is built inside the wreck of a Votann hauler, and parked in front of it is a gunship even bigger and uglier than the last one. Its guns turn toward you.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Take on the gunship",
+          "encounter": "PQ_GITZBOLT_GUNSHIP"
+        },
+        {
+          "key": "SLIP",
+          "label": "Slip past the gunship through the wreck field",
+          "roll": {
+            "stat": "nerve",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "PATHFINDER": 3
+          }
+        },
+        {
+          "key": "JAM",
+          "label": "Jam the gunship's targeting with Ork scrap-signals",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "You are past the gunship and docked at the workshop before its crew even notice.",
+          "effects": []
+        },
+        "success": {
+          "text": "You make it past the gunship and dock at the workshop.",
+          "effects": []
+        },
+        "partial": {
+          "text": "You make it past, but the gunship rakes your hull on the way in.",
+          "effects": [
+            {
+              "hull": -4
+            }
+          ]
+        },
+        "failure": {
+          "text": "You make it in, the hard way. Your ship will need a lot of welding.",
+          "effects": [
+            {
+              "hull": -6
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_G4_LAIR"
+    },
+    {
+      "act": 4,
+      "on_complete": [],
+      "only_if": [],
+      "key": "PQ_G4_LAIR",
+      "quest": "Q_GITZBOLT",
+      "trigger": "arrival",
+      "location": "GITZBOLT_SCRAPFIELD",
+      "title": "Gitzbolt's Lair",
+      "goal": "Take the Core back from Gitzbolt.",
+      "objective": "Board Gitzbolt's workshop.",
+      "intro_text": "The workshop hatch blows open. Inside, among the sparks, the Ancestor Core hums in a cradle of Ork wiring, and a very small, very angry Mek is standing in front of it.",
+      "routes": [
+        {
+          "key": "FIGHT",
+          "label": "Go in after him",
+          "encounter": "PQ_GITZBOLT_LAIR"
+        },
+        {
+          "key": "GRAB",
+          "label": "Forget Gitzbolt: cut the Core free and run",
+          "roll": {
+            "stat": "craft",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "ARTIFICER": 3
+          }
+        },
+        {
+          "key": "BARGAIN",
+          "label": "Offer Gitzbolt his life for the Core",
+          "roll": {
+            "stat": "silver_tongue",
+            "difficulty": "HARD"
+          },
+          "class_bonus": {
+            "SPEAKER": 3
+          }
+        }
+      ],
+      "outcomes": {
+        "critical": {
+          "text": "The Core comes free in your hands, and Gitzbolt is left shouting at an empty cradle.",
+          "effects": [
+            {
+              "set_flag": {
+                "CORE_RECOVERABLE": true
+              }
+            }
+          ]
+        },
+        "success": {
+          "text": "You get the Core out. Gitzbolt gets away, again.",
+          "effects": [
+            {
+              "set_flag": {
+                "CORE_RECOVERABLE": true
+              }
+            }
+          ]
+        },
+        "partial": {
+          "text": "You get the Core out, with a grot attached to your leg most of the way.",
+          "effects": [
+            {
+              "set_flag": {
+                "CORE_RECOVERABLE": true
+              }
+            },
+            {
+              "health": -3
+            }
+          ]
+        },
+        "failure": {
+          "text": "You get the Core out, but the workshop goes up behind you and takes some of you with it.",
+          "effects": [
+            {
+              "set_flag": {
+                "CORE_RECOVERABLE": true
+              }
+            },
+            {
+              "health": -5
+            }
+          ]
+        }
+      },
+      "retry_on_defeat": true,
+      "next": "PQ_G5_CORE"
+    },
+    {
+      "act": 4,
+      "on_complete": [
+        {
+          "complete_quest": "Q_GITZBOLT"
+        },
+        {
+          "add_relic": "GITZBOLT_KUSTOM_FIELD"
+        }
+      ],
+      "only_if": [],
+      "key": "PQ_G5_CORE",
+      "quest": "Q_GITZBOLT",
+      "trigger": "auto",
+      "title": "The Core, Again",
+      "goal": "Decide what to do with the Core.",
+      "objective": "Decide the fate of the Core.",
+      "intro_text": "The Ancestor Core is in your hands for the second time. It seems, if a machine-spirit can seem anything, relieved.",
+      "routes": [
+        {
+          "key": "RETURN",
+          "label": "Return it to Hold Durnvar",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_core_choice": "RETURNED",
+              "reputation": {
+                "HOLD_DURNVAR": 20
+              }
+            }
+          ]
+        },
+        {
+          "key": "KEEP",
+          "label": "Keep it aboard as a relic",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_core_choice": "KEPT",
+              "add_relic": "ANCESTOR_CORE"
+            }
+          ]
+        },
+        {
+          "key": "DESTROY",
+          "label": "Destroy it, so nobody can steal it again",
+          "auto_tier": "success",
+          "effects_always": [
+            {
+              "set_core_choice": "DESTROYED"
+            }
+          ]
+        }
+      ],
+      "outro_text": "Among the wreckage of the workshop you find one of Gitzbolt's gadgets still working: a kustom force field. It would bolt onto your shields nicely.",
+      "next": null,
+      "outcomes": {
+        "critical": {
+          "text": "It is done. This time, for good.",
+          "effects": []
+        },
+        "success": {
+          "text": "It is done. This time, for good.",
+          "effects": []
+        },
+        "partial": {
+          "text": "It is done. This time, for good.",
+          "effects": []
+        },
+        "failure": {
+          "text": "It is done. This time, for good.",
+          "effects": []
+        }
+      }
+    }
+  ]
+}

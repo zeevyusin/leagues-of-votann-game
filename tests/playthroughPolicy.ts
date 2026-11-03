@@ -47,11 +47,45 @@ export interface PlayOptions {
   muster?: boolean;
   /** Overrides the choice on any non-hub screen: return an open option id, or undefined for the default. */
   prefer?: (state: GameState, openIds: string[]) => string | undefined;
+  /**
+   * Play like a careful player (combat-system.md Phase 3, balance pass): read the enemy and counter,
+   * balance ship power, use the counter-key and crew commitments, buy upgrades and equip relics.
+   */
+  careful?: boolean;
+}
+
+const COUNTER: Record<string, string> = { aggressive: 'stance:defend', evasive: 'stance:attack', guarded: 'stance:outmaneuver' };
+const UPGRADE_ORDER = ['upgrade:armour', 'upgrade:shields', 'upgrade:weapons', 'upgrade:engine', 'upgrade:reactor'];
+/** Ore a careful player keeps back for fuel and repairs. */
+const RESERVE = 80;
+
+/** A careful player's fight choice, or undefined to fall back to the simple policy. */
+function carefulFight(state: GameState, ids: string[]): string | undefined {
+  const top = state.scenes[state.scenes.length - 1];
+  if (top.type !== 'combat') return undefined;
+  const c = top.combat;
+  if (c.menu === 'crew') return ids.find((id) => id.startsWith('commit:')) ?? 'menu:';
+  if (c.menu) return 'menu:';
+  if (ids.includes('menu:crew')) return 'menu:crew';
+  if (c.mode === 'personal') {
+    const seen = c.read === 'misleading' ? c.shown_intent : c.intent;
+    if (c.read !== 'vague' && ids.includes(COUNTER[seen])) return COUNTER[seen];
+    return ids.includes('stance:attack') ? 'stance:attack' : undefined;
+  }
+  if (ids.includes('counterkey')) return 'counterkey';
+  if (c.pending_weapons === null) {
+    const weapons = ids.filter((id) => id.startsWith('weapons:')).map((id) => Number(id.slice(8)));
+    const w = weapons.includes(3) ? 3 : Math.max(...weapons);
+    return `weapons:${w}`;
+  }
+  return ids.includes('shields:1') ? 'shields:1' : ids.find((id) => id.startsWith('shields:'));
 }
 
 export function play(start: GameState, opts: PlayOptions): GameState {
   let state = start;
   let shoppedOnDay = -1;
+  let lastBeat = '';
+  const beatVisits = new Map<string, number>();
   const pick = opts.pick ?? 'first';
   const max = opts.maxSteps ?? 3000;
   const step = (id: string, text?: string) => {
@@ -60,6 +94,7 @@ export function play(start: GameState, opts: PlayOptions): GameState {
 
   for (let i = 0; i < max; i++) {
     const top = state.scenes[state.scenes.length - 1];
+    if (top.type !== 'beat') lastBeat = '';
     if (top.type === 'hub' && opts.until(state)) return state;
     opts.onState?.(state);
     const view = buildView(state, data);
@@ -86,8 +121,25 @@ export function play(start: GameState, opts: PlayOptions): GameState {
           continue;
         }
         const routes = open.filter((o) => o.id.startsWith('route:'));
+        // A beat seen again was lost last time (retry_on_defeat): try a route that is not a fight.
+        if (lastBeat !== top.key) {
+          lastBeat = top.key;
+          beatVisits.set(top.key, (beatVisits.get(top.key) ?? 0) + 1);
+        }
+        const noFight = routes.filter((o) => !/combat vs/i.test(o.detail ?? ''));
+        if ((beatVisits.get(top.key) ?? 0) > 1 && noFight.length) {
+          step(noFight[0].id);
+          continue;
+        }
         step((pick === 'last' ? routes[routes.length - 1] : routes[0]).id);
         continue;
+      }
+      if (opts.careful) {
+        const id = carefulFight(state, open.map((o) => o.id));
+        if (id) {
+          step(id);
+          continue;
+        }
       }
       // In fights, never Withdraw or use the console action: plain stances, and in ship fights
       // the most weapons power with the least shields (so even an all-crits run ends its fights).
@@ -103,6 +155,7 @@ export function play(start: GameState, opts: PlayOptions): GameState {
       shoppedOnDay = state.day;
       if (view.tabs?.market) {
         step('tab:market');
+        step('mkt:section:fuel');
         for (const id of ['mkt:buy:fuel:fill', 'mkt:buy:supplies:fill']) {
           const opt = buildView(state, data).options.find((o) => o.id === id);
           if (opt && !opt.locked) step(id);
@@ -112,6 +165,7 @@ export function play(start: GameState, opts: PlayOptions): GameState {
       // Treat injuries while there is a market and the money (Ironkin) to do it.
       if (view.tabs?.market && state.character.injuries.length) {
         step('tab:market');
+        step('mkt:section:services');
         for (const id of ['mkt:rest', 'mkt:repair_injury']) {
           const opt = buildView(state, data).options.find((o) => o.id === id);
           if (opt && !opt.locked) step(id);
@@ -122,9 +176,31 @@ export function play(start: GameState, opts: PlayOptions): GameState {
       step('tab:ship');
       const repair = buildView(state, data).options.find((o) => o.id === 'repair');
       if (repair && !repair.locked) step('repair');
+      if (opts.careful) {
+        // Equip relics while there are free slots.
+        for (const o of buildView(state, data).options) if (o.id.startsWith('equip:') && !o.locked) step(o.id);
+        while (state.scenes[state.scenes.length - 1].type === 'notice') step('continue');
+        // One upgrade per day, keeping a reserve for fuel and repairs.
+        if (view.tabs?.market) {
+          step('tab:market');
+          step('mkt:section:upgrades');
+          const ups = buildView(state, data).options;
+          for (const id of UPGRADE_ORDER) {
+            const o = ups.find((x) => x.id === `mkt:${id}`);
+            const cost = Number(/\((\d+) Ore\)/.exec(o?.label ?? '')?.[1] ?? Infinity);
+            if (o && !o.locked && state.resources.ore - cost >= RESERVE) {
+              step(o.id);
+              break;
+            }
+          }
+          while (state.scenes[state.scenes.length - 1].type === 'notice') step('continue');
+          step('tab:ship');
+        }
+      }
       // Broke and low on fuel: work the docks until there is enough to fly on.
       if (view.tabs?.market && state.resources.fuel < 8 && state.resources.ore < 30) {
         step('tab:market');
+        step('mkt:section:services');
         step('mkt:work');
         shoppedOnDay = -1;
       }
@@ -165,6 +241,9 @@ export function play(start: GameState, opts: PlayOptions): GameState {
         if (hop) break;
       }
     if (!hop && opts.bounce) hop = state.location === opts.bounce[0] ? opts.bounce[1] : opts.bounce[0];
+    // A beat waiting here was put off (or lost and waits for a retry): leave and come back.
+    if (!hop && state.story.active_beats.some((k) => beatOf(k).location === state.location && state.story.deferred_beats.includes(k)))
+      hop = systemOf(data, state.location).connections.find((c) => state.discovered_systems.includes(c.to))?.to ?? null;
     if (!hop) throw new Error(`Stuck at ${state.location} with beats ${state.story.active_beats.join(', ')}`);
 
     if (top.tab !== 'nav') {

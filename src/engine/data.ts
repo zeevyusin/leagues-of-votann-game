@@ -26,6 +26,8 @@ import markets from '../../data/markets.json';
 import storyBeatsAct3 from '../../data/story_beats_act3.json';
 import injuries from '../../data/injuries.json';
 import endings from '../../data/endings.json';
+import battleOaths from '../../data/battle_oaths.json';
+import postQuests from '../../data/post_quests.json';
 import { validateGameData, type GameData } from './schema';
 
 export function rawGameData() {
@@ -43,16 +45,18 @@ export function rawGameData() {
     oaths,
     grudges,
     // Job offers are Comms messages; they live in their own file to keep messages.json readable.
-    messages: [...messages, ...jobs.messages],
+    messages: [...messages, ...jobs.messages, ...postQuests.messages],
     lore,
     enemies,
     enemy_ships: enemyShips,
     combat_encounters: combatEncounters,
-    // Act 1, Act 2, Act 3, travel events, and job beats all share the beat format.
-    story_beats: [...storyBeats, ...storyBeatsAct2, ...storyBeatsAct3, ...travelEvents, ...jobs.beats],
+    // Act 1, Act 2, Act 3, travel events, job beats and post-game quests all share the beat format.
+    story_beats: [...storyBeats, ...storyBeatsAct2, ...storyBeatsAct3, ...travelEvents, ...jobs.beats, ...postQuests.beats],
     story_threads: storyThreads,
     act_events: actEvents,
     injuries,
+    battle_oaths: battleOaths,
+    post_quests: postQuests.quests,
     endings,
     markets,
   };

@@ -1,5 +1,5 @@
 // Derived values, lookups, and shared modifiers.
-import type { GameData, Config } from './schema';
+import type { GameData, Config, RelicEffect } from './schema';
 import type { Rng } from './rng';
 import { toRollEvent, type Modifier, type RollEvent, type RollResult } from './roll';
 import type { Character, GameState, Ship, StatKey } from './types';
@@ -58,10 +58,15 @@ export function injuryName(d: GameData, c: Character, key: string): string {
   return c.kin_type === 'IRONKIN' ? i.ironkin_name : i.name;
 }
 
+/** A system has a port if the map says so, or if the fleet made it home (A New Hearth). */
+export function isPort(d: GameData, state: GameState, system: string): boolean {
+  return systemOf(d, system).port || state.story.home_port === system;
+}
+
 /** A port is closed once the Waaagh! meter passes its limit. After the ending, an evacuated Hold stays closed. */
 export function portOpen(d: GameData, state: GameState, system: string): boolean {
   const s = systemOf(d, system);
-  if (!s.port) return false;
+  if (!isPort(d, state, system)) return false;
   if (state.story.post_game) return !(state.story.ending?.hold === 'EVACUATED' && system === d.config.ACT3_RALLY_SYSTEM);
   return s.closes_at_waaagh === undefined || (state.story.waaagh_meter ?? 0) < s.closes_at_waaagh;
 }
@@ -153,6 +158,7 @@ export function generalModifiers(
     const injury = injuryOf(d, key);
     if (stat && injury.stat === stat) mods.push({ label: injuryName(d, state.character, key), value: injury.value });
   }
+  mods.push(...relicRollModifiers(state, d, stat, context));
   if (context !== 'personal' && stat) {
     for (const key of state.crew) {
       const member = crewOf(d, key);
@@ -161,6 +167,54 @@ export function generalModifiers(
     }
   }
   return mods;
+}
+
+// ---------- Relics (game-overview.md 6.3.1) ----------
+
+/** Every effect of every equipped relic that applies to this character, labelled with the relic's name. */
+export function relicEffects(state: GameState, d: GameData): { name: string; effect: RelicEffect }[] {
+  const out: { name: string; effect: RelicEffect }[] = [];
+  for (const r of state.relics) {
+    if (!r.equipped) continue;
+    const info = relicOf(d, r.key);
+    const name = r.identified ? info.display_name : info.unidentified_name;
+    for (const effect of [...info.benefit_effects, ...info.drawback_effects])
+      if (!effect.kin_type || effect.kin_type === state.character.kin_type) out.push({ name, effect });
+  }
+  return out;
+}
+
+/** Sum of one numeric relic field across equipped relics. */
+export function relicSum(state: GameState, d: GameData, field: Exclude<keyof RelicEffect, 'kin_type' | 'stat' | 'contexts' | 'reputation'>): number {
+  return relicEffects(state, d).reduce((n, x) => n + (x.effect[field] ?? 0), 0);
+}
+
+/** Product of a multiplier field across equipped relics (1 when none). */
+export function relicProduct(state: GameState, d: GameData, field: 'ork_event_weight' | 'broken_oath_hearthfire_multiplier'): number {
+  return relicEffects(state, d).reduce((n, x) => n * (x.effect[field] ?? 1), 1);
+}
+
+function relicRollModifiers(state: GameState, d: GameData, stat: StatKey | null, context: 'story' | 'personal' | 'ship'): Modifier[] {
+  const mods: Modifier[] = [];
+  for (const { name, effect } of relicEffects(state, d)) {
+    if (!effect.roll) continue;
+    if (effect.stat && effect.stat !== stat) continue;
+    if (effect.contexts && !effect.contexts.includes(context)) continue;
+    mods.push({ label: name, value: effect.roll });
+  }
+  return mods;
+}
+
+/** Labelled relic modifiers for Negotiate or telegraph reads. */
+export function relicFieldModifiers(state: GameState, d: GameData, field: 'negotiate' | 'read'): Modifier[] {
+  return relicEffects(state, d)
+    .filter((x) => x.effect[field])
+    .map((x) => ({ label: x.name, value: x.effect[field]! }));
+}
+
+/** Reactor pips including relic bonuses. */
+export function shipPips(state: GameState, d: GameData): number {
+  return reactorPips(d.config, state.ship) + relicSum(state, d, 'reactor_pips');
 }
 
 function titleWord(s: string): string {

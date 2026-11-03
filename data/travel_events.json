@@ -39,6 +39,19 @@
         },
         "class_bonus": {
           "PATHFINDER": 3
+        },
+        "outcomes": {
+          "critical": {
+            "text": "Your scan finds a hidden compartment the looters missed. Inside, wrapped in oilcloth, is a compass whose needle will not keep still.",
+            "effects": [
+              {
+                "add_relic": "VOID_COMPASS"
+              },
+              {
+                "supplies": 2
+              }
+            ]
+          }
         }
       },
       {

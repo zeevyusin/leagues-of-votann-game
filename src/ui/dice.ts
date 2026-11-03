@@ -1,30 +1,24 @@
 // Dice roll animation: a d20 tumbles, lands on the real result, then shows the math and the tier.
 // Purely visual; the engine has already decided the outcome before this plays.
 import { TIER_LABEL, titleCase, type RollEvent } from '../engine/roll';
+import { loadSettings } from './settings';
 
 const TUMBLE_MS = 900;
 const HOLD_MS = 1100;
 const REDUCED_HOLD_MS = 800;
-const SETTING_KEY = 'votann.dice';
+/** The 'fast' dice setting plays the whole animation at this share of normal speed. */
+const FAST_FACTOR = 0.45;
 
 export function diceEnabled(): boolean {
-  try {
-    return window.localStorage.getItem(SETTING_KEY) !== 'off';
-  } catch {
-    return true;
-  }
+  return loadSettings().dice !== 'off';
 }
 
-export function setDiceEnabled(on: boolean): void {
-  try {
-    window.localStorage.setItem(SETTING_KEY, on ? 'on' : 'off');
-  } catch {
-    // Storage blocked: the setting just won't persist.
-  }
+function speed(): number {
+  return loadSettings().dice === 'fast' ? FAST_FACTOR : 1;
 }
 
 function reducedMotion(): boolean {
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  return loadSettings().reducedMotion || (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
 }
 
 // A d20 seen face-on: hexagon outline, a front triangle, and the edges joining them.
@@ -94,7 +88,7 @@ export class DiceOverlay {
         tier.textContent = r.natural === 'crit' ? `Natural ${r.sides}! ${TIER_LABEL[r.tier]}` : r.natural === 'fumble' ? `Natural 1. ${TIER_LABEL[r.tier]}` : TIER_LABEL[r.tier];
         tier.className = `dice-tier tier-${r.tier}`;
         this.finishCurrent = done;
-        this.timers.push(window.setTimeout(done, reduced ? REDUCED_HOLD_MS : HOLD_MS));
+        this.timers.push(window.setTimeout(done, (reduced ? REDUCED_HOLD_MS : HOLD_MS) * speed()));
       };
       const done = () => {
         this.clearTimers();
@@ -109,12 +103,13 @@ export class DiceOverlay {
       // Flicker random faces, slowing down, then land on the real result.
       this.finishCurrent = done;
       let elapsed = 0;
+      const tumble = TUMBLE_MS * speed();
       let step = 45;
       const flicker = () => {
         number.textContent = String(1 + Math.floor(Math.random() * r.sides));
         elapsed += step;
         step = Math.min(160, Math.round(step * 1.18));
-        if (elapsed >= TUMBLE_MS) land();
+        if (elapsed >= tumble) land();
         else this.timers.push(window.setTimeout(flicker, step));
       };
       flicker();

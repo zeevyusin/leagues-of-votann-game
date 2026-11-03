@@ -1096,12 +1096,15 @@
     ],
     "outcomes": {
       "critical": {
-        "text": "The Kâhl clasps your arm. 'Kharr stands with you. And with Durnvar, for your sake.'",
+        "text": "The Kâhl clasps your arm. 'Kharr stands with you. And with Durnvar, for your sake.' Before you leave, the Kâhl slips a worn iron band onto your wrist. \"Swear well with it.\"",
         "effects": [
           {
             "reputation": {
               "KHARR_LEAGUE": 20
             }
+          },
+          {
+            "add_relic": "OATHBAND_OF_THE_KAHL"
           }
         ]
       },
@@ -1586,11 +1589,14 @@
     ],
     "outcomes": {
       "critical": {
-        "text": "The champion falls and the crater goes silent. Then ten thousand Orks roar your name. Somewhere, Skragnak is hearing about this.",
+        "text": "The champion falls and the crater goes silent. Then ten thousand Orks roar your name. Somewhere, Skragnak is hearing about this. Afterwards, an old Kin prisoner presses a hammer into your hands: \"It was my grandfather's. It has been waiting for you.\"",
         "effects": [
           {
             "waaagh": -10,
             "hearthfire": 15
+          },
+          {
+            "add_relic": "GRUDGEHAMMER_OF_VARN"
           }
         ]
       },

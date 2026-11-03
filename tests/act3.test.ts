@@ -10,6 +10,7 @@ import { ScriptedRng } from '../src/engine/rng';
 
 const act3Unlocked = (s: GameState) => s.story.act_events_shown.includes('ACT3_UNLOCKED');
 const freeRoam = (s: GameState) => s.story.post_game;
+const sagaDone = (s: GameState) => !!s.story.flags.SAGA_COMPLETE;
 const kins: KinType[] = ['KIN', 'IRONKIN'];
 
 /** A save with Act 3 unlocked, made once per class and kin type. */
@@ -48,6 +49,10 @@ describe('Act 3 playthrough', () => {
         expect(end.crew).toContain('DORRIK');
         // The Waaagh! is retired: no longer on the status bar.
         expect(buildView(end, data).status?.some((i) => i.label === 'Waaagh!')).toBe(false);
+        // Then the post-game quest chain for this ending, to the end of the saga.
+        const saga = play(end, { until: sagaDone, maxSteps: 4000 });
+        expect(saga.story.post_quests_completed.length).toBeGreaterThan(0);
+        expect(saga.relics.some((r) => r.key === 'HEARTHSTONE_OF_DURN')).toBe(true);
       });
     }
 
@@ -58,6 +63,26 @@ describe('Act 3 playthrough', () => {
     expect(end.story.flags.SKRAGNAK_LOST).toBe(true);
     expect(end.story.ending?.grudge).toBe('GREAT_COST');
     expect(end.location).toBe('KARRAK_STATION');
+    // A New Hearth can be finished even when every roll fails.
+    const saga = play(end, { until: sagaDone, rng: alwaysLow, maxSteps: 4000 });
+    expect(saga.story.post_quests_completed).toContain('Q_NEW_HEARTH');
+    expect(saga.story.home_port).not.toBeNull();
+  });
+
+  it('a lost Core opens Hunt Gitzbolt, which can be finished even when every roll fails', () => {
+    const s = unlocked('HERNKYN_PIONEER');
+    s.story.story_rewards = s.story.story_rewards.filter((r) => r !== 'TECH_COUNTERKEY');
+    const end = play(s, {
+      until: freeRoam,
+      muster: true,
+      rng: alwaysHigh,
+      prefer: (st) => (st.scenes[st.scenes.length - 1].type === 'board' ? 'leave' : undefined),
+    });
+    expect(end.story.core_status).toBe('LOST');
+    const saga = play(end, { until: sagaDone, rng: alwaysLow, maxSteps: 6000 });
+    expect(saga.story.post_quests_completed).toEqual(expect.arrayContaining(['Q_GITZBOLT']));
+    expect(saga.story.core_status).not.toBe('LOST');
+    expect(saga.relics.some((r) => r.key === 'GITZBOLT_KUSTOM_FIELD')).toBe(true);
   });
 
   it('taking the last routes picks the Last Stand', () => {

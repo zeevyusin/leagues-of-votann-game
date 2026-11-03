@@ -393,12 +393,15 @@
     "allow_withdraw": false,
     "outcomes": {
       "victory_broken": {
-        "text": "Bonecrusha topples. The pit goes silent, then erupts. They are chanting your name. Badly, but it is your name.",
+        "text": "Bonecrusha topples. The pit goes silent, then erupts. They are chanting your name. Badly, but it is your name. An old Kin prisoner presses a hammer into your hands as you leave: \"It was my grandfather's.\"",
         "effects": [
           {
             "grizzgut": "PIT_BROKEN",
             "waaagh": -10,
             "hearthfire": 10
+          },
+          {
+            "add_relic": "GRUDGEHAMMER_OF_VARN"
           }
         ]
       },
@@ -1115,6 +1118,194 @@
       },
       "withdrew": {
         "text": "There is no running from this.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_LAST_WARBAND",
+    "mode": "personal",
+    "intro": "The gate opens and the warband pours out, Boyz first, their Nob roaring behind them.",
+    "enemies": [
+      "ORK_BOYZ_MOB",
+      "RAID_NOB"
+    ],
+    "tags": [
+      "surface"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The Nob breaks, and the rest of the warband runs for the belt.",
+        "effects": [
+          {
+            "reputation": {
+              "DURN_LEAGUE": 5
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The warband drives you back to your ship. They are cheering. It will not last.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_BUILDERS_ESCORT",
+    "mode": "ship",
+    "intro": "The raider comes in fast, going for the slowest builder ship.",
+    "enemies": [
+      "ORK_RAIDER"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The raider limps off into the rocks. The builders sail on.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The raider gets through and the builders scatter. You will have to gather them again.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_ANVIL_SQUATTERS",
+    "mode": "personal",
+    "intro": "The grots come screaming out of the vault, with the Boyz lumbering behind them.",
+    "enemies": [
+      "GROT_SCAVENGERS",
+      "ORK_BOYZ_MOB"
+    ],
+    "tags": [
+      "cramped"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The squatters run for the hills. The Anvil is yours again.",
+        "effects": []
+      },
+      "victory_negotiated": {
+        "text": "The grots take a bag of shiny bolts and leave, dragging the Boyz with them.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The squatters hold the vault, for now.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_SKRAPFANG_LOOTAS",
+    "mode": "ship",
+    "intro": "The loota ship lifts off the wreck field, every gun it owns pointed at you.",
+    "enemies": [
+      "ORK_LOOTA_SHIP"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "The lootas flee, leaving their pile of salvage behind.",
+        "effects": [
+          {
+            "add_cargo": {
+              "key": "ORK_SCRAP",
+              "qty": 2
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "The lootas drive you off. They are still in the tunnels.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_GITZBOLT_GUNSHIP",
+    "mode": "ship",
+    "intro": "The gunship's guns light up, and so does every light in the Scrapfield.",
+    "enemies": [
+      "GITZBOLT_GUNSHIP_MK2"
+    ],
+    "tags": [],
+    "allow_withdraw": true,
+    "start_range": "long",
+    "outcomes": {
+      "victory_broken": {
+        "text": "The gunship slews sideways into the wreck, dead in the water. The workshop's hatch is right there.",
+        "effects": []
+      },
+      "defeat": {
+        "text": "The gunship drives you out of the Scrapfield. Gitzbolt's laughter follows you all the way out on the open channel.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
+        "effects": []
+      }
+    }
+  },
+  {
+    "key": "PQ_GITZBOLT_LAIR",
+    "mode": "personal",
+    "intro": "Grots pour out of every duct, and behind them, Gitzbolt lowers a welding mask and revs something that should not be revved.",
+    "enemies": [
+      "GITZBOLT_GROTS",
+      "BIG_MEK_GITZBOLT"
+    ],
+    "tags": [
+      "cramped",
+      "boarding"
+    ],
+    "allow_withdraw": true,
+    "outcomes": {
+      "victory_broken": {
+        "text": "Gitzbolt dives into an escape pod and is gone, again. But he left the Core behind.",
+        "effects": [
+          {
+            "set_flag": {
+              "CORE_RECOVERABLE": true
+            }
+          }
+        ]
+      },
+      "victory_negotiated": {
+        "text": "You make Gitzbolt an offer he cannot refuse: leave now, and keep his teeth. He takes it. The Core stays.",
+        "effects": [
+          {
+            "set_flag": {
+              "CORE_RECOVERABLE": true
+            }
+          }
+        ]
+      },
+      "defeat": {
+        "text": "You wake up outside the workshop. Gitzbolt has bolted the hatch and painted \"GO AWAY\" on it.",
+        "effects": []
+      },
+      "withdrew": {
+        "text": "You pull back to try again another day.",
         "effects": []
       }
     }

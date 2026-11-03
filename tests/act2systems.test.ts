@@ -223,8 +223,8 @@ describe('combat phase 2', () => {
     const rolls: { total: number; die: number; statValue: number }[] = [];
     combat.intent = 'evasive';
     personalRound(s, { ...ctx(), rolls: rolls as never[] }, combat, 'attack');
-    // die 11 + Grit + matched +3 + Tunnel-Born +2
-    expect(rolls[0].total).toBe(11 + rolls[0].statValue + 3 + 2);
+    // die 11 + Grit + matched counter + Tunnel-Born +2
+    expect(rolls[0].total).toBe(11 + rolls[0].statValue + data.config.COMBAT_MATCHED_BONUS + 2);
   });
 
   it('Withdraw is refused where the encounter does not allow it', () => {

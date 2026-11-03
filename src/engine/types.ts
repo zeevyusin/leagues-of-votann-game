@@ -13,7 +13,7 @@ export type HubTab = 'comms' | 'nav' | 'ship' | 'logbook' | 'market';
 export type RangeBand = 'close' | 'medium' | 'long';
 export type ShipTarget = 'hull' | 'weapons' | 'shields' | 'engines';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface Character {
   name: string;
@@ -96,6 +96,10 @@ export interface StoryState {
   ending: Ending | null;
   /** Free-roam after the epilogue: the Waaagh! is retired. */
   post_game: boolean;
+  /** Post-game quests finished (story.md 7.7). */
+  post_quests_completed: string[];
+  /** A system that became the fleet's home port (A New Hearth). */
+  home_port: string | null;
 }
 
 export interface Ending {
@@ -127,11 +131,22 @@ export interface CombatBuffs {
   defeat_hearthfire: number;
   /** Modifiers from the encounter and the story (Act 3 rewards, Press on, and so on). */
   mods: FightMod[];
+  /** The battle oath sworn this fight, and whether it has already broken. */
+  battle_oath: string | null;
+  oath_broken: boolean;
+  /** Crew already committed this fight (Hearthline). */
+  committed: string[];
+  /** Extra Resolve damage if this round's roll succeeds (Brokka's commitment). */
+  hit_resolve_bonus: number;
 }
+
+/** A sub-list open on the combat screen: battle oaths or crew commitments. */
+export type CombatMenu = 'oath' | 'crew' | null;
 
 export interface PersonalCombat {
   mode: 'personal';
   buffs: CombatBuffs;
+  menu: CombatMenu;
   encounter: string;
   enemy_index: number;
   enemy: { key: string; resolve: number; resolve_max: number };
@@ -162,6 +177,7 @@ export interface ShipAlloc {
 export interface ShipCombat {
   mode: 'ship';
   buffs: CombatBuffs;
+  menu: CombatMenu;
   encounter: string;
   enemy: { key: string; hull: number; hull_max: number };
   round: number;
@@ -182,7 +198,8 @@ export type CombatState = PersonalCombat | ShipCombat;
 export type CombatThen = { beat: string; route: string } | null;
 
 export type Scene =
-  | { type: 'hub'; tab: HubTab }
+  /** section: the open market section, if any (game-overview.md 4.5). */
+  | { type: 'hub'; tab: HubTab; section?: string | null }
   | { type: 'message'; key: string }
   | { type: 'beat'; key: string }
   | { type: 'combat'; combat: CombatState }
@@ -205,7 +222,7 @@ export interface GameState {
   ship: Ship;
   resources: Resources;
   cargo: { key: string; qty: number }[];
-  relics: { key: string; identified: boolean }[];
+  relics: { key: string; identified: boolean; equipped: boolean }[];
   crew: string[];
   oaths: OathEntry[];
   grudges: GrudgeEntry[];
@@ -272,6 +289,22 @@ export function migrateState(raw: GameState): GameState {
     }
     s.version = 3;
   }
+  if (s.version < 4) {
+    s.ship.modules.armour ??= 1;
+    for (const r of s.relics) r.equipped ??= false;
+    s.story.post_quests_completed ??= [];
+    s.story.home_port ??= null;
+    for (const scene of s.scenes) {
+      if (scene.type !== 'combat' && scene.type !== 'board') continue;
+      const c = scene.combat;
+      c.menu ??= null;
+      c.buffs.battle_oath ??= null;
+      c.buffs.oath_broken ??= false;
+      c.buffs.committed ??= [];
+      c.buffs.hit_resolve_bonus ??= 0;
+    }
+    s.version = 4;
+  }
   return s;
 }
 
@@ -287,6 +320,10 @@ export function freshBuffs(): CombatBuffs {
     victory_hearthfire: 0,
     defeat_hearthfire: 0,
     mods: [],
+    battle_oath: null,
+    oath_broken: false,
+    committed: [],
+    hit_resolve_bonus: 0,
   };
 }
 

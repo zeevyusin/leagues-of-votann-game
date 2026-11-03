@@ -25,6 +25,8 @@ export function requirementMet(state: GameState, req: Requirement): boolean {
   if (req.hearthfire_max !== undefined && state.resources.hearthfire > req.hearthfire_max) return false;
   if (req.grudge && !state.grudges.some((g) => g.key === req.grudge)) return false;
   if (req.lore && !state.lore.includes(req.lore)) return false;
+  if (req.hold_fate && state.story.ending?.hold !== req.hold_fate) return false;
+  if (req.core_status && state.story.core_status !== req.core_status) return false;
   return true;
 }
 
@@ -50,6 +52,8 @@ export function requirementText(data: GameData, req: Requirement): string {
   if (req.hearthfire_max !== undefined) parts.push(`Hearthfire ${req.hearthfire_max} or less`);
   if (req.grudge) parts.push(grudgeOf(data, req.grudge).title);
   if (req.lore) parts.push(loreOf(data, req.lore).title);
+  if (req.hold_fate) parts.push(`Hold Durnvar ${req.hold_fate.toLowerCase()}`);
+  if (req.core_status) parts.push(`the Core ${req.core_status.toLowerCase()}`);
   return parts.join(', ');
 }
 

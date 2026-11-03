@@ -233,10 +233,11 @@ Sources of modifiers: Hearthfire band, Wear state (Ironkin), ship modules, crew 
   - a roll modifier on one stat, optionally only in one context (story, personal combat, ship combat);
   - a modifier on all rolls in personal or ship combat;
   - a Negotiate modifier, or a read bonus for enemy telegraphs;
-  - max Health, max Hull, or reactor pips;
+  - reactor pips or the Shields cap in ship combat;
   - Fuel cost per journey, travel event chance, or Ork event weight;
-  - Hearthfire, Supplies, or Wear per journey;
-  - a reputation change with a faction while equipped (applied on equip, removed on unequip).
+  - Hearthfire or Wear per journey (optionally for one kin type only);
+  - a reputation change with a faction while equipped (applied on equip, removed on unequip);
+  - extra reputation from kept oaths, or extra Hearthfire lost from broken ones.
 
 **The relics** (about 8; names and numbers `[TUNABLE]`, Claude drafts the text):
 
@@ -285,7 +286,7 @@ Combat is deliberately abstract and text-driven. Detailed rules will be specced 
 - Crew can leave (low Hearthfire, broken oaths) or be lost in events.
 
 ### 8.3 Progression
-- **Pacing target `[DECIDED]` (Milestone 4):** the level cap is reached **around the end of Act 3**, not before. Targets for an average run: about level 3 after Act 1, level 6 to 8 when Act 3 unlocks, level 9 to 10 at the epilogue. The balance pass lowers the XP values below (or steepens the curve) until the automated playthroughs land in these ranges. The post-game has nothing left to level.
+- **Pacing target `[DECIDED]` (Milestone 4):** the level cap is reached **around the end of Act 3**, not before. Targets for an average run: about level 3 after Act 1, level 6 to 8 when Act 3 unlocks, level 8 to 10 at the epilogue, and the cap during the post-game quests. The balance pass met them by steepening the curve (`XP_PER_LEVEL_BASE = 150`). Measured over 120 careful runs: 3.7 after Act 1, 7 at the unlock, 8.7 at the epilogue.
 - **Skill points per level** to improve stats. `[DECIDED]` **1 stat point per level-up** (`STAT_POINTS_PER_LEVEL = 1`), and no stat can exceed **8** (`STAT_MAX = 8`). Both `[TUNABLE]`.
 - **XP sources `[DECIDED]`: milestones plus deeds.** Suggested values `[TUNABLE]`, tuned so the player reaches about level 10 near the end of the campaign:
 
@@ -301,7 +302,7 @@ Combat is deliberately abstract and text-driven. Detailed rules will be specced 
 - **Ship upgrades** (modules) purchased or salvaged.
 - **Crew recruitment** and relic acquisition expand options.
 - Class and subclass are fixed at creation. There is no later subclass unlock. Progression adds depth within the chosen build rather than changing it.
-- `[DECIDED]` **Level cap 10** `[TUNABLE]`, sized for the 4 to 6 hour campaign. Gentle XP curve: XP needed to reach the next level = `100 × current level` `[TUNABLE]`. Keep `LEVEL_CAP` and `XP_PER_LEVEL_BASE` in `config.json`.
+- `[DECIDED]` **Level cap 10** `[TUNABLE]`, sized for the 4 to 6 hour campaign. Gentle XP curve: XP needed to reach the next level = `150 × current level` `[TUNABLE]` (100 before the Milestone 4 balance pass). Keep `LEVEL_CAP` and `XP_PER_LEVEL_BASE` in `config.json`.
 
 ---
 
@@ -337,22 +338,26 @@ Keep the engine data-driven so story content can be added later without code cha
 
 ```
 data/
-  stats.json            # see character-creation.md
-  kin_types.json
-  base_classes.json
-  subclasses.json
-  config.json           # all [TUNABLE] values and [DECIDED] flags
-  systems.json          # star map: systems, factions, danger, connections
-  factions.json         # factions and starting reputation
-  messages.json         # Comms messages and reply trees, with gating conditions
-  events.json           # travel/encounter events with four-tier outcomes
-  relics.json
-  ship_modules.json
-  crew.json
-  items.json            # cargo goods; `mission: true` items are never lost on defeat
-  oaths.json            # oath templates: terms, deadline, how to fulfil, keep/break effects
-  grudges.json          # grudge templates
-  lore.json             # Logbook discovery entries
+  config.json             # all [TUNABLE] values and [DECIDED] flags
+  stats.json, kin_types.json, base_classes.json, subclasses.json   # see character-creation.md
+  systems.json            # star map: systems, factions, danger, connections
+  factions.json           # factions and starting reputation
+  markets.json            # per-port prices, upgrades, goods, rumors
+  crew.json               # crew members, traits, Hearthline commitments
+  items.json              # cargo goods; `mission: true` items are never lost on defeat
+  relics.json             # relics: benefit and drawback text and effects
+  oaths.json, grudges.json, lore.json
+  battle_oaths.json       # oaths sworn at the start of a fight
+  injuries.json
+  messages.json           # Comms messages
+  jobs.json               # side jobs: their Comms offers and beats
+  story_beats.json, story_beats_act2.json, story_beats_act3.json   # story beats, act by act
+  story_threads.json      # Act 2 threads and their rewards
+  travel_events.json      # travel events (same format as story beats)
+  act_events.json         # one-off story screens such as "Act 3 unlocked"
+  enemies.json, enemy_ships.json, combat_encounters.json
+  endings.json            # ending pieces, crew fates, rally lines
+  post_quests.json        # post-game quests: their messages and beats
 ```
 
 ### Core engine modules
@@ -523,7 +528,7 @@ The fourth milestone makes the game **complete with one campaign**. It adds litt
 |---|---|
 | Die type: d20 or d100 | `d20` |
 | Death: permadeath or recoverable defeat | Recoverable (`PERMADEATH = false`) |
-| Level cap and XP curve | Cap 10, XP to next level = `100 × level` |
+| Level cap and XP curve | Cap 10, XP to next level = `150 × level` |
 | Wear pressure model (see `character-creation.md`) | `ON_PUSH` |
 | Bonus stat points at creation (see `character-creation.md`) | Enabled, 3 points, max +2 per stat |
 | Roll tiers | Margin-based: crit +5 or nat 20, success 0 to +4, partial -1 to -4, failure -5 or nat 1 |

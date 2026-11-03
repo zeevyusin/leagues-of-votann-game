@@ -8,7 +8,7 @@ export const genderSchema = z.enum(['MALE', 'FEMALE']);
 export const kinTypeSchema = z.enum(['KIN', 'IRONKIN']);
 export const baseClassSchema = z.enum(['WARRIOR', 'PATHFINDER', 'ARTIFICER', 'SPEAKER']);
 export const tierSchema = z.enum(['critical', 'success', 'partial', 'failure']);
-export const MODULE_KEYS = ['engine', 'shields', 'weapons', 'reactor', 'cargo_hold', 'scanner', 'workshop'] as const;
+export const MODULE_KEYS = ['engine', 'shields', 'weapons', 'reactor', 'cargo_hold', 'scanner', 'workshop', 'armour'] as const;
 export const moduleKey = z.enum(MODULE_KEYS);
 const difficulty = z.union([z.string(), z.number()]);
 const numRecord = z.record(z.string(), z.number());
@@ -64,6 +64,11 @@ export const effectSchema = z.strictObject({
   next_fight: z.strictObject({ label: z.string(), value: z.number(), rolls: z.number().optional() }).optional(),
   /** Moves the ship to a system at once, with no travel time or Fuel (Act 3 only). */
   move_to: z.string().optional(),
+  /** Finishes a post-game quest (story.md 7.7). */
+  complete_quest: z.string().optional(),
+  /** Makes a system the fleet's home port, with a market (A New Hearth). */
+  set_home_port: z.string().optional(),
+  set_core_choice: z.enum(['RETURNED', 'KEPT', 'DESTROYED']).optional(),
 });
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -90,6 +95,9 @@ export const requirementSchema = z.strictObject({
   /** A grudge in the Logbook (active or settled). */
   grudge: z.string().optional(),
   lore: z.string().optional(),
+  /** The Hold's fate from the ending (post-game only). */
+  hold_fate: z.enum(['UNBROKEN', 'SCARRED', 'EVACUATED']).optional(),
+  core_status: z.enum(['IN_VAULT', 'STOLEN', 'RECOVERED', 'DESTROYED', 'LOST']).optional(),
 });
 export type Requirement = z.infer<typeof requirementSchema>;
 
@@ -161,6 +169,10 @@ const beatSchema = z.strictObject({
   only_if: z.array(requirementSchema).default([]),
   /** XP for completing the beat; defaults to XP_BEAT. */
   xp: z.number().optional(),
+  /** Post-game quest this beat belongs to (story.md 7.7). */
+  quest: z.string().optional(),
+  /** A lost or escaped fight leaves the beat waiting, to be tried again on the next visit. */
+  retry_on_defeat: z.boolean().default(false),
   next: z.string().nullable(),
 });
 export type Beat = z.infer<typeof beatSchema>;
@@ -180,6 +192,33 @@ const startingKitSchema = z.strictObject({
   reveal_systems: z.array(z.string()).optional(),
 });
 export type StartingKit = z.infer<typeof startingKitSchema>;
+
+/** What an equipped relic does (game-overview.md 6.3.1). Fields add up across equipped relics. */
+const relicEffectSchema = z.strictObject({
+  /** Only for this kin type. */
+  kin_type: kinTypeSchema.optional(),
+  /** A roll modifier: on one stat (or every roll), in some contexts (or all). */
+  roll: z.number().optional(),
+  stat: statKey.optional(),
+  contexts: z.array(z.enum(['story', 'personal', 'ship'])).optional(),
+  negotiate: z.number().optional(),
+  read: z.number().optional(),
+  reactor_pips: z.number().optional(),
+  shields_cap: z.number().optional(),
+  fuel_per_journey: z.number().optional(),
+  event_chance: z.number().optional(),
+  /** Multiplies the weight of Ork travel events. */
+  ork_event_weight: z.number().optional(),
+  hearthfire_per_journey: z.number().optional(),
+  wear_per_journey: z.number().optional(),
+  /** Applied on equip and taken back on unequip. */
+  reputation: numRecord.optional(),
+  /** Extra share of reputation from kept oaths (0.25 = +25%). */
+  oath_reputation_bonus: z.number().optional(),
+  /** Multiplies Hearthfire lost when an oath is broken. */
+  broken_oath_hearthfire_multiplier: z.number().optional(),
+});
+export type RelicEffect = z.infer<typeof relicEffectSchema>;
 
 /** How a console action works inside a fight (combat-system.md, Phase 2). */
 const combatActionSchema = z.strictObject({
@@ -324,7 +363,6 @@ export const configSchema = z.strictObject({
   WAAAGH_LAUNCH: z.number(),
   THREADS_REQUIRED: z.number(),
   BEATS_PER_THREAD: z.number(),
-  ORK_TONE: z.enum(['GRIM_FUNNY', 'GRIM']),
   ALLOW_SHIP_NAMING: z.boolean(),
   DEFAULT_SHIP_NAME: z.string(),
   SHIP_NAME_MAX_LENGTH: z.number(),
@@ -354,6 +392,9 @@ export const configSchema = z.strictObject({
   SAFE_ROUTE_SUBCLASS: z.string(),
   MODULE_UPGRADE_COST: z.record(z.string(), z.number()),
   CARGO_CAPACITY_PER_HOLD_LEVEL: z.number(),
+  RELIC_SLOTS: z.number(),
+  RELIC_IDENTIFY_ORE: z.number(),
+  ARMOUR_HULL_PER_LEVEL: z.number(),
   REPUTATION_DISCOUNT_AT: z.number(),
   REPUTATION_DISCOUNT: z.number(),
   REPUTATION_SURCHARGE_BELOW: z.number(),
@@ -380,6 +421,11 @@ export const configSchema = z.strictObject({
   DUEL_ADAPT_AFTER: z.number(),
   DUEL_WITNESS_HEARTHFIRE: z.number(),
   DUEL_WITNESS_REPUTATION: z.number(),
+  BATTLE_OATH_KEPT_HEARTHFIRE: z.number(),
+  BATTLE_OATH_BROKEN_HEARTHFIRE: z.number(),
+  BATTLE_OATH_KEPT_REPUTATION: z.number(),
+  BATTLE_OATH_BROKEN_REPUTATION: z.number(),
+  BATTLE_OATH_FACTION: z.string(),
   HOLD_SCARRED_AT: z.number(),
   ACT3_MUSTER_PORTS: z.array(z.string()).min(1),
   ACT3_RALLY_SYSTEM: z.string(),
@@ -420,6 +466,8 @@ const endingsSchema = z.strictObject({
   /** Story oaths settled by the epilogue: kept when the requirements are met, broken otherwise. */
   oaths: z.array(z.strictObject({ oath: z.string(), keep_if: z.array(requirementSchema).default([]) })),
   rally_lines: z.array(z.strictObject({ requirements: z.array(requirementSchema), text: textVariant })),
+  /** Shown once every post-game quest open to this run is done. */
+  saga_complete: textVariant,
   ylsa_warning: textVariant,
   free_roam: textVariant,
 });
@@ -509,6 +557,30 @@ export const gameDataSchema = z.strictObject({
       protected: z.boolean(),
       /** Safe from every loss until Act 3 (Ylsa, story.md 9.1). */
       act3_risk: z.boolean().default(false),
+      /** Hearthline commitment: once per fight, changes the current round (combat-system.md Phase 3). */
+      commitment: z
+        .strictObject({
+          name: z.string(),
+          description: z.string(),
+          modes: z.array(z.enum(['personal', 'ship'])).min(1),
+          roll: z.number().optional(),
+          heal_hull: z.number().optional(),
+          resolve_on_hit: z.number().optional(),
+          victory_hearthfire: z.number().optional(),
+        })
+        .optional(),
+    }),
+  ),
+  /** Sworn in round 1 of a fight for a bonus (combat-system.md Phase 3). */
+  battle_oaths: z.array(
+    z.strictObject({
+      key: z.string(),
+      name: z.string(),
+      description: z.string(),
+      all_rolls: z.number().default(0),
+      negotiate: z.number().default(0),
+      crit_resolve: z.number().default(0),
+      breaks_on: z.enum(['withdraw_or_defeat', 'forced_victory', 'below_half']),
     }),
   ),
   items: z.array(
@@ -521,6 +593,14 @@ export const gameDataSchema = z.strictObject({
       unidentified_name: z.string(),
       benefit: z.string(),
       drawback: z.string(),
+      /** What a market pays for it. */
+      value: z.number().min(0),
+      /** Mission relics cannot be sold. */
+      mission: z.boolean().default(false),
+      /** Known relics arrive already identified. */
+      known: z.boolean().default(false),
+      benefit_effects: z.array(relicEffectSchema).default([]),
+      drawback_effects: z.array(relicEffectSchema).default([]),
     }),
   ),
   oaths: z.array(
@@ -664,6 +744,18 @@ export const gameDataSchema = z.strictObject({
     z.strictObject({ key: z.string(), name: z.string(), ironkin_name: z.string(), stat: statKey, value: z.number() }),
   ),
   endings: endingsSchema,
+  /** Post-game quest chains (story.md 7.7): offered at free roam when their requirements are met. */
+  post_quests: z.array(
+    z.strictObject({
+      key: z.string(),
+      title: z.string(),
+      requirements: z.array(requirementSchema).default([]),
+      /** Comms message sent when free roam starts. */
+      message: z.string(),
+      beats: z.array(z.string()).min(1),
+      reward_text: z.string(),
+    }),
+  ),
   markets: z.array(
     z.strictObject({
       port: z.string(),
@@ -677,6 +769,8 @@ export const gameDataSchema = z.strictObject({
       /** Per-item multiplier on what this port pays (missing = 1). */
       buys: priceList,
       feast: z.boolean(),
+      /** The port identifies relics for RELIC_IDENTIFY_ORE. */
+      identify_relics: z.boolean().default(false),
       rumors: z.array(
         z.strictObject({
           key: z.string(),
@@ -752,6 +846,8 @@ export function crossReferenceErrors(d: GameData): string[] {
       need(sets.item, e.remove_cargo?.key, where, 'item');
       need(sets.thread, e.complete_thread, where, 'thread');
       need(sets.system, e.move_to, where, 'system');
+      need(sets.system, e.set_home_port, where, 'system');
+      if (e.complete_quest && !d.post_quests.some((q) => q.key === e.complete_quest)) errors.push(`${where}: unknown quest "${e.complete_quest}"`);
     }
   };
   const checkReqs = (reqs: Requirement[], where: string) => {
@@ -781,6 +877,16 @@ export function crossReferenceErrors(d: GameData): string[] {
   for (const m of d.config.ACT2_THREAD_MESSAGES) need(sets.message, m, 'config.ACT2_THREAD_MESSAGES', 'message');
   for (const p of d.config.ACT3_MUSTER_PORTS) need(sets.system, p, 'config.ACT3_MUSTER_PORTS', 'system');
   need(sets.system, d.config.ACT3_RALLY_SYSTEM, 'config.ACT3_RALLY_SYSTEM', 'system');
+  need(sets.faction, d.config.BATTLE_OATH_FACTION, 'config.BATTLE_OATH_FACTION', 'faction');
+  for (const q of d.post_quests) {
+    need(sets.message, q.message, `quest ${q.key}`, 'message');
+    checkReqs(q.requirements, `quest ${q.key}`);
+    for (const b of q.beats) {
+      need(sets.beat, b, `quest ${q.key}`, 'beat');
+      const beat = d.story_beats.find((x) => x.key === b);
+      if (beat && beat.quest !== q.key) errors.push(`quest ${q.key}: beat ${b} is not marked quest "${q.key}"`);
+    }
+  }
   need(sets.beat, d.config.ACT3_FIRST_BEAT, 'config.ACT3_FIRST_BEAT', 'beat');
   need(sets.beat, d.config.ACT3_LAUNCH_BEAT, 'config.ACT3_LAUNCH_BEAT', 'beat');
   for (const p of Object.values(d.config.POST_GAME_START)) need(sets.system, p, 'config.POST_GAME_START', 'system');

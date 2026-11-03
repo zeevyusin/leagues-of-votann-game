@@ -12,6 +12,8 @@ import type { PersonalCombat, ShipCombat } from '../src/engine/types';
 import { ctxWith, data, gameFor } from './helpers';
 
 const cfg = data.config;
+/** Health lost to a failure (natural 1) against the dig-site's first enemy, before stance and passives. */
+const digDamage = () => cfg.COMBAT_DAMAGE_TABLE.failure[1] + data.enemies.find((e) => e.key === 'ORK_BOYZ_MOB')!.damage_bonus;
 
 /** Starts the Act 1 dig-site fight, then forces the enemy's intent and a clear read. */
 function personalSetup(subclass: string, kin: 'KIN' | 'IRONKIN' = 'KIN') {
@@ -23,37 +25,38 @@ function personalSetup(subclass: string, kin: 'KIN' | 'IRONKIN' = 'KIN') {
 }
 
 describe('personal combat', () => {
-  it('a failure deals 0 and takes 2 (+1 for Attack)', () => {
+  it('a failure deals 0 and takes the failure damage (+1 for Attack)', () => {
     const { state, combat } = personalSetup('HERNKYN_PIONEER');
     const hp = state.character.health;
     personalRound(state, ctxWith(new ScriptedRng([0])), combat, 'attack');
     expect(combat.enemy.resolve).toBe(combat.enemy.resolve_max);
-    expect(state.character.health).toBe(hp - 3);
+    expect(state.character.health).toBe(hp - digDamage() - cfg.COMBAT_ATTACK_TAKEN_PENALTY);
   });
 
   it('Defend vs Aggressive gets the matched-counter bonus and reduces damage', () => {
     const { state, combat } = personalSetup('HERNKYN_PIONEER');
-    // die 1 -> natural 1 failure: 2 damage, Defend -1 => 1
+    // die 1 -> natural 1 failure: failure damage, Defend reduces it
     const hp = state.character.health;
     const out = personalRound(state, ctxWith(new ScriptedRng([0])), combat, 'defend');
-    expect(state.character.health).toBe(hp - 1);
-    expect(out.lines[0].text).toContain('Matched counter +3');
+    expect(state.character.health).toBe(hp - (digDamage() - cfg.COMBAT_DEFEND_REDUCTION));
+    expect(out.lines[0].text).toContain(`Matched counter +${cfg.COMBAT_MATCHED_BONUS}`);
   });
 
   it('Hold the Line reduces damage by 1 for Kin Warriors', () => {
     const { state, combat } = personalSetup('HEARTHKYN_WARRIOR');
     const hp = state.character.health;
     personalRound(state, ctxWith(new ScriptedRng([0])), combat, 'attack');
-    expect(state.character.health).toBe(hp - 2);
+    expect(state.character.health).toBe(hp - (digDamage() + cfg.COMBAT_ATTACK_TAKEN_PENALTY - cfg.HOLD_THE_LINE_REDUCTION));
   });
 
   it('Plated Bulwark reduces by 2 and adds Wear for Ironkin Warriors', () => {
     const { state, combat } = personalSetup('HEARTHKYN_WARRIOR', 'IRONKIN');
     const hp = state.character.health;
     personalRound(state, ctxWith(new ScriptedRng([0])), combat, 'attack');
-    // 3 damage - 2 = 1 taken; Wear = bulwark 2 + 1 damage x 2
-    expect(state.character.health).toBe(hp - 1);
-    expect(state.character.wear).toBe(cfg.PLATED_BULWARK_WEAR_PER_HIT + cfg.COMBAT_WEAR_PER_HEALTH_DAMAGE);
+    // Wear = bulwark wear + Wear per point of Health actually lost
+    const taken = digDamage() + cfg.COMBAT_ATTACK_TAKEN_PENALTY - cfg.PLATED_BULWARK_REDUCTION;
+    expect(state.character.health).toBe(hp - taken);
+    expect(state.character.wear).toBe(cfg.PLATED_BULWARK_WEAR_PER_HIT + taken * cfg.COMBAT_WEAR_PER_HEALTH_DAMAGE);
   });
 
   it('a critical Attack deals 3 + 1 and takes nothing', () => {
@@ -141,10 +144,10 @@ describe('ship combat', () => {
     const ctx = ctxWith(new ScriptedRng([0.5]));
     const combat = startCombat(state, ctx, 'A1_RAIDER_ESCAPE', null) as ShipCombat;
     combat.enemy_alloc = { weapons: 1, shields: 0, engines: 5 };
-    // die 11 + Nerve 2 + Ylsa 1 + 3 engines = 17 vs 11 + 5 = 16: a success, not a critical.
     const rolls: unknown[] = [];
     shipRound(state, { ...ctxWith(new ScriptedRng([0.5])), rolls: rolls as never[] }, combat, { weapons: 3, shields: 0, engines: 3 });
-    expect((rolls[0] as { difficulty: number }).difficulty).toBe(11 + 5);
+    const raider = data.enemy_ships.find((x) => x.key === 'ORK_RAIDER')!;
+    expect((rolls[0] as { difficulty: number }).difficulty).toBe(raider.defense_difficulty + 5);
   });
 
   it('rejects allocations that leave pips unspent or break a cap', () => {

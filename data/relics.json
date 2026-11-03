@@ -3,14 +3,85 @@
     "key": "LODESTONE_OF_KHAZ",
     "display_name": "Lodestone of Khaz",
     "unidentified_name": "Humming stone in a rune-cut cage",
-    "benefit": "Always points toward the nearest Votann machine-spirit. (+1 Wits when scanning ancient tech, once equipping is built.)",
-    "drawback": "It hums louder near Orks. They can hear it too."
+    "benefit": "Always points toward the nearest Votann machine-spirit: +1 Wits outside personal combat.",
+    "drawback": "It hums louder near Orks, and they can hear it too: Ork travel events are half again as likely.",
+    "value": 60,
+    "benefit_effects": [{ "roll": 1, "stat": "wits", "contexts": ["story", "ship"] }],
+    "drawback_effects": [{ "ork_event_weight": 1.5 }]
   },
   {
     "key": "ANCESTOR_CORE",
     "display_name": "The Ancestor Core",
     "unidentified_name": "The Ancestor Core",
-    "benefit": "An ancestor machine-spirit of terrible power, and it seems to like you. (Its effects arrive with relic equipping.)",
-    "drawback": "Every League in the Reach wants it, and some of them will ask nicely."
+    "benefit": "An ancestor machine-spirit wired into your reactor: +1 reactor pip and +1 to ship combat rolls.",
+    "drawback": "Kin crew are uneasy sleeping next to it (-2 Hearthfire per journey). An Ironkin feels it in their own systems (+5 Wear per journey).",
+    "value": 0,
+    "mission": true,
+    "known": true,
+    "benefit_effects": [{ "reactor_pips": 1 }, { "roll": 1, "contexts": ["ship"] }],
+    "drawback_effects": [
+      { "kin_type": "KIN", "hearthfire_per_journey": -2 },
+      { "kin_type": "IRONKIN", "wear_per_journey": 5 }
+    ]
+  },
+  {
+    "key": "GRUDGEHAMMER_OF_VARN",
+    "display_name": "Grudgehammer of Varn",
+    "unidentified_name": "A heavy hammer etched with names",
+    "benefit": "Every name on it is a grudge settled: +1 to personal combat rolls.",
+    "drawback": "It does not want you to talk: -2 to Negotiate.",
+    "value": 80,
+    "benefit_effects": [{ "roll": 1, "contexts": ["personal"] }],
+    "drawback_effects": [{ "negotiate": -2 }]
+  },
+  {
+    "key": "HEARTHSTONE_OF_DURN",
+    "display_name": "Hearthstone of Durn",
+    "unidentified_name": "A warm stone from a Hold's hearth",
+    "benefit": "A piece of home aboard: +2 Hearthfire per journey.",
+    "drawback": "And a reminder of how far from home you are: -1 Nerve.",
+    "value": 50,
+    "benefit_effects": [{ "hearthfire_per_journey": 2 }],
+    "drawback_effects": [{ "roll": -1, "stat": "nerve" }]
+  },
+  {
+    "key": "VOID_COMPASS",
+    "display_name": "Void-compass",
+    "unidentified_name": "A compass whose needle never settles",
+    "benefit": "It finds the shortest way between stars: -1 Fuel per journey (never below 1).",
+    "drawback": "The shortest way is rarely the quietest: +10% chance of a travel event.",
+    "value": 70,
+    "benefit_effects": [{ "fuel_per_journey": -1 }],
+    "drawback_effects": [{ "event_chance": 0.1 }]
+  },
+  {
+    "key": "OATHBAND_OF_THE_KAHL",
+    "display_name": "Oathband of the Kâhl",
+    "unidentified_name": "A plain iron band, worn smooth",
+    "benefit": "The Kâhls of old swore on it: kept oaths give 25% more reputation.",
+    "drawback": "It remembers broken ones too: broken oaths cost double Hearthfire.",
+    "value": 60,
+    "benefit_effects": [{ "oath_reputation_bonus": 0.25 }],
+    "drawback_effects": [{ "broken_oath_hearthfire_multiplier": 2 }]
+  },
+  {
+    "key": "MEMNYR_DATASLATE",
+    "display_name": "Memnyr data-slate",
+    "unidentified_name": "A cracked data-slate full of tiny script",
+    "benefit": "Centuries of battle notes: +2 to reading enemy telegraphs.",
+    "drawback": "You keep quoting it at people: -1 Silver Tongue.",
+    "value": 60,
+    "benefit_effects": [{ "read": 2 }],
+    "drawback_effects": [{ "roll": -1, "stat": "silver_tongue" }]
+  },
+  {
+    "key": "GITZBOLT_KUSTOM_FIELD",
+    "display_name": "Gitzbolt's kustom field",
+    "unidentified_name": "A sparking Ork gadget, still warm",
+    "benefit": "A Mek's force field bolted to your shields: +1 Shields cap in ship combat.",
+    "drawback": "Flying Ork tech into Hold Durnvar's docks does not go down well: -10 reputation with Hold Durnvar while equipped.",
+    "value": 90,
+    "benefit_effects": [{ "shields_cap": 1 }],
+    "drawback_effects": [{ "reputation": { "HOLD_DURNVAR": -10 } }]
   }
 ]

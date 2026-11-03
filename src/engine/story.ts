@@ -23,6 +23,7 @@ import {
 import type { Effect, Route } from './schema';
 import type { CombatResult } from './combat';
 import { gainInjury, startCombat } from './combat';
+import { settleBattleOath } from './hearthline';
 import { act3Objective, beginEpilogue, musterHint, startAct3 } from './act3';
 import type { BeatResult, CombatState, GameState, Line, Scene, StatKey, Tier } from './types';
 
@@ -206,6 +207,8 @@ function settleEncounter(state: GameState, ctx: Ctx, combat: CombatState, result
   if (oreMult) for (const e of effects) if (e.ore && e.ore > 0) e.ore = Math.round(e.ore * oreMult);
   lines.push(...applyEffects(state, ctx, effects, { nonLethal: true }));
 
+  lines.push(...settleBattleOath(state, ctx, combat, result));
+
   if (combat.then) completeBeat(state, ctx, combat.then.beat, combat.then.route, result, lines);
   else state.scenes.push({ type: 'notice', title: banner.charAt(0) + banner.slice(1).toLowerCase(), lines });
 }
@@ -227,6 +230,14 @@ function completeBeat(state: GameState, ctx: Ctx, beatKey: string, routeKey: str
     return;
   }
 
+  // A lost fight in a retryable beat leaves it waiting for the next visit.
+  if (beat.retry_on_defeat && (tier === 'defeat' || tier === 'withdrew')) {
+    state.story.playing_beat = null;
+    if (!state.story.deferred_beats.includes(beatKey)) state.story.deferred_beats.push(beatKey);
+    lines.push({ text: '' }, { text: 'This is not over. You can try again on your next visit.', tone: 'accent' });
+    state.scenes.push({ type: 'notice', title: beat.title, lines });
+    return;
+  }
   state.story.active_beats = state.story.active_beats.filter((k) => k !== beatKey);
   state.story.completed_beats.push({ key: beatKey, route: routeKey, tier });
   const actsBefore = state.story.acts_completed.length;
@@ -296,7 +307,11 @@ export function currentObjectives(state: GameState, ctx: Ctx): string[] {
   const out: string[] = [];
   for (const key of state.story.active_beats) {
     const beat = beatOf(ctx.data, key);
-    const thread = beat.thread ? threadOf(ctx.data, beat.thread).title : null;
+    const thread = beat.thread
+      ? threadOf(ctx.data, beat.thread).title
+      : beat.quest
+        ? ctx.data.post_quests.find((q) => q.key === beat.quest)!.title
+        : null;
     out.push(thread ? `${thread}: ${beat.objective}` : beat.objective);
   }
   const hint = musterHint(state, ctx);
@@ -315,7 +330,8 @@ export function progressChecks(state: GameState, ctx: Ctx): boolean {
     for (const m of cfg.ACT2_THREAD_MESSAGES) lines.push(...receiveMessage(state, ctx, m));
     return showActEvent(state, ctx, 'ACT2_STARTED', lines);
   }
-  if (s.post_game || s.flags.ACT3_STARTED) return false;
+  if (s.post_game) return sagaComplete(state, ctx);
+  if (s.flags.ACT3_STARTED) return false;
   // The meter reaching 100 starts Act 3 at once, ready or not (story.md 6.6).
   if ((s.waaagh_meter ?? 0) >= cfg.WAAAGH_LAUNCH) {
     startAct3(state, ctx, true);
@@ -324,6 +340,22 @@ export function progressChecks(state: GameState, ctx: Ctx): boolean {
   if (s.threads_completed.length >= cfg.THREADS_REQUIRED && !s.act_events_shown.includes('ACT3_UNLOCKED'))
     return showActEvent(state, ctx, 'ACT3_UNLOCKED');
   return false;
+}
+
+/** Post-game quests open to this run (story.md 7.7). */
+export function availableQuests(state: GameState, ctx: Ctx) {
+  return ctx.data.post_quests.filter((q) => allMet(state, q.requirements));
+}
+
+/** Once every quest open to this run is done, the saga is complete (free roam goes on). */
+function sagaComplete(state: GameState, ctx: Ctx): boolean {
+  const s = state.story;
+  if (s.flags.SAGA_COMPLETE) return false;
+  const open = availableQuests(state, ctx);
+  if (!open.length || !open.every((q) => s.post_quests_completed.includes(q.key))) return false;
+  s.flags.SAGA_COMPLETE = true;
+  state.scenes.push({ type: 'notice', title: 'The saga is complete', lines: [{ text: resolveText(ctx.data.endings.saga_complete, state) }] });
+  return true;
 }
 
 function showActEvent(state: GameState, ctx: Ctx, key: string, extra: Line[] = []): boolean {

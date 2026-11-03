@@ -11,7 +11,8 @@
       "engine",
       "reactor",
       "cargo_hold",
-      "scanner"
+      "scanner",
+      "armour"
     ],
     "sells": {
       "ORE_CRATES": 10,
@@ -21,7 +22,8 @@
       "ORK_SCRAP": 1.2
     },
     "feast": true,
-    "rumors": []
+    "rumors": [],
+    "identify_relics": true
   },
   {
     "port": "HOLD_DURNVAR",
@@ -33,7 +35,8 @@
       "shields",
       "workshop",
       "cargo_hold",
-      "reactor"
+      "reactor",
+      "armour"
     ],
     "sells": {
       "HOLD_ALE": 6
@@ -43,7 +46,8 @@
       "MEDICAE_KITS": 0.8
     },
     "feast": true,
-    "rumors": []
+    "rumors": [],
+    "identify_relics": true
   },
   {
     "port": "KHARR_HOLD",
@@ -54,7 +58,8 @@
     "upgrades": [
       "weapons",
       "engine",
-      "scanner"
+      "scanner",
+      "armour"
     ],
     "sells": {},
     "buys": {
@@ -106,6 +111,18 @@
           }
         ],
         "text": "A one-eyed freebooter leans close. \"Prison hulk, high orbit over Skrapfang Rock. Lightly guarded. The Orks don't think anyone's stupid enough to try.\""
+      },
+      {
+        "key": "DATASLATE",
+        "label": "Buy an old Memnyr data-slate off a freebooter",
+        "price": 60,
+        "requirements": [],
+        "effects": [
+          {
+            "add_relic": "MEMNYR_DATASLATE"
+          }
+        ],
+        "text": "\"Took it off a Kin scholar,\" the freebooter says. \"He won't be needin' it. Don't ask.\" The slate is cracked but still glowing, crammed with tiny script."
       }
     ]
   }

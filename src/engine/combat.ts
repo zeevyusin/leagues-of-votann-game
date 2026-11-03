@@ -4,6 +4,7 @@ import { pick, weightedPick } from './rng';
 import { applyEffects } from './effects';
 import type { CombatAction, Effect } from './schema';
 import { allMet } from './conditions';
+import { battleOathOf, checkOathMidFight } from './hearthline';
 import {
   consoleActionFor,
   encounterOf,
@@ -13,7 +14,9 @@ import {
   hasPassive,
   injuryName,
   moduleCap,
-  reactorPips,
+  relicFieldModifiers,
+  relicSum,
+  shipPips,
   recordRoll,
   statLabel,
   subclassOf,
@@ -98,6 +101,7 @@ export function startCombat(state: GameState, ctx: Ctx, encounterKey: string, th
     const combat: PersonalCombat = {
       mode: 'personal',
       buffs,
+      menu: null,
       encounter: enc.key,
       enemy_index: 0,
       enemy,
@@ -122,6 +126,7 @@ export function startCombat(state: GameState, ctx: Ctx, encounterKey: string, th
   const combat: ShipCombat = {
     mode: 'ship',
     buffs,
+    menu: null,
     encounter: enc.key,
     enemy: { key: ship.key, hull: Math.max(1, hullMax - damage), hull_max: hullMax },
     round: 0,
@@ -174,9 +179,10 @@ export function gainInjury(state: GameState, ctx: Ctx, lines: Line[]): void {
 
 export function readBonus(state: GameState, ctx: Ctx): number {
   const cfg = ctx.data.config;
-  if (hasPassive(ctx.data, state.character, 'SENSOR_SUITE')) return cfg.SENSOR_SUITE_READ_BONUS;
-  if (hasPassive(ctx.data, state.character, 'SHARP_SENSES')) return cfg.SHARP_SENSES_READ_BONUS;
-  return 0;
+  const relic = relicSum(state, ctx.data, 'read');
+  if (hasPassive(ctx.data, state.character, 'SENSOR_SUITE')) return cfg.SENSOR_SUITE_READ_BONUS + relic;
+  if (hasPassive(ctx.data, state.character, 'SHARP_SENSES')) return cfg.SHARP_SENSES_READ_BONUS + relic;
+  return relic;
 }
 
 /** Picks the enemy's intent and how clearly the player reads it (Wits + read bonus vs read_difficulty). */
@@ -271,7 +277,7 @@ export function personalRound(state: GameState, ctx: Ctx, combat: PersonalCombat
   mods.push(...buffModifiers(state, ctx, combat));
   if (stance === 'negotiate') {
     if (combat.buffs.negotiate_bonus) mods.push({ label: 'Negotiating edge', value: combat.buffs.negotiate_bonus });
-    mods.push(...leverageModifiers(state, ctx, combat));
+    mods.push(...leverageModifiers(state, ctx, combat), ...relicFieldModifiers(state, ctx.data, 'negotiate'));
   }
   const r = roll(ctx.rng, cfg, stat, c.stats[stat], mods, dc);
   recordRoll(ctx, r, `${stance.charAt(0).toUpperCase()}${stance.slice(1)} vs ${enemy.display_name}`);
@@ -311,6 +317,11 @@ export function personalRound(state: GameState, ctx: Ctx, combat: PersonalCombat
       break;
   }
 
+  // Oath of the Unbowed hits harder on a critical; Brokka's hammer blow lands on any hit.
+  const oath = combat.buffs.battle_oath ? battleOathOf(ctx, combat.buffs.battle_oath) : null;
+  if (r.tier === 'critical' && oath?.crit_resolve && stance !== 'negotiate') dealt += oath.crit_resolve;
+  if (good && combat.buffs.hit_resolve_bonus) dealt += combat.buffs.hit_resolve_bonus;
+  combat.buffs.hit_resolve_bonus = 0;
   taken = takePersonalDamage(state, ctx, combat, taken, lines);
   combat.enemy.resolve = Math.max(0, combat.enemy.resolve - dealt);
   const verb = stance === 'negotiate' ? 'Your words cost' : 'You deal';
@@ -352,6 +363,7 @@ function afterPersonalExchange(
   const cfg = ctx.data.config;
   const c = state.character;
   const enemy = enemyOf(ctx.data, combat.enemy.key);
+  checkOathMidFight(state, ctx, combat, lines);
   if (c.health <= 0) {
     lines.push({ text: 'You go down.', tone: 'bad' });
     return { lines, result: 'defeat' };
@@ -528,14 +540,14 @@ export function shipCaps(state: GameState, ctx: Ctx): ShipAlloc {
   const cfg = ctx.data.config;
   return {
     weapons: moduleCap(cfg, state.ship.modules.weapons),
-    shields: moduleCap(cfg, state.ship.modules.shields),
+    shields: moduleCap(cfg, state.ship.modules.shields) + relicSum(state, ctx.data, 'shields_cap'),
     engines: moduleCap(cfg, state.ship.modules.engine),
   };
 }
 
 /** Weapons values that still leave a legal split for shields and engines. */
 export function validWeaponChoices(state: GameState, ctx: Ctx): number[] {
-  const pips = reactorPips(ctx.data.config, state.ship);
+  const pips = shipPips(state, ctx.data);
   const caps = shipCaps(state, ctx);
   const out: number[] = [];
   for (let w = 0; w <= Math.min(caps.weapons, pips); w++) if (pips - w <= caps.shields + caps.engines) out.push(w);
@@ -543,7 +555,7 @@ export function validWeaponChoices(state: GameState, ctx: Ctx): number[] {
 }
 
 export function validShieldChoices(state: GameState, ctx: Ctx, weapons: number): number[] {
-  const pips = reactorPips(ctx.data.config, state.ship);
+  const pips = shipPips(state, ctx.data);
   const caps = shipCaps(state, ctx);
   const out: number[] = [];
   for (let s = 0; s <= Math.min(caps.shields, pips - weapons); s++) if (pips - weapons - s <= caps.engines) out.push(s);
@@ -633,7 +645,7 @@ export function shipRound(state: GameState, ctx: Ctx, combat: ShipCombat, alloc:
   const cfg = ctx.data.config;
   const enemyShip = enemyShipOf(ctx.data, combat.enemy.key);
   const caps = shipCaps(state, ctx);
-  const pips = reactorPips(cfg, state.ship);
+  const pips = shipPips(state, ctx.data);
   if (alloc.weapons + alloc.shields + alloc.engines !== pips) throw new Error('All pips must be spent');
   if (alloc.weapons > caps.weapons || alloc.shields > caps.shields || alloc.engines > caps.engines)
     throw new Error('Allocation exceeds module caps');
@@ -710,6 +722,8 @@ export function shipDamage(state: GameState, ctx: Ctx, combat: ShipCombat, alloc
 function afterShipExchange(state: GameState, ctx: Ctx, combat: ShipCombat, lines: Line[]): RoundOutcome {
   const enemyShip = enemyShipOf(ctx.data, combat.enemy.key);
   if (combat.enemy.hull > 0) superweaponFires(state, ctx, combat, lines);
+  checkOathMidFight(state, ctx, combat, lines);
+  combat.buffs.hit_resolve_bonus = 0;
   if (state.ship.hull <= 0) {
     lines.push({ text: 'Your ship is crippled.', tone: 'bad' });
     return { lines, result: 'defeat' };
@@ -724,7 +738,7 @@ function afterShipExchange(state: GameState, ctx: Ctx, combat: ShipCombat, lines
 
 /** The forced allocation for a ship Withdraw: everything into Engines, the rest into Shields, then Weapons. */
 export function withdrawAllocation(state: GameState, ctx: Ctx): ShipAlloc {
-  const pips = reactorPips(ctx.data.config, state.ship);
+  const pips = shipPips(state, ctx.data);
   const caps = shipCaps(state, ctx);
   const engines = Math.min(caps.engines, pips);
   const shields = Math.min(caps.shields, pips - engines);

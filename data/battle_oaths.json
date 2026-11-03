@@ -1,0 +1,24 @@
+[
+  {
+    "key": "NO_RETREAT",
+    "name": "Oath of No Retreat",
+    "description": "+1 to all rolls this fight. Broken if you Withdraw or are defeated.",
+    "all_rolls": 1,
+    "breaks_on": "withdraw_or_defeat"
+  },
+  {
+    "key": "MERCY",
+    "name": "Oath of Mercy",
+    "description": "+2 to Negotiate this fight. Broken if you win by breaking them with force.",
+    "negotiate": 2,
+    "breaks_on": "forced_victory"
+  },
+  {
+    "key": "UNBOWED",
+    "name": "Oath of the Unbowed",
+    "description": "+1 to all rolls, and +1 Resolve damage on a critical. Broken if your Health (or Hull) drops below half.",
+    "all_rolls": 1,
+    "crit_resolve": 1,
+    "breaks_on": "below_half"
+  }
+]

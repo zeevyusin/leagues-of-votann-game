@@ -8,6 +8,7 @@ import {
   injuryName,
   itemOf,
   liveWaaagh,
+  relicOf,
   marketOf,
   portOpen,
   subclassOf,
@@ -16,13 +17,19 @@ import {
   type Ctx,
 } from './rules';
 import { MODULE_KEYS } from './schema';
+import { identifyRelic, relicLabel, sellRelic } from './relics';
 import type { GameState, Line, ModuleKey, Option } from './types';
 
 type Market = NonNullable<ReturnType<typeof marketOf>>;
 
 export function currentMarket(state: GameState, ctx: Ctx): Market | null {
   if (!state.docked || !portOpen(ctx.data, state, state.location)) return null;
-  return marketOf(ctx.data, state.location);
+  const own = marketOf(ctx.data, state.location);
+  if (own) return own;
+  // A new home port trades like Hold Durnvar did.
+  if (state.story.home_port !== state.location) return null;
+  const hold = marketOf(ctx.data, ctx.data.config.ACT3_RALLY_SYSTEM);
+  return hold ? { ...hold, port: state.location } : null;
 }
 
 /** Multiplier on everything the player buys here (before rounding). */
@@ -78,7 +85,18 @@ export function sellPrice(state: GameState, ctx: Ctx, market: Market, item: stri
   return price(info.value, sellMultiplier(state, ctx, market, item));
 }
 
-export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; options: Option[] } {
+export const MARKET_SECTIONS = ['fuel', 'upgrades', 'goods', 'sell', 'services'] as const;
+export type MarketSection = (typeof MARKET_SECTIONS)[number];
+const SECTION_LABEL: Record<MarketSection, string> = {
+  fuel: 'Fuel and Supplies',
+  upgrades: 'Upgrades',
+  goods: 'Goods',
+  sell: 'Sell cargo',
+  services: 'Services',
+};
+
+/** The market screen: the list of sections, or one section's options (game-overview.md 4.5). Ids are unprefixed. */
+export function marketOptions(state: GameState, ctx: Ctx, section: MarketSection | null = null): { body: Line[]; options: Option[] } {
   const cfg = ctx.data.config;
   const market = currentMarket(state, ctx);
   if (!market) return { body: [{ text: 'There is no market here.', tone: 'muted' }], options: [] };
@@ -91,15 +109,15 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
   if (liveWaaagh(state) !== null && waaaghBand(cfg, liveWaaagh(state)).price_multiplier > 1)
     body.push({ text: 'The Waaagh! has pushed up the price of Fuel and Supplies.', tone: 'bad' });
 
-  const options: Option[] = [];
+  const sec: Record<MarketSection, Option[]> = { fuel: [], upgrades: [], goods: [], sell: [], services: [] };
   const canAfford = (cost: number) => (r.ore < cost ? `Needs ${cost} Ore` : undefined);
 
   const fp = fuelPrice(state, ctx, market);
   if (fp !== null) {
     const room = cfg.FUEL_MAX - r.fuel;
     const fill = Math.min(room, Math.floor(r.ore / fp));
-    options.push({ id: 'buy:fuel:1', label: `Buy 1 Fuel (${fp} Ore)`, locked: room <= 0 ? 'Tank full' : canAfford(fp) });
-    options.push({
+    sec.fuel.push({ id: 'buy:fuel:1', label: `Buy 1 Fuel (${fp} Ore)`, locked: room <= 0 ? 'Tank full' : canAfford(fp) });
+    sec.fuel.push({
       id: 'buy:fuel:fill',
       label: `Fill the tank (+${Math.max(fill, 0)} Fuel, ${Math.max(fill, 0) * fp} Ore)`,
       locked: room <= 0 ? 'Tank full' : fill <= 0 ? `Needs ${fp} Ore` : undefined,
@@ -108,9 +126,9 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
   const sp = suppliesPrice(state, ctx, market);
   if (sp !== null) {
     const room = cfg.SUPPLIES_MAX - r.supplies;
-    options.push({ id: 'buy:supplies:5', label: `Buy 5 Supplies (${sp * 5} Ore)`, locked: room < 5 ? 'Hold full' : canAfford(sp * 5) });
+    sec.fuel.push({ id: 'buy:supplies:5', label: `Buy 5 Supplies (${sp * 5} Ore)`, locked: room < 5 ? 'Hold full' : canAfford(sp * 5) });
     const fill = Math.min(room, Math.floor(r.ore / sp));
-    options.push({
+    sec.fuel.push({
       id: 'buy:supplies:fill',
       label: `Stock up (+${Math.max(fill, 0)} Supplies, ${Math.max(fill, 0) * sp} Ore)`,
       locked: room <= 0 ? 'Hold full' : fill <= 0 ? `Needs ${sp} Ore` : undefined,
@@ -120,7 +138,7 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
   for (const m of market.upgrades) {
     const cost = upgradePrice(state, ctx, market, m);
     const lvl = state.ship.modules[m];
-    options.push({
+    sec.upgrades.push({
       id: `upgrade:${m}`,
       label: cost === null ? `${moduleLabel(m)} (max level)` : `Upgrade ${moduleLabel(m)} to level ${lvl + 1} (${cost} Ore)`,
       detail: upgradeHint(ctx, m),
@@ -130,7 +148,7 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
 
   for (const item of Object.keys(market.sells)) {
     const cost = goodPrice(state, ctx, market, item);
-    options.push({
+    sec.goods.push({
       id: `good:${item}`,
       label: `Buy 1 ${itemOf(ctx.data, item).display_name} (${cost} Ore)`,
       locked: cargoSpace(state) <= 0 ? 'Cargo hold full' : canAfford(cost),
@@ -141,20 +159,20 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
     const each = sellPrice(state, ctx, market, slot.key);
     const name = itemOf(ctx.data, slot.key).display_name;
     if (each <= 0) continue;
-    options.push({ id: `sell:${slot.key}:1`, label: `Sell 1 ${name} (+${each} Ore)` });
-    if (slot.qty > 1) options.push({ id: `sell:${slot.key}:all`, label: `Sell all ${slot.qty} ${name} (+${each * slot.qty} Ore)` });
+    sec.sell.push({ id: `sell:${slot.key}:1`, label: `Sell 1 ${name} (+${each} Ore)` });
+    if (slot.qty > 1) sec.sell.push({ id: `sell:${slot.key}:all`, label: `Sell all ${slot.qty} ${name} (+${each * slot.qty} Ore)` });
   }
 
   if (market.feast) {
     const cost = price(cfg.FEAST_COST, buyMultiplier(state, ctx, market));
     const gain = state.character.kin_type === 'IRONKIN' ? cfg.FEAST_HEARTHFIRE_IRONKIN : cfg.FEAST_HEARTHFIRE;
-    options.push({ id: 'feast', label: `Hold a feast for the crew (${cost} Ore)`, detail: `+${gain} Hearthfire`, locked: canAfford(cost) });
+    sec.services.push({ id: 'feast', label: `Hold a feast for the crew (${cost} Ore)`, detail: `+${gain} Hearthfire`, locked: canAfford(cost) });
   }
 
   for (const rumor of market.rumors) {
     if (state.story.flags[`RUMOR_${rumor.key}`]) continue;
     const cost = price(rumor.price, buyMultiplier(state, ctx, market));
-    options.push({
+    sec.services.push({
       id: `rumor:${rumor.key}`,
       label: `${rumor.label} (${cost} Ore)`,
       tone: 'accent',
@@ -167,9 +185,9 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
   if (injury) {
     const name = injuryName(ctx.data, state.character, injury);
     if (state.character.kin_type === 'KIN')
-      options.push({ id: 'rest', label: `Rest and heal: ${name} (${cfg.INJURY_REST_DAYS} days)`, detail: 'Days pass as usual.', tone: 'good' });
+      sec.services.push({ id: 'rest', label: `Rest and heal: ${name} (${cfg.INJURY_REST_DAYS} days)`, detail: 'Days pass as usual.', tone: 'good' });
     else
-      options.push({
+      sec.services.push({
         id: 'repair_injury',
         label: `Maintenance: repair ${name} (${cfg.INJURY_REPAIR_ORE} Ore)`,
         locked: canAfford(cfg.INJURY_REPAIR_ORE),
@@ -177,8 +195,16 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
       });
   }
 
+  // Relics: sold for their value; identified for Ore at ports that do it.
+  state.relics.forEach((relic, i) => {
+    const info = relicOf(ctx.data, relic.key);
+    if (!info.mission) sec.sell.push({ id: `sellrelic:${i}`, label: `Sell relic: ${relicLabel(ctx, relic)} (+${info.value} Ore)`, detail: relic.equipped ? 'Equipped: it will be unequipped first.' : undefined });
+    if (!relic.identified && market.identify_relics)
+      sec.services.push({ id: `identify:${i}`, label: `Identify relic: ${relicLabel(ctx, relic)} (${cfg.RELIC_IDENTIFY_ORE} Ore)`, locked: canAfford(cfg.RELIC_IDENTIFY_ORE), tone: 'accent' });
+  });
+
   // Always available, so a captain with no Ore can still earn enough to fly on.
-  options.push({
+  sec.services.push({
     id: 'work',
     label: `Take dock work (${cfg.DOCK_WORK_DAYS} days, +${cfg.DOCK_WORK_ORE} Ore)`,
     detail: 'Hard, honest, and slow. Days pass as usual.',
@@ -188,7 +214,7 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
   const haggle = subclassOf(ctx.data, state.character.subclass).console_action.market_haggle;
   if (haggle) {
     const action = consoleActionFor(ctx.data, state.character);
-    options.push({
+    sec.services.push({
       id: 'haggle',
       label: `${action.name} (console action)`,
       detail: `${Math.round(haggle * 100)}% better prices for the rest of this visit${action.wearCost ? `. +${action.wearCost} Wear` : ''}`,
@@ -196,8 +222,19 @@ export function marketOptions(state: GameState, ctx: Ctx): { body: Line[]; optio
       tone: 'accent',
     });
   }
+  if (section) {
+    const options = sec[section];
+    if (!options.length) body.push({ text: 'Nothing here right now.', tone: 'muted' });
+    return { body: [...body, { text: '' }, { text: SECTION_LABEL[section].toUpperCase(), tone: 'heading' }], options: [...options, { id: 'section:', label: 'Back to the market', tone: 'muted' }] };
+  }
+  const options = MARKET_SECTIONS.map((k) => ({
+    id: `section:${k}`,
+    label: SECTION_LABEL[k],
+    detail: sec[k].length ? `${sec[k].length} option${sec[k].length > 1 ? 's' : ''}` : 'Nothing right now',
+  }));
   return { body, options };
 }
+
 
 function upgradeHint(ctx: Ctx, m: ModuleKey): string {
   const cfg = ctx.data.config;
@@ -214,6 +251,8 @@ function upgradeHint(ctx: Ctx, m: ModuleKey): string {
       return 'Clearer reads of enemy ships';
     case 'workshop':
       return 'Cheaper Wear maintenance';
+    case 'armour':
+      return `+${cfg.ARMOUR_HULL_PER_LEVEL} max Hull`;
   }
 }
 
@@ -290,6 +329,13 @@ export function marketChoice(state: GameState, ctx: Ctx, id: string): Line[] | n
       r.ore += cfg.DOCK_WORK_ORE;
       lines.push({ text: `+${cfg.DOCK_WORK_ORE} Ore`, tone: 'good' });
       return lines;
+    }
+    case 'sellrelic':
+      return sellRelic(state, ctx, Number(parts[1]));
+    case 'identify': {
+      const relic = state.relics[Number(parts[1])];
+      if (!relic || relic.identified || !market.identify_relics || !pay(cfg.RELIC_IDENTIFY_ORE)) return null;
+      return [{ text: `-${cfg.RELIC_IDENTIFY_ORE} Ore`, tone: 'bad' }, ...identifyRelic(state, ctx, Number(parts[1]))];
     }
     case 'rest': {
       const injury = state.character.injuries[0];

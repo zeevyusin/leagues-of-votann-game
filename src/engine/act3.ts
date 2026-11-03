@@ -2,7 +2,7 @@
 // story.md sections 6.6, 6.7, 7 and 9.1. The beats themselves are data (story_beats_act3.json);
 // this module only starts the chain and turns its flags into an ending.
 import { allMet } from './conditions';
-import { applyEffects, resolveOath } from './effects';
+import { applyEffects, receiveMessage, resolveOath } from './effects';
 import { titleCase } from './roll';
 import { dock } from './travel';
 import { resolveNext } from './story';
@@ -284,6 +284,7 @@ export function startFreeRoam(state: GameState, ctx: Ctx): void {
   state.location = cfg.POST_GAME_START[end.hold];
   const lines: Line[] = [{ text: resolveText(ctx.data.endings.free_roam, state) }, { text: '' }];
   lines.push(...dock(state, ctx));
+  for (const q of ctx.data.post_quests) if (allMet(state, q.requirements)) lines.push(...receiveMessage(state, ctx, q.message));
   if (!cfg.ALLOW_POST_GAME) lines.push({ text: 'The saga is complete.', tone: 'muted' });
   state.scenes.push({ type: 'notice', title: 'Free roam', lines });
 }

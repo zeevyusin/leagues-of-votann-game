@@ -14,7 +14,7 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 11,
+    "defense_difficulty": 13,
     "preferred_range": "close"
   },
   {
@@ -32,7 +32,7 @@
       "shields": 2,
       "engines": 4
     },
-    "defense_difficulty": 10,
+    "defense_difficulty": 12,
     "preferred_range": "long"
   },
   {
@@ -50,7 +50,7 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 11,
+    "defense_difficulty": 13,
     "preferred_range": "medium"
   },
   {
@@ -68,7 +68,7 @@
       "shields": 3,
       "engines": 2
     },
-    "defense_difficulty": 11,
+    "defense_difficulty": 13,
     "preferred_range": "long"
   },
   {
@@ -86,7 +86,7 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 11,
+    "defense_difficulty": 12,
     "preferred_range": "close"
   },
   {
@@ -104,7 +104,7 @@
       "shields": 3,
       "engines": 3
     },
-    "defense_difficulty": 12,
+    "defense_difficulty": 13,
     "preferred_range": "long"
   },
   {
@@ -122,7 +122,25 @@
       "shields": 4,
       "engines": 3
     },
-    "defense_difficulty": 12,
+    "defense_difficulty": 13,
     "preferred_range": "close"
+  },
+  {
+    "key": "GITZBOLT_GUNSHIP_MK2",
+    "display_name": "Gitzbolt's gunship 'Da Even Bigga Zappa'",
+    "hull": 10,
+    "reactor_pips": 7,
+    "allocation_weights": {
+      "weapons": 3,
+      "shields": 2,
+      "engines": 2
+    },
+    "system_caps": {
+      "weapons": 4,
+      "shields": 3,
+      "engines": 3
+    },
+    "defense_difficulty": 13,
+    "preferred_range": "long"
   }
 ]
