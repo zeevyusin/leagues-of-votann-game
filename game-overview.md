@@ -52,6 +52,8 @@ The console has four main screens. The player can switch between them freely whe
 - Each destination shows **travel time (in days) and fuel cost**, plus known danger and faction control where relevant. Typical route: 1 to 3 days, 1 to 3 Fuel `[TUNABLE]`.
 - Travel can trigger **random events** (see section 7).
 - Unexplored systems may be hidden until discovered through scans, rumors, or class abilities (for example Pathfinder actions).
+- **Route tree `[DECIDED]`:** Nav draws every known system as a tree rooted at the current location. Each system hangs under the one before it on the shortest route (fewest days, then least Fuel), so the systems you pass through are visible at a glance. Each line shows the total days and Fuel from here, and tags for objective, port and unvisited. A destination whose total Fuel is more than the ship carries is flagged.
+- **Toward objective:** a neighbouring system that starts the shortest route to an objective is marked `[toward objective]`, and its detail names the objectives it leads to.
 
 ### 3.3 Ship and Cargo
 - **Ship modules** (upgradable): engine, shields, weapons, reactor (sets power pips, see `combat-system.md`), cargo hold, scanner, and a workshop (reduces maintenance cost for Ironkin Wear and repairs).

@@ -96,6 +96,7 @@ import {
   withdrawLock,
   type RoundOutcome,
 } from './combat';
+import { objectiveSystems, objectivesByFirstHop, routeTreeLines } from './navmap';
 import { MARKET_SECTIONS, currentMarket, marketChoice, marketOptions, type MarketSection } from './market';
 import { commitCrew, commitLock, commitments, oathLock, swearBattleOath } from './hearthline';
 import { equipLock, equipRelic, equippedCount, identifyRelic, relicLabel, unequipRelic } from './relics';
@@ -626,26 +627,29 @@ function commsView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): 
 function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): View {
   const loc = systemOf(ctx.data, state.location);
   const body: Line[] = [...head, { text: loc.display_name.toUpperCase(), tone: 'heading' }, { text: loc.description }, { text: '' }];
-  body.push({ text: 'Known systems:', tone: 'muted' });
-  for (const key of state.discovered_systems) {
-    const s = systemOf(ctx.data, key);
-    const here = key === state.location ? ' (you are here)' : '';
-    const visited = state.visited_systems.includes(key) ? '' : ' (unvisited)';
-    body.push({ text: `  ${s.display_name}${here}${visited}`, tone: key === state.location ? 'teal' : 'normal' });
+  // The route tree shows which systems lie on the way to each destination.
+  if (availableRoutes(state, ctx).length) body.push(...routeTreeLines(state, ctx));
+  else {
+    body.push({ text: 'Known systems:', tone: 'muted' });
+    for (const key of state.discovered_systems) {
+      const s = systemOf(ctx.data, key);
+      body.push({ text: `  ${s.display_name}${key === state.location ? ' (you are here)' : ''}`, tone: key === state.location ? 'teal' : 'normal' });
+    }
   }
-  const waiting = new Set(
-    state.story.active_beats.map((k) => beatOf(ctx.data, k)).filter((b) => b.trigger === 'arrival').map((b) => b.location),
-  );
+  const waiting = objectiveSystems(state, ctx);
+  const toward = objectivesByFirstHop(state, ctx);
   const options: Option[] = availableRoutes(state, ctx).map((r) => {
     const s = systemOf(ctx.data, r.to);
     const faction = s.faction === 'NONE' ? 'unclaimed' : factionOf(ctx.data, s.faction).display_name;
     const fuel = routeFuel(state, ctx, r.fuel);
+    const via = toward.get(r.to) ?? [];
+    const onTheWay = via.length ? ` On the way to ${via.map((k) => systemOf(ctx.data, k).display_name).join(' and ')}.` : '';
     return {
       id: `go:${r.to}`,
-      label: `Set course: ${s.display_name}${waiting.has(r.to) ? '  [objective]' : ''}`,
-      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${isPort(ctx.data, state, r.to) ? ', port' : ''}.`,
+      label: `Set course: ${s.display_name}${waiting.has(r.to) ? '  [objective]' : via.length ? '  [toward objective]' : ''}`,
+      detail: `${r.days} day${r.days > 1 ? 's' : ''}, ${fuel} Fuel. Danger ${titleCase(s.danger)}. ${faction}${isPort(ctx.data, state, r.to) ? ', port' : ''}.${onTheWay}`,
       locked: fuel > state.resources.fuel ? `Needs ${fuel} Fuel` : undefined,
-      tone: waiting.has(r.to) ? 'accent' : undefined,
+      tone: waiting.has(r.to) || via.length ? 'accent' : undefined,
     };
   });
   if (canMusterHere(state, ctx))
