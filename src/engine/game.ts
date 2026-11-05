@@ -96,7 +96,7 @@ import {
   withdrawLock,
   type RoundOutcome,
 } from './combat';
-import { objectiveSystems, objectivesByFirstHop, routeTreeLines } from './navmap';
+import { navMap, objectiveSystems, objectivesByFirstHop, routeTreeLines } from './navmap';
 import { MARKET_SECTIONS, currentMarket, marketChoice, marketOptions, type MarketSection } from './market';
 import { commitCrew, commitLock, commitments, oathLock, swearBattleOath } from './hearthline';
 import { equipLock, equipRelic, equippedCount, identifyRelic, relicLabel, unequipRelic } from './relics';
@@ -527,11 +527,13 @@ export function buildView(state: GameState, data: GameData): View {
     case 'board': {
       const enemy = enemyShipOf(data, scene.combat.enemy.key);
       const boarding = encounterOf(data, encounterOf(data, scene.combat.encounter).boarding!);
+      const art = data.art.enemy_ships[enemy.key];
       return {
         kind: 'board',
         title: `${enemy.display_name} is disabled`,
         subtitle: 'Ship combat',
         status,
+        visual: art ? { kind: 'enemy_ship', art, alt: enemy.display_name, dim: true } : undefined,
         body: [...scene.lines, { text: '' }, { text: 'She is drifting, dark and open. You could put a boarding party aboard.', tone: 'accent' }],
         options: [
           { id: 'board', label: 'Board her', detail: `Personal combat: ${boarding.enemies.map((e) => enemyOf(data, e).display_name).join(', then ')}`, tone: 'accent' },
@@ -618,6 +620,7 @@ function commsView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): 
       id: `msg:${m.key}`,
       label: `${m.read ? '' : '[NEW] '}${msg.subject}`,
       detail: `From ${msg.from}, day ${m.day}${answerable ? '. Awaiting your answer.' : ''}${jobNote}`,
+      art: ctx.data.art.senders[msg.from],
       tone: m.read ? 'muted' : 'accent',
     };
   });
@@ -627,9 +630,9 @@ function commsView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): 
 function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): View {
   const loc = systemOf(ctx.data, state.location);
   const body: Line[] = [...head, { text: loc.display_name.toUpperCase(), tone: 'heading' }, { text: loc.description }, { text: '' }];
-  // The route tree shows which systems lie on the way to each destination.
-  if (availableRoutes(state, ctx).length) body.push(...routeTreeLines(state, ctx));
-  else {
+  // The star map shows which systems lie on the way to each destination. The route tree is its text form.
+  const routes = availableRoutes(state, ctx).length > 0;
+  if (!routes) {
     body.push({ text: 'Known systems:', tone: 'muted' });
     for (const key of state.discovered_systems) {
       const s = systemOf(ctx.data, key);
@@ -669,7 +672,7 @@ function navView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): Vi
     });
   }
   if (isStranded(state, ctx)) options.push({ id: 'distress', label: 'Send a distress call', detail: 'Someone will answer. They will want paying.', tone: 'accent' });
-  return { kind: 'nav', title: 'Nav', subtitle, body, options };
+  return { kind: 'nav', title: 'Nav', subtitle, visual: routes ? { kind: 'map', map: navMap(state, ctx), list: routeTreeLines(state, ctx) } : undefined, body, options };
 }
 
 function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): View {
@@ -743,7 +746,7 @@ function shipScreenView(state: GameState, ctx: Ctx, head: Line[], subtitle: stri
     state.relics.forEach((r, i) => {
       if (!r.identified) options.push({ id: `evaluate:${i}`, label: `${consoleActionFor(ctx.data, c).name}: ${relicOf(ctx.data, r.key).unidentified_name}`, tone: 'accent' });
     });
-  return { kind: 'ship', title: 'Ship and Cargo', subtitle, body, options };
+  return { kind: 'ship', title: 'Ship and Cargo', subtitle, visual: { kind: 'player_ship', alt: state.ship.name, modules: state.ship.modules }, body, options };
 }
 
 function logbookView(state: GameState, ctx: Ctx, head: Line[], subtitle: string): View {
@@ -856,7 +859,8 @@ function messageView(state: GameState, ctx: Ctx, key: string): View {
     }
   }
   options.push({ id: 'back', label: 'Back to Comms', tone: 'muted' });
-  return { kind: 'message', title: msg.subject, subtitle: `From ${msg.from}`, body, options };
+  const art = ctx.data.art.senders[msg.from];
+  return { kind: 'message', title: msg.subject, subtitle: `From ${msg.from}`, visual: art ? { kind: 'portrait', art, alt: msg.from } : undefined, body, options };
 }
 
 function beatView(state: GameState, ctx: Ctx, key: string): View {
@@ -971,7 +975,15 @@ function personalView(state: GameState, ctx: Ctx, combat: PersonalCombat): View 
   });
   options.push(...combatExtraOptions(state, ctx, combat));
   const subtitle = encounterOf(ctx.data, combat.encounter).mode === 'personal' ? 'Personal combat' : 'Ship combat';
-  return { kind: 'combat', title: `Combat: ${enemy.display_name}`, subtitle, body, options: combatMenuView(state, ctx, combat) ?? options };
+  const art = ctx.data.art.enemies[enemy.key];
+  return {
+    kind: 'combat',
+    title: `Combat: ${enemy.display_name}`,
+    subtitle,
+    visual: art ? { kind: 'enemy', art, alt: enemy.display_name, dim: ctx.data.art.dim_enemies.includes(enemy.key) } : undefined,
+    body,
+    options: combatMenuView(state, ctx, combat) ?? options,
+  };
 }
 
 function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
@@ -1022,7 +1034,15 @@ function shipView(state: GameState, ctx: Ctx, combat: ShipCombat): View {
     options.push({ id: 'target', label: `Target: ${titleCase(combat.target)}`, detail: 'Press to change. Does not use the round.', tone: 'muted' });
     options.push({ id: 'back', label: 'Change weapons', tone: 'muted' });
   }
-  return { kind: 'combat', title: `Ship combat: ${enemy.display_name}`, subtitle: 'Ship combat', body, options: combatMenuView(state, ctx, combat) ?? options };
+  const art = ctx.data.art.enemy_ships[enemy.key];
+  return {
+    kind: 'combat',
+    title: `Ship combat: ${enemy.display_name}`,
+    subtitle: 'Ship combat',
+    visual: art ? { kind: 'enemy_ship', art, alt: enemy.display_name, dim: false } : undefined,
+    body,
+    options: combatMenuView(state, ctx, combat) ?? options,
+  };
 }
 
 function sumMods(mods: { value: number }[]): number {

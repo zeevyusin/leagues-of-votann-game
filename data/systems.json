@@ -7,6 +7,10 @@
     "faction": "DURN_LEAGUE",
     "danger": "MEDIUM",
     "hidden": false,
+    "map": {
+      "x": 150,
+      "y": 38
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",
@@ -33,6 +37,10 @@
     "faction": "KARRAK_STATION",
     "danger": "LOW",
     "hidden": false,
+    "map": {
+      "x": 232,
+      "y": 118
+    },
     "connections": [
       {
         "to": "KETHRAS_ANVIL",
@@ -74,6 +82,10 @@
     "faction": "HOLD_DURNVAR",
     "danger": "LOW",
     "hidden": false,
+    "map": {
+      "x": 52,
+      "y": 108
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",
@@ -100,6 +112,10 @@
     "faction": "KHARR_LEAGUE",
     "danger": "LOW",
     "hidden": true,
+    "map": {
+      "x": 104,
+      "y": 200
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",
@@ -121,6 +137,10 @@
     "faction": "NONE",
     "danger": "MEDIUM",
     "hidden": true,
+    "map": {
+      "x": 296,
+      "y": 46
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",
@@ -147,6 +167,10 @@
     "faction": "ORKS",
     "danger": "HIGH",
     "hidden": true,
+    "map": {
+      "x": 408,
+      "y": 34
+    },
     "connections": [
       {
         "to": "CINDER_DRIFT",
@@ -168,6 +192,10 @@
     "faction": "ORKS",
     "danger": "MEDIUM",
     "hidden": true,
+    "map": {
+      "x": 440,
+      "y": 204
+    },
     "connections": [
       {
         "to": "GRIMHOLT_BELT",
@@ -189,6 +217,10 @@
     "faction": "DURN_LEAGUE",
     "danger": "MEDIUM",
     "hidden": true,
+    "map": {
+      "x": 304,
+      "y": 204
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",
@@ -210,6 +242,10 @@
     "faction": "ORKS",
     "danger": "HIGH",
     "hidden": true,
+    "map": {
+      "x": 566,
+      "y": 204
+    },
     "connections": [
       {
         "to": "GITZBOLT_SCRAPFIELD",
@@ -231,6 +267,10 @@
     "faction": "ORKS",
     "danger": "HIGH",
     "hidden": true,
+    "map": {
+      "x": 516,
+      "y": 50
+    },
     "connections": [
       {
         "to": "SKRAPFANG_ROCK",
@@ -252,6 +292,10 @@
     "faction": "ORKS",
     "danger": "HIGH",
     "hidden": true,
+    "map": {
+      "x": 596,
+      "y": 122
+    },
     "connections": [
       {
         "to": "RUSTMAW",
@@ -278,6 +322,10 @@
     "faction": "FREEBOOTERS",
     "danger": "MEDIUM",
     "hidden": true,
+    "map": {
+      "x": 416,
+      "y": 118
+    },
     "connections": [
       {
         "to": "KARRAK_STATION",

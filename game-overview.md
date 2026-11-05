@@ -13,7 +13,7 @@ A text-based adventure game themed on the Leagues of Votann. The player commands
 
 ## 1. Game Pillars
 
-1. **Console-first.** The entire game is experienced through a ship console. There is no free movement or map exploration outside of console menus.
+1. **Console-first.** The entire game is experienced through a ship console. There is no free movement or exploration outside of console menus. The Nav star map shows the known Reach and can shorten a menu choice, but travel follows the same routes and rules either way.
 2. **Choices with consequences.** Most outcomes are text-based, driven by player choices and stat-based rolls. Partial successes ("you succeed, but...") keep the story moving rather than dead-ending.
 3. **Kin culture matters.** Oaths, grudges, ancestor relics, and hearth loyalty are first-class mechanics, not flavor.
 4. **Class and kin type change what you can do.** Stats, class actions, and Ironkin vs. Kin differences open and close options throughout the game.
@@ -52,7 +52,8 @@ The console has four main screens. The player can switch between them freely whe
 - Each destination shows **travel time (in days) and fuel cost**, plus known danger and faction control where relevant. Typical route: 1 to 3 days, 1 to 3 Fuel `[TUNABLE]`.
 - Travel can trigger **random events** (see section 7).
 - Unexplored systems may be hidden until discovered through scans, rumors, or class abilities (for example Pathfinder actions).
-- **Route tree `[DECIDED]`:** Nav draws every known system as a tree rooted at the current location. Each system hangs under the one before it on the shortest route (fewest days, then least Fuel), so the systems you pass through are visible at a glance. Each line shows the total days and Fuel from here, and tags for objective, port and unvisited. A destination whose total Fuel is more than the ship carries is flagged.
+- **Star map `[DECIDED]`:** Nav draws every known system and route on a map, lights up the way to the nearest objective, and shows the route and totals for any system the player points at. Clicking a neighbouring system picks the same option as the menu, which stays the main way to travel. Act 3 has no travel, so it shows a plain list instead. See `graphics.md` section 7.
+- **Route tree `[DECIDED]`:** the text form of the star map, shown on screens under 600px wide, with graphics off, for screen readers, or with **R**. It draws every known system as a tree rooted at the current location. Each system hangs under the one before it on the shortest route (fewest days, then least Fuel), so the systems you pass through are visible at a glance. Each line shows the total days and Fuel from here, and tags for objective, port and unvisited. A destination whose total Fuel is more than the ship carries is flagged.
 - **Toward objective:** a neighbouring system that starts the shortest route to an objective is marked `[toward objective]`, and its detail names the objectives it leads to.
 
 ### 3.3 Ship and Cargo
@@ -322,10 +323,10 @@ Keep the engine data-driven so story content can be added later without code cha
 - **Long menus `[DECIDED]` (Milestone 4):** a list with more than 10 options pages. Each page shows up to 8 options, then **Previous page** (9) and **Next page** (0) where they apply. The market avoids most paging with sections (section 4.5). Paging is handled in the UI from the View's option list, so the engine stays unchanged.
 - **System menu additions `[DECIDED]` (Milestone 4):**
   - **How to play:** keys, rolls and outcome tiers, the two combat modes, Hearthfire, Wear, injuries, the Waaagh! meter, oaths and grudges. Short pages, written for a first-time player.
-  - **Settings:** text size (small, medium, large), dice animation (normal, fast, off), and reduced motion. Saved per browser in localStorage, never in the save file.
+  - **Settings:** text size (small, medium, large), graphics (on, off), dice animation (normal, fast, off), and reduced motion. Saved per browser in localStorage, never in the save file.
   - **About:** the fan-project disclaimer, the game version, and credits.
 - **Release `[DECIDED]` (Milestone 4):** the game is published as a static site on **GitHub Pages**. The repository is pushed to the author's GitHub account, and a GitHub Actions workflow builds and deploys `dist/` on every push to `main`. Saves stay in each player's browser. The version number in `package.json` becomes `1.0.0` at release and is shown on the title screen and the About page.
-- **Visual style:** a dark ship console in **Leagues of Votann colors**: dark background, **shades of blue and teal** for panels, text, and frames, with **orange** as the accent for highlights, warnings, and important prompts. Monospace font for console text. Keep colors as theme tokens (CSS variables) so they are easy to adjust. Starting palette `[TUNABLE]`:
+- **Visual style:** a dark ship console in **Leagues of Votann colors**: dark background, **shades of blue and teal** for panels, text, and frames, with **orange** as the accent for highlights, warnings, and important prompts. Monospace font for console text. Keep colors as theme tokens (CSS variables) so they are easy to adjust. Portraits, ships and the star map follow `graphics.md`. Starting palette `[TUNABLE]`:
 
 | Token | Use | Value |
 |---|---|---|
@@ -358,6 +359,7 @@ data/
   travel_events.json      # travel events (same format as story beats)
   act_events.json         # one-off story screens such as "Act 3 unlocked"
   enemies.json, enemy_ships.json, combat_encounters.json
+  art.json                # art IDs for message senders, enemies and enemy ships (see graphics.md)
   endings.json            # ending pieces, crew fates, rally lines
   post_quests.json        # post-game quests: their messages and beats
 ```

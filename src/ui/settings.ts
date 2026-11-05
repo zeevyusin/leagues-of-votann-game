@@ -6,11 +6,13 @@ export interface Settings {
   textSize: TextSize;
   dice: DiceSetting;
   reducedMotion: boolean;
+  /** Off hides every image, and the game plays as text only (graphics.md 6.3). */
+  graphics: boolean;
 }
 
 const KEY = 'votann.settings';
 const LEGACY_DICE_KEY = 'votann.dice';
-const DEFAULTS: Settings = { textSize: 'medium', dice: 'normal', reducedMotion: false };
+const DEFAULTS: Settings = { textSize: 'medium', dice: 'normal', reducedMotion: false, graphics: true };
 
 export const TEXT_SIZES: TextSize[] = ['small', 'medium', 'large'];
 export const DICE_SETTINGS: DiceSetting[] = ['normal', 'fast', 'off'];

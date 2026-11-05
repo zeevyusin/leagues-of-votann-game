@@ -28,6 +28,7 @@ import injuries from '../../data/injuries.json';
 import endings from '../../data/endings.json';
 import battleOaths from '../../data/battle_oaths.json';
 import postQuests from '../../data/post_quests.json';
+import art from '../../data/art.json';
 import { validateGameData, type GameData } from './schema';
 
 export function rawGameData() {
@@ -59,6 +60,7 @@ export function rawGameData() {
     post_quests: postQuests.quests,
     endings,
     markets,
+    art,
   };
 }
 

@@ -2,7 +2,7 @@
 // so the player can see which systems lie on the way to a destination.
 import { relicSum, systemOf, isPort, type Ctx } from './rules';
 import { availableRoutes, routeFuel } from './travel';
-import type { GameState, Line } from './types';
+import type { GameState, Line, NavMap, NavMapNode } from './types';
 
 export interface RouteStep {
   /** The system before this one on the shortest route from here (null for here). */
@@ -65,6 +65,72 @@ export function objectiveSystems(state: GameState, ctx: Ctx): Set<string> {
   return out;
 }
 
+/** Words shared by the route tree and the star map. */
+function systemTags(state: GameState, ctx: Ctx, key: string, objectives: Set<string>): string[] {
+  const tags: string[] = [];
+  if (objectives.has(key)) tags.push('objective');
+  if (isPort(ctx.data, state, key)) tags.push('port');
+  if (!state.visited_systems.includes(key)) tags.push('unvisited');
+  return tags;
+}
+
+function routeTotal(step: RouteStep): string {
+  return `${step.days} day${step.days > 1 ? 's' : ''}, ${step.fuel} Fuel`;
+}
+
+/** What the star map says about a system when it is highlighted. */
+function mapDetail(state: GameState, ctx: Ctx, key: string, step: RouteStep | undefined, path: string[], objectives: Set<string>): string {
+  const name = systemOf(ctx.data, key).display_name;
+  if (key === state.location) return `${name}: you are here.`;
+  if (!step) return `${name}: no known route yet.`;
+  const parts = [`${name}: ${routeTotal(step)}`];
+  if (step.fuel > state.resources.fuel) parts.push('more Fuel than you have');
+  const via = path.slice(0, -1).map((k) => systemOf(ctx.data, k).display_name);
+  if (via.length) parts.push(`via ${via.join(', ')}`);
+  const tags = systemTags(state, ctx, key, objectives);
+  return `${parts.join(', ')}.${tags.length ? ` [${tags.join(', ')}]` : ''}`;
+}
+
+/** The star map for the Nav screen: known systems, the routes between them, and the way to the nearest objective. */
+export function navMap(state: GameState, ctx: Ctx): NavMap {
+  const routes = shortestRoutes(state, ctx);
+  const objectives = objectiveSystems(state, ctx);
+  const reachable = new Map(availableRoutes(state, ctx).map((r) => [r.to, routeFuel(state, ctx, r.fuel) <= state.resources.fuel]));
+  const known = new Set(state.discovered_systems);
+
+  const nodes: NavMapNode[] = state.discovered_systems.map((key) => {
+    const sys = systemOf(ctx.data, key);
+    const step = routes.get(key);
+    const path = step ? pathTo(routes, key) : [];
+    return {
+      key,
+      name: sys.display_name,
+      x: sys.map.x,
+      y: sys.map.y,
+      here: key === state.location,
+      port: isPort(ctx.data, state, key),
+      ork: sys.faction === 'ORKS',
+      objective: objectives.has(key),
+      visited: state.visited_systems.includes(key),
+      route: step ? [state.location, ...path] : [],
+      detail: mapDetail(state, ctx, key, step, path, objectives),
+      go: reachable.get(key) ? `go:${key}` : undefined,
+    };
+  });
+
+  const edges: [string, string][] = [];
+  for (const key of known)
+    for (const c of systemOf(ctx.data, key).connections)
+      if (known.has(c.to) && !edges.some(([a, b]) => a === c.to && b === key)) edges.push([key, c.to]);
+
+  let nearest: NavMapNode | undefined;
+  for (const n of nodes) {
+    if (!n.objective || n.here || !n.route.length) continue;
+    if (!nearest || routes.get(n.key)!.days < routes.get(nearest.key)!.days) nearest = n;
+  }
+  return { nodes, edges, objective_route: nearest?.route ?? [] };
+}
+
 /** The route tree for the Nav screen. */
 export function routeTreeLines(state: GameState, ctx: Ctx): Line[] {
   const routes = shortestRoutes(state, ctx);
@@ -83,12 +149,9 @@ export function routeTreeLines(state: GameState, ctx: Ctx): Line[] {
       const last = i === kids.length - 1;
       const step = routes.get(k)!;
       const sys = systemOf(ctx.data, k);
-      const tags: string[] = [];
-      if (objectives.has(k)) tags.push('objective');
-      if (isPort(ctx.data, state, k)) tags.push('port');
-      if (!state.visited_systems.includes(k)) tags.push('unvisited');
+      const tags = systemTags(state, ctx, k, objectives);
       const short = step.fuel > state.resources.fuel ? ', more Fuel than you have' : '';
-      const total = `${step.days} day${step.days > 1 ? 's' : ''}, ${step.fuel} Fuel${short}`;
+      const total = routeTotal(step) + short;
       lines.push({
         text: `${prefix}${last ? '└─ ' : '├─ '}${sys.display_name}  (${total})${tags.length ? `  [${tags.join(', ')}]` : ''}`,
         tone: objectives.has(k) ? 'accent' : short ? 'muted' : 'normal',

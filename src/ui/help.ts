@@ -18,7 +18,7 @@ export const HELP_PAGES: HelpPage[] = [
     lines: [
       p('You command a Kin prospector ship. Everything happens through numbered menus: press 1 to 9, or 0 for the tenth option, or click.'),
       gap,
-      p('Tab switches between the console screens: Comms (messages and jobs), Nav (travel), Ship (hull, cargo, crew, relics), Logbook (oaths, grudges, the Waaagh!) and, while docked, the Market.'),
+      p('Tab switches between the console screens: Comms (messages and jobs), Nav (travel, with a star map; press R for the route list), Ship (hull, cargo, crew, relics), Logbook (oaths, grudges, the Waaagh!) and, while docked, the Market.'),
       gap,
       p('Esc opens the System menu: save to a slot, export a save file, settings, and this guide. The game also autosaves after every choice.'),
       p('Long lists show 8 options at a time: 9 goes back a page and 0 goes forward.', 'muted'),

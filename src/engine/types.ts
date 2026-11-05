@@ -336,10 +336,46 @@ export interface Line {
   tone?: Tone;
 }
 
+/** A picture for the UI to draw. The engine only names art IDs; src/ui/art.ts turns them into images. */
+export type Visual =
+  | { kind: 'portrait'; art: string; alt: string }
+  | { kind: 'enemy' | 'enemy_ship'; art: string; alt: string; dim: boolean }
+  | { kind: 'player_ship'; alt: string; modules: Record<ModuleKey, number> }
+  | { kind: 'map'; map: NavMap; list: Line[] };
+
+/** A known system on the star map. */
+export interface NavMapNode {
+  key: string;
+  name: string;
+  x: number;
+  y: number;
+  here: boolean;
+  port: boolean;
+  ork: boolean;
+  objective: boolean;
+  visited: boolean;
+  /** Systems on the shortest route, starting here. Empty if there is no known route. */
+  route: string[];
+  /** Totals and tags, shown when this system is highlighted. */
+  detail: string;
+  /** The option that travels here, for a neighbour the ship can reach right now. */
+  go?: string;
+}
+
+/** What the star map shows: the engine decides it, the UI only draws it (graphics.md 7). */
+export interface NavMap {
+  nodes: NavMapNode[];
+  edges: [string, string][];
+  /** The shortest route to the nearest objective, shown when nothing is highlighted. */
+  objective_route: string[];
+}
+
 export interface Option {
   id: string;
   label: string;
   detail?: string;
+  /** Art ID of a thumbnail shown beside the option. */
+  art?: string;
   /** If set, the option is shown but cannot be chosen; the text says what is needed. */
   locked?: string;
   tone?: Tone;
@@ -357,6 +393,8 @@ export interface View {
   subtitle?: string;
   status?: StatusItem[];
   tabs?: { active: HubTab; unread: number; market: boolean };
+  /** Drawn above the body. Screens work the same without it. */
+  visual?: Visual;
   body: Line[];
   options: Option[];
   input?: { id: string; prompt: string; maxLength: number; value?: string };

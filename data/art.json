@@ -1,0 +1,51 @@
+{
+  "senders": {
+    "Old Dorrik": "dorrik",
+    "Fleet-Theyn Hrolla Vask": "hrolla",
+    "Hernkyn outrider Vessa": "vessa",
+    "Karrak Station Dockmaster": "dockmaster",
+    "Clerk of the Durnvar Council": "clerk",
+    "Kaptin Snazrik": "snazrik",
+    "The Council of Hold Durnvar": "crest_durnvar",
+    "Hold Durnvar, Office of Works": "crest_durnvar",
+    "Hold Durnvar forge-masters": "crest_durnvar",
+    "Karrak Station bounty board": "crest_karrak",
+    "Karrak Station medicae guild": "crest_karrak",
+    "Grimholt Miners' Guild": "crest_grimholt",
+    "The refugee fleet": "crest_refugees"
+  },
+  "enemies": {
+    "ORK_BOYZ_MOB": "ork_boyz",
+    "NOB_GRIZZGUT_1": "grizzgut_1",
+    "NOB_GRIZZGUT_2": "grizzgut_2",
+    "NOB_GRIZZGUT_3": "grizzgut_3",
+    "GROT_SCAVENGERS": "grot_scavengers",
+    "GITZBOLT_GROTS": "gitzbolt_grots",
+    "ORK_JAILERS": "ork_jailers",
+    "JAILER_NOB": "nob_krugrot",
+    "RAID_NOB": "nob_zogbad",
+    "SLAVER_GUARDS": "slaver_guards",
+    "SLAVER_NOB": "nob_gutrip",
+    "PIT_CHAMPION": "bonecrusha",
+    "PIRATE_BOARDER": "pirate_boarders",
+    "ARD_BOYZ": "ard_boyz",
+    "BIG_MEK_GITZBOLT": "big_mek_gitzbolt",
+    "SKRAGNAK": "skragnak",
+    "SKRAGNAK_UNPLUGGED": "skragnak",
+    "SKRAGNAK_AMBUSHED": "skragnak",
+    "SKRAGNAK_GUARD": "meganobz"
+  },
+  "dim_enemies": [
+    "SKRAGNAK_UNPLUGGED"
+  ],
+  "enemy_ships": {
+    "ORK_RAIDER": "ork_raider",
+    "ORK_SCOUT": "ork_scout",
+    "PIRATE_CUTTER": "pirate_cutter",
+    "ORK_LOOTA_SHIP": "ork_loota",
+    "ORK_ESCORT_PACK": "ork_escorts",
+    "GITZBOLT_GUNSHIP": "gitzbolt_gunship",
+    "KROOZER_GUARD": "kill_kroozer",
+    "GITZBOLT_GUNSHIP_MK2": "gitzbolt_gunship_mk2"
+  }
+}

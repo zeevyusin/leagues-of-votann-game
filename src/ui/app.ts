@@ -2,6 +2,8 @@
 import type { GameData } from '../engine/schema';
 import { applyChoiceWithRolls, buildView } from '../engine/game';
 import type { RollEvent } from '../engine/roll';
+import { artImage, renderVisual } from './art';
+import { renderMap, type MapHandle } from './map';
 import { DiceOverlay, diceEnabled } from './dice';
 import { ABOUT_LINES, HELP_PAGES, VERSION } from './help';
 import { DICE_SETTINGS, TEXT_SIZES, applySettings, cycle, loadSettings, saveSettings } from './settings';
@@ -49,6 +51,8 @@ export class App {
   /** Page of a long option list, reset whenever the screen changes. */
   private page = 0;
   private pageKey = '';
+  /** The text route list beside the star map. */
+  private routeList = false;
 
   constructor(
     private root: HTMLElement,
@@ -100,7 +104,7 @@ export class App {
     }
     options.push({ id: 'sys:export', label: 'Export save to a file' });
     options.push({ id: 'panel:help', label: 'How to play' });
-    options.push({ id: 'panel:settings', label: 'Settings', detail: 'Text size, dice animation, reduced motion' });
+    options.push({ id: 'panel:settings', label: 'Settings', detail: 'Text size, graphics, dice animation, reduced motion' });
     options.push({ id: 'panel:about', label: 'About' });
     options.push({ id: 'sys:quit', label: 'Quit to title', detail: 'Your progress is autosaved.', tone: 'muted' });
     return {
@@ -123,6 +127,7 @@ export class App {
         body: [{ text: 'Press an option to change it.', tone: 'muted' }],
         options: [
           { id: 'panel:set:text', label: `Text size: ${cap(st.textSize)}` },
+          { id: 'panel:set:graphics', label: `Graphics: ${st.graphics ? 'On' : 'Off'}`, detail: 'Portraits and ship images' },
           { id: 'panel:set:dice', label: `Dice animation: ${cap(st.dice)}` },
           { id: 'panel:set:motion', label: `Reduced motion: ${st.reducedMotion ? 'On' : 'Off'}`, detail: 'Skips the dice tumble and other movement' },
           { id: 'panel:close', label: 'Back', tone: 'accent' },
@@ -148,6 +153,7 @@ export class App {
     else if (id.startsWith('panel:set:')) {
       const st = loadSettings();
       if (id === 'panel:set:text') st.textSize = cycle(TEXT_SIZES, st.textSize);
+      if (id === 'panel:set:graphics') st.graphics = !st.graphics;
       if (id === 'panel:set:dice') st.dice = cycle(DICE_SETTINGS, st.dice);
       if (id === 'panel:set:motion') st.reducedMotion = !st.reducedMotion;
       saveSettings(st);
@@ -246,6 +252,11 @@ export class App {
     } else if (id === 'sys:quit') this.mode = { kind: 'title' };
   }
 
+  private toggleRouteList(): void {
+    this.routeList = !this.routeList;
+    this.render();
+  }
+
   private load(state: GameState | undefined): void {
     if (!state) return;
     this.mode = { kind: 'game', state, menu: false };
@@ -266,6 +277,12 @@ export class App {
       return;
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    if (e.key.toLowerCase() === 'r' && this.currentView().visual?.kind === 'map') {
+      e.preventDefault();
+      this.toggleRouteList();
+      return;
+    }
 
     if (e.key === 'Escape' && this.panel) {
       this.panel = null;
@@ -361,7 +378,16 @@ export class App {
     if (view.subtitle) head.append(el('div', 'screen-subtitle', view.subtitle));
     screen.append(head);
 
+    const graphics = loadSettings().graphics;
     const body = el('div', 'screen-body');
+    let map: MapHandle | null = null;
+    if (view.visual?.kind === 'map') {
+      const lines = view.visual.list.map(renderLine);
+      if (graphics) {
+        map = renderMap(view.visual.map, lines, this.routeList, (id) => this.choose(id), () => this.toggleRouteList());
+        body.append(map.el);
+      } else body.append(...lines);
+    } else if (view.visual && graphics) body.append(renderVisual(view.visual));
     for (const line of view.body) body.append(renderLine(line));
     screen.append(body);
 
@@ -371,7 +397,15 @@ export class App {
     if (view.error || message) screen.append(el('div', 'screen-error', view.error ?? message ?? ''));
 
     if (view.input) screen.append(this.renderInput(view.input));
-    screen.append(this.renderOptions(this.shownOptions(view)));
+    const options = this.renderOptions(this.shownOptions(view), graphics);
+    if (map) {
+      // Pointing at a destination in the menu lights up its route on the map.
+      const show = (e: Event) => map?.highlight((e.target as HTMLElement).closest<HTMLElement>('[data-system]')?.dataset.system ?? null);
+      options.addEventListener('mouseover', show);
+      options.addEventListener('focusin', show);
+      options.addEventListener('mouseleave', () => map?.highlight(null));
+    }
+    screen.append(options);
     shell.append(screen);
     root.append(shell);
 
@@ -421,13 +455,15 @@ export class App {
     return shown;
   }
 
-  private renderOptions(options: Shown[]): HTMLElement {
+  private renderOptions(options: Shown[], graphics: boolean): HTMLElement {
     const list = el('ol', 'options');
     options.forEach(({ opt, key }) => {
       const li = el('li');
       const b = el('button', `option ${toneClass(opt.tone)}${opt.locked ? ' locked' : ''}`) as HTMLButtonElement;
       b.disabled = !!opt.locked;
+      if (opt.id.startsWith('go:')) b.dataset.system = opt.id.slice(3);
       b.append(el('span', 'option-key', key));
+      if (opt.art && graphics) b.append(artImage(opt.art, '', 'option-art'));
       const text = el('span', 'option-text');
       text.append(el('span', 'option-label', opt.label));
       if (opt.detail) text.append(el('span', 'option-detail', opt.detail));

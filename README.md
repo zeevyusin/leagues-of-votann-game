@@ -8,6 +8,7 @@ A text adventure played from the console of a Kin prospector's ship, in the Ashf
 
 - **Numbered menus.** Press 1 to 9, or 0 for the tenth option, or click. Long lists show 8 options at a time: 9 goes back a page, 0 goes forward.
 - **Tab** switches between the console screens: Comms, Nav, Ship, Logbook, and the Market while docked.
+- **Nav** has a star map. Point at a system to see its route, or click a neighbouring system to set course. **R** opens the route list.
 - **Esc** opens the System menu: save to one of 3 slots, export or import a save file, How to play, Settings, and About.
 - **Saving.** The game autosaves after every choice. Saves live in your browser, so export a save file if you want to move to another browser or computer.
 - **How to play** (title screen or System menu) explains rolls, both kinds of combat, Hearthfire, Wear, relics and the Waaagh!.
@@ -32,6 +33,7 @@ Then open http://localhost:5173.
 |---|---|
 | `npm test` | Runs the engine tests, including automated playthroughs of all three acts, the epilogue and the post-game quests for every class and kin type, and the balance checks |
 | `npm run build` | Type-checks and builds a static site into `dist/` |
+| `npm run art` | Rebuilds the images in `public/art/` from the text grids in `art/` |
 | `npm run preview` | Serves the built site locally |
 | `npm run typecheck` | Type-checks only |
 
@@ -50,9 +52,12 @@ The site then appears at `https://<your-user>.github.io/<repository>/`.
 | Path | Contents |
 |---|---|
 | `data/` | All content and every tunable number. `config.json` holds the `[TUNABLE]` values and `[DECIDED]` flags. |
+| `art/` | Pixel art source: one text grid per image, plus `palette.json`. |
+| `public/art/` | The built images. They are committed, so the site build does not need `npm run art`. |
+| `scripts/` | `build-art.mjs`, the art build. |
 | `src/engine/` | The game itself, in pure TypeScript with no browser code. `game.ts` is the entry point: `buildView(state)` and `applyChoice(state, id)`. |
 | `src/ui/` | The browser console: rendering, keyboard input, paging, settings, help, the dice animation, and save slots. |
 | `tests/` | Vitest tests for the engine, including the automated test player in `playthroughPolicy.ts`. |
-| `*.md` | The design specs: [game-overview.md](game-overview.md), [character-creation.md](character-creation.md), [combat-system.md](combat-system.md), [story.md](story.md). |
+| `*.md` | The design specs: [game-overview.md](game-overview.md), [character-creation.md](character-creation.md), [combat-system.md](combat-system.md), [story.md](story.md), [graphics.md](graphics.md). |
 
 Data files are checked when the game loads. A broken reference (for example a beat pointing to a missing encounter) stops the game with a list of problems instead of failing mid-scene.

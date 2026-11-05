@@ -473,6 +473,9 @@ const endingsSchema = z.strictObject({
 });
 export type Endings = z.infer<typeof endingsSchema>;
 
+/** An art ID is the file name of a PNG in public/art/. */
+const artId = z.string().regex(/^[a-z0-9_]+$/);
+
 export const gameDataSchema = z.strictObject({
   config: configSchema,
   stats: z.array(z.strictObject({ key: statKey, display_name: z.string(), governs: z.string() })),
@@ -530,6 +533,8 @@ export const gameDataSchema = z.strictObject({
       faction: z.string(),
       danger: z.enum(['LOW', 'MEDIUM', 'HIGH']),
       hidden: z.boolean(),
+      /** Position on the Nav star map, in a 650 by 240 space (graphics.md 7.1). */
+      map: z.strictObject({ x: z.number(), y: z.number() }),
       /** The port refuses to dock ships once the Waaagh! meter reaches this value. */
       closes_at_waaagh: z.number().optional(),
       connections: z.array(z.strictObject({ to: z.string(), days: z.number().min(1), fuel: z.number().min(0) })),
@@ -783,6 +788,14 @@ export const gameDataSchema = z.strictObject({
       ),
     }),
   ),
+  /** Art IDs for each message sender, enemy and enemy ship (graphics.md 6.2). Anything left out shows no image. */
+  art: z.strictObject({
+    senders: z.record(z.string(), artId),
+    enemies: z.record(z.string(), artId),
+    /** Enemies whose portrait is shown powered down. */
+    dim_enemies: z.array(z.string()),
+    enemy_ships: z.record(z.string(), artId),
+  }),
 });
 export type GameData = z.infer<typeof gameDataSchema>;
 
@@ -1009,5 +1022,9 @@ export function crossReferenceErrors(d: GameData): string[] {
       for (const t of tierSchema.options) if (r.outcomes?.[t]) checkEffects(r.outcomes[t]!.effects, `${rw}.outcomes.${t}`);
     }
   }
+  const senders = new Set(d.messages.map((m) => m.from));
+  for (const from of Object.keys(d.art.senders)) if (!senders.has(from)) errors.push(`art.senders: no message is from "${from}"`);
+  for (const k of [...Object.keys(d.art.enemies), ...d.art.dim_enemies]) need(sets.enemy, k, 'art.enemies', 'enemy');
+  for (const k of Object.keys(d.art.enemy_ships)) need(sets.ship, k, 'art.enemy_ships', 'ship');
   return errors;
 }
