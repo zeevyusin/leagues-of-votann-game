@@ -114,6 +114,33 @@
   "TINKERS_EYE_REPAIR_DISCOUNT": 1,
   "FATIGUE_DAYS": 6,
   "FATIGUE_PENALTY": -1,
+  "ANCESTORS_EYE": {
+    "FAVOURED": {
+      "name": "Favoured",
+      "summary": "Easy. The ancestors look kindly on you.",
+      "roll": 2,
+      "read": 0,
+      "fatigue_days": 3,
+      "supplies_multiplier": 0.5
+    },
+    "WEIGHED": {
+      "name": "Weighed",
+      "summary": "Normal. The game as it was designed.",
+      "roll": 0,
+      "read": 0,
+      "fatigue_days": 0,
+      "supplies_multiplier": 1
+    },
+    "JUDGED": {
+      "name": "Judged",
+      "summary": "Hard. Every deed is judged.",
+      "roll": -2,
+      "read": -2,
+      "fatigue_days": -1,
+      "supplies_multiplier": 1
+    }
+  },
+  "DEFAULT_ANCESTORS_EYE": "WEIGHED",
   "MUTINY_DIFFICULTY": "HARD",
   "MUTINY_BRIBE_ORE": 40,
   "MUTINY_RESET_HEARTHFIRE": 20,

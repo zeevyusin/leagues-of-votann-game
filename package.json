@@ -1,7 +1,7 @@
 {
   "name": "votann-command-console",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A text adventure on a Kin ship's console. Unofficial fan project.",
   "type": "module",
   "scripts": {

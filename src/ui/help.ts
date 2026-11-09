@@ -20,7 +20,7 @@ export const HELP_PAGES: HelpPage[] = [
       gap,
       p('Tab switches between the console screens: Comms (messages and jobs), Nav (travel, with a star map; press R for the route list), Ship (hull, cargo, crew, relics), Logbook (oaths, grudges, the Waaagh!) and, while docked, the Market.'),
       gap,
-      p('Esc opens the System menu: save to a slot, export a save file, settings, and this guide. The game also autosaves after every choice.'),
+      p('Esc opens the System menu: save or load a slot, change The Ancestors\' Eye (difficulty), export a save file, settings, and this guide. The game also autosaves after every choice.'),
       p('Long lists show 8 options at a time: 9 goes back a page and 0 goes forward.', 'muted'),
     ],
   },
@@ -82,6 +82,18 @@ export const HELP_PAGES: HelpPage[] = [
       p('If the meter reaches 100 first, the Waaagh! launches without you, and the final battle starts at once in its hardest form.', 'bad'),
       gap,
       p('Every run reaches an ending. After the epilogue you can keep flying, finish what you left undone, and take on one last task.', 'muted'),
+    ],
+  },
+  {
+    title: "The Ancestors' Eye",
+    lines: [
+      p("The Ancestors' Eye is the difficulty. You choose it when you create a captain, and you can change it at any time from the System menu."),
+      gap,
+      p('Favoured (easy): +2 to every roll, Fatigue comes later, and the crew eats less.', 'good'),
+      p('Weighed (normal): the game as it was designed.'),
+      p('Judged (hard): -2 to every roll, enemies are harder to read, and Fatigue comes sooner.', 'bad'),
+      gap,
+      p('The bonus or penalty shows in every roll, labelled The Ancestors\' Eye.', 'muted'),
     ],
   },
 ];

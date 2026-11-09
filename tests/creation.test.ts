@@ -37,7 +37,7 @@ describe('creation flow', () => {
     const blocked = creationChoose(data, d, 'done');
     expect(blocked.draft.step).toBe('bonus');
     d = creationChoose(data, d, 'add:wits').draft;
-    expect(creationChoose(data, d, 'done').draft.step).toBe('confirm');
+    expect(creationChoose(data, d, 'done').draft.step).toBe('eye');
   });
 
   it('a subclass must belong to the chosen base class', () => {

@@ -11,10 +11,10 @@ import {
   passiveFor,
 } from './rules';
 import type { BaseClass, Character, GameState, Gender, KinType, ModuleKey, Option, StatKey, View, Line } from './types';
-import { SAVE_VERSION } from './types';
+import { ANCESTORS_EYE_LEVELS, SAVE_VERSION, type AncestorsEye } from './types';
 import { MODULE_KEYS } from './schema';
 
-export type CreationStep = 'name' | 'gender' | 'kin' | 'class' | 'subclass' | 'bonus' | 'confirm';
+export type CreationStep = 'name' | 'gender' | 'kin' | 'class' | 'subclass' | 'bonus' | 'eye' | 'confirm';
 
 export interface CreationDraft {
   step: CreationStep;
@@ -24,15 +24,16 @@ export interface CreationDraft {
   base_class: BaseClass | null;
   subclass: string | null;
   bonus: Record<StatKey, number>;
+  ancestors_eye: AncestorsEye;
   error?: string;
 }
 
-const STEPS: CreationStep[] = ['name', 'gender', 'kin', 'class', 'subclass', 'bonus', 'confirm'];
+const STEPS: CreationStep[] = ['name', 'gender', 'kin', 'class', 'subclass', 'bonus', 'eye', 'confirm'];
 
 const zeroStats = (): Record<StatKey, number> => ({ grit: 0, craft: 0, wits: 0, silver_tongue: 0, nerve: 0 });
 
 export function newDraft(): CreationDraft {
-  return { step: 'name', name: '', gender: null, kin_type: null, base_class: null, subclass: null, bonus: zeroStats() };
+  return { step: 'name', name: '', gender: null, kin_type: null, base_class: null, subclass: null, bonus: zeroStats(), ancestors_eye: 'WEIGHED' };
 }
 
 export function bonusRemaining(data: GameData, draft: CreationDraft): number {
@@ -170,9 +171,49 @@ export function creationView(data: GameData, draft: CreationDraft): View {
       options.push(back);
       return { ...base, title: 'Bonus points', body, options };
     }
+    case 'eye':
+      return {
+        ...base,
+        title: "The Ancestors' Eye",
+        body: eyeLines(data),
+        options: [
+          ...ANCESTORS_EYE_LEVELS.map((k) => ({
+            id: k,
+            label: `${data.config.ANCESTORS_EYE[k].name}${k === data.config.DEFAULT_ANCESTORS_EYE ? ' (default)' : ''}`,
+            detail: data.config.ANCESTORS_EYE[k].summary,
+            tone: k === draft.ancestors_eye ? ('accent' as const) : undefined,
+          })),
+          back,
+        ],
+      };
     case 'confirm':
       return { ...base, title: 'Confirm your captain', body: summaryLines(data, draft), options: [{ id: 'begin', label: 'Begin', tone: 'accent' }, back] };
   }
+}
+
+/** What each difficulty level changes, in words, from the numbers in config.json. */
+export function eyeEffects(data: GameData, key: AncestorsEye): string {
+  const e = data.config.ANCESTORS_EYE[key];
+  const parts: string[] = [];
+  const signed = (n: number) => `${n > 0 ? '+' : ''}${n}`;
+  if (e.roll) parts.push(`${signed(e.roll)} to every roll you make`);
+  if (e.read) parts.push(`enemies are harder to read (${signed(e.read)} more)`);
+  if (e.fatigue_days) parts.push(`Fatigue comes ${Math.abs(e.fatigue_days)} day${Math.abs(e.fatigue_days) > 1 ? 's' : ''} ${e.fatigue_days > 0 ? 'later' : 'sooner'}`);
+  if (e.supplies_multiplier !== 1) parts.push(`the crew eats ${e.supplies_multiplier < 1 ? 'less' : 'more'} (Supplies x${e.supplies_multiplier})`);
+  return parts.length ? `${parts.join(', ')}.` : 'No changes.';
+}
+
+/** The difficulty levels explained, for character creation and the System menu. */
+export function eyeLines(data: GameData): Line[] {
+  const lines: Line[] = [
+    { text: 'How closely do the ancestors watch you? You can change this at any time from the System menu.' },
+    { text: '' },
+  ];
+  for (const k of ANCESTORS_EYE_LEVELS) {
+    const e = data.config.ANCESTORS_EYE[k];
+    lines.push({ text: e.name.toUpperCase(), tone: 'heading' }, { text: e.summary, tone: 'muted' }, { text: eyeEffects(data, k), tone: k === 'JUDGED' ? 'bad' : k === 'FAVOURED' ? 'good' : 'normal' }, { text: '' });
+  }
+  return lines;
 }
 
 function describeKit(data: GameData, subclass: string): string {
@@ -214,6 +255,7 @@ function summaryLines(data: GameData, draft: CreationDraft): Line[] {
   ];
   if (draft.kin_type === 'IRONKIN') lines.push({ text: `Starting Wear: ${data.config.WEAR_START}` });
   lines.push({ text: `Starting Hearthfire: ${data.config.STARTING_KIT.hearthfire + (sub.starting_kit.hearthfire ?? 0)}` });
+  lines.push({ text: `The Ancestors' Eye: ${data.config.ANCESTORS_EYE[draft.ancestors_eye].name}`, tone: 'teal' });
   return lines;
 }
 
@@ -292,7 +334,7 @@ export function creationChoose(
       const s = data.subclasses.find((x) => x.key === id && x.base_class === d.base_class);
       if (!s) return { draft: d, done: false };
       d.subclass = s.key;
-      return go(data.config.ALLOW_BONUS_POINTS ? 'bonus' : 'confirm');
+      return go(data.config.ALLOW_BONUS_POINTS ? 'bonus' : 'eye');
     }
     case 'bonus': {
       if (id === 'reset') {
@@ -304,7 +346,7 @@ export function creationChoose(
           d.error = 'Spend all bonus points first.';
           return { draft: d, done: false };
         }
-        return go('confirm');
+        return go('eye');
       }
       if (id.startsWith('add:')) {
         const k = id.slice(4) as StatKey;
@@ -315,6 +357,10 @@ export function creationChoose(
       }
       return { draft: d, done: false };
     }
+    case 'eye':
+      if (!ANCESTORS_EYE_LEVELS.includes(id as AncestorsEye)) return { draft: d, done: false };
+      d.ancestors_eye = id as AncestorsEye;
+      return go('confirm');
     case 'confirm':
       return { draft: d, done: id === 'begin' };
   }
@@ -341,6 +387,7 @@ export function newGame(data: GameData, draft: CreationDraft, seed: number): Gam
 
   return {
     version: SAVE_VERSION,
+    ancestors_eye: draft.ancestors_eye ?? data.config.DEFAULT_ANCESTORS_EYE,
     rng: seed >>> 0,
     day: cfg.START_DAY,
     location: cfg.START_SYSTEM,

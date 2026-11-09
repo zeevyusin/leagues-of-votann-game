@@ -9,7 +9,8 @@ A text adventure played from the console of a Kin prospector's ship, in the Ashf
 - **Numbered menus.** Press 1 to 9, or 0 for the tenth option, or click. Long lists show 8 options at a time: 9 goes back a page, 0 goes forward.
 - **Tab** switches between the console screens: Comms, Nav, Ship, Logbook, and the Market while docked.
 - **Nav** has a star map. Point at a system to see its route, or click a neighbouring system to set course. **R** opens the route list.
-- **Esc** opens the System menu: save to one of 3 slots, export or import a save file, How to play, Settings, and About.
+- **Esc** opens the System menu: save or load one of 3 slots, change The Ancestors' Eye (difficulty), export a save file, How to play, Settings, and About.
+- **The Ancestors' Eye** is the difficulty: Favoured (easy), Weighed (normal) or Judged (hard). Pick it when you create a captain and change it at any time.
 - **Saving.** The game autosaves after every choice. Saves live in your browser, so export a save file if you want to move to another browser or computer.
 - **How to play** (title screen or System menu) explains rolls, both kinds of combat, Hearthfire, Wear, relics and the Waaagh!.
 

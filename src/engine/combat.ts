@@ -10,6 +10,8 @@ import {
   encounterOf,
   enemyOf,
   enemyShipOf,
+  eyeLevel,
+  eyeModifiers,
   generalModifiers,
   hasPassive,
   injuryName,
@@ -196,7 +198,9 @@ export function newPersonalRound(state: GameState, ctx: Ctx, combat: PersonalCom
   else combat.intent = weightedPick(ctx.rng, duel ? habitWeights(state, ctx, enemy.intent_weights) : enemy.intent_weights);
   combat.telegraph = pick(ctx.rng, enemy.telegraphs[combat.intent]);
   if (adapting) combat.telegraph += " He's seen that before.";
-  const read = roll(ctx.rng, cfg, 'wits', state.character.stats.wits, [{ label: 'Read bonus', value: readBonus(state, ctx) }], enemy.read_difficulty);
+  const eye = eyeLevel(ctx.data, state);
+  const readMods = [{ label: 'Read bonus', value: readBonus(state, ctx) }, ...eyeModifiers(ctx.data, state, eye.roll + eye.read)];
+  const read = roll(ctx.rng, cfg, 'wits', state.character.stats.wits, readMods, enemy.read_difficulty);
   combat.read = combat.buffs.reveal || read.tier === 'critical' || read.tier === 'success' ? 'clear' : 'vague';
   combat.shown_intent = combat.intent;
   const other = pick(ctx.rng, INTENTS.filter((i) => i !== combat.intent));

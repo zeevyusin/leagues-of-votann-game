@@ -1,21 +1,24 @@
 // The browser console. Renders a View from the engine and turns key presses and clicks into choices.
 import type { GameData } from '../engine/schema';
-import { applyChoiceWithRolls, buildView } from '../engine/game';
+import { applyChoiceWithRolls, buildView, setAncestorsEye } from '../engine/game';
 import type { RollEvent } from '../engine/roll';
 import { artImage, renderVisual } from './art';
 import { renderMap, type MapHandle } from './map';
 import { DiceOverlay, diceEnabled } from './dice';
 import { ABOUT_LINES, HELP_PAGES, VERSION } from './help';
 import { DICE_SETTINGS, TEXT_SIZES, applySettings, cycle, loadSettings, saveSettings } from './settings';
-import { creationChoose, creationView, newDraft, newGame, type CreationDraft } from '../engine/creation';
+import { creationChoose, creationView, eyeEffects, eyeLines, newDraft, newGame, type CreationDraft } from '../engine/creation';
 import { newSeed } from '../engine/rng';
-import type { GameState, HubTab, Line, Option, View } from '../engine/types';
+import { ANCESTORS_EYE_LEVELS, type AncestorsEye, type GameState, type HubTab, type Line, type Option, type View } from '../engine/types';
 import { AUTOSAVE, exportSave, pickSaveFile, readSave, slotKey, writeSave } from './saves';
 
 type Mode =
   | { kind: 'title'; message?: string }
   | { kind: 'creation'; draft: CreationDraft }
   | { kind: 'game'; state: GameState; menu: boolean; message?: string };
+
+/** The System menu's own pages. */
+type MenuPage = 'main' | 'save' | 'load' | 'eye';
 
 /** How to play, Settings and About open over the title screen or the System menu. */
 type Panel = { kind: 'help'; page: number } | { kind: 'settings' } | { kind: 'about' } | null;
@@ -48,6 +51,7 @@ export class App {
   /** Rolls from the last choice, animated after the next render. */
   private pendingRolls: RollEvent[] = [];
   private panel: Panel = null;
+  private menuPage: MenuPage = 'main';
   /** Page of a long option list, reset whenever the screen changes. */
   private page = 0;
   private pageKey = '';
@@ -97,11 +101,55 @@ export class App {
   }
 
   private systemMenuView(state: GameState, message?: string): View {
-    const options: Option[] = [{ id: 'sys:resume', label: 'Resume', tone: 'accent' }];
-    for (let i = 1; i <= this.data.config.SAVE_SLOTS; i++) {
-      const s = readSave(slotKey(i));
-      options.push({ id: `sys:save:${i}`, label: `Save to slot ${i}`, detail: s ? `Overwrites: ${s.summary}` : 'Empty' });
+    const subtitle = `${state.character.name}, day ${state.day}`;
+    const slots = this.data.config.SAVE_SLOTS;
+    const backOption: Option = { id: 'sys:main', label: 'Back', tone: 'muted' };
+    if (this.menuPage === 'save' || this.menuPage === 'load') {
+      const saving = this.menuPage === 'save';
+      const options: Option[] = [];
+      for (let i = 1; i <= slots; i++) {
+        const s = readSave(slotKey(i));
+        options.push(
+          saving
+            ? { id: `sys:save:${i}`, label: `Slot ${i}`, detail: s ? `Overwrites: ${s.summary}` : 'Empty' }
+            : { id: `sys:load:${i}`, label: `Slot ${i}`, detail: s?.summary, locked: s ? undefined : 'Empty' },
+        );
+      }
+      options.push(backOption);
+      return {
+        kind: 'system',
+        title: saving ? 'Save game' : 'Load game',
+        subtitle,
+        body: [
+          saving
+            ? { text: 'Choose a slot to save to.', tone: 'muted' }
+            : { text: 'Loading replaces the game you are playing. Save it to a slot first if you want to keep it.', tone: 'accent' },
+        ],
+        options,
+      };
     }
+    if (this.menuPage === 'eye') {
+      return {
+        kind: 'system',
+        title: "The Ancestors' Eye",
+        subtitle: `Now: ${this.data.config.ANCESTORS_EYE[state.ancestors_eye].name}`,
+        body: eyeLines(this.data),
+        options: [
+          ...ANCESTORS_EYE_LEVELS.map((k) => ({
+            id: `sys:eye:${k}`,
+            label: `${this.data.config.ANCESTORS_EYE[k].name}${k === state.ancestors_eye ? ' (current)' : ''}`,
+            detail: this.data.config.ANCESTORS_EYE[k].summary,
+            tone: k === state.ancestors_eye ? ('accent' as const) : undefined,
+          })),
+          backOption,
+        ],
+      };
+    }
+    const eye = this.data.config.ANCESTORS_EYE[state.ancestors_eye];
+    const options: Option[] = [{ id: 'sys:resume', label: 'Resume', tone: 'accent' }];
+    options.push({ id: 'sys:page:save', label: 'Save game', detail: `Choose one of ${slots} slots` });
+    options.push({ id: 'sys:page:load', label: 'Load game', detail: `Choose one of ${slots} slots` });
+    options.push({ id: 'sys:page:eye', label: `The Ancestors' Eye: ${eye.name}`, detail: `Difficulty. ${eyeEffects(this.data, state.ancestors_eye)}` });
     options.push({ id: 'sys:export', label: 'Export save to a file' });
     options.push({ id: 'panel:help', label: 'How to play' });
     options.push({ id: 'panel:settings', label: 'Settings', detail: 'Text size, graphics, dice animation, reduced motion' });
@@ -110,7 +158,7 @@ export class App {
     return {
       kind: 'system',
       title: 'System',
-      subtitle: `${state.character.name}, day ${state.day}`,
+      subtitle,
       body: message ? [{ text: message, tone: 'good' }] : [{ text: 'The game autosaves after every choice.', tone: 'muted' }],
       options,
     };
@@ -242,10 +290,28 @@ export class App {
   }
 
   private systemChoice(mode: Extract<Mode, { kind: 'game' }>, id: string): void {
-    if (id === 'sys:resume') mode.menu = false;
+    if (id === 'sys:resume') {
+      mode.menu = false;
+      this.menuPage = 'main';
+    } else if (id === 'sys:main') this.menuPage = 'main';
+    else if (id.startsWith('sys:page:')) this.menuPage = id.slice(9) as MenuPage;
     else if (id.startsWith('sys:save:')) {
       const slot = Number(id.slice(9));
       mode.message = writeSave(slotKey(slot), mode.state, this.data) ? `Saved to slot ${slot}.` : 'Saving failed: browser storage is unavailable.';
+      this.menuPage = 'main';
+    } else if (id.startsWith('sys:load:')) {
+      const saved = readSave(slotKey(Number(id.slice(9))))?.state;
+      if (saved) {
+        this.menuPage = 'main';
+        this.load(saved);
+        writeSave(AUTOSAVE, saved, this.data);
+      }
+    } else if (id.startsWith('sys:eye:')) {
+      const eye = id.slice(8) as AncestorsEye;
+      mode.state = setAncestorsEye(mode.state, eye);
+      writeSave(AUTOSAVE, mode.state, this.data);
+      mode.message = `The Ancestors' Eye is now ${this.data.config.ANCESTORS_EYE[eye].name}.`;
+      this.menuPage = 'main';
     } else if (id === 'sys:export') {
       exportSave(mode.state, this.data);
       mode.message = 'Save file exported.';
@@ -291,7 +357,9 @@ export class App {
       return;
     }
     if (e.key === 'Escape' && this.mode.kind === 'game') {
-      this.mode.menu = !this.mode.menu;
+      // Esc steps back from a System menu page before it closes the menu.
+      if (this.mode.menu && this.menuPage !== 'main') this.menuPage = 'main';
+      else this.mode.menu = !this.mode.menu;
       this.mode.message = undefined;
       e.preventDefault();
       this.render();
@@ -343,6 +411,7 @@ export class App {
       sys.addEventListener('click', () => {
         const m = this.mode as Extract<Mode, { kind: 'game' }>;
         m.menu = !m.menu;
+        this.menuPage = 'main';
         this.render();
       });
       header.append(sys);

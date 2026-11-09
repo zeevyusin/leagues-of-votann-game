@@ -251,6 +251,21 @@ const traitCombatSchema = z.strictObject({
 const bandPenalty = z.strictObject({ min: z.number(), state: z.string(), penalty: z.number() });
 const hearthBand = z.strictObject({ min: z.number(), band: z.string(), modifier: z.number() });
 
+/** One level of The Ancestors' Eye, the difficulty setting. */
+const eyeLevelSchema = z.strictObject({
+  name: z.string(),
+  summary: z.string(),
+  /** Added to every roll the player makes. */
+  roll: z.number(),
+  /** Added to reading an enemy in personal combat, on top of roll. */
+  read: z.number(),
+  /** Added to FATIGUE_DAYS. */
+  fatigue_days: z.number(),
+  /** Multiplies the Supplies the crew eats each day. */
+  supplies_multiplier: z.number().positive(),
+});
+export const ancestorsEyeSchema = z.enum(['FAVOURED', 'WEIGHED', 'JUDGED']);
+
 export const configSchema = z.strictObject({
   DIE_TYPE: z.enum(['d20', 'd100']),
   DIFFICULTY: numRecord,
@@ -308,6 +323,8 @@ export const configSchema = z.strictObject({
   TINKERS_EYE_REPAIR_DISCOUNT: z.number(),
   FATIGUE_DAYS: z.number(),
   FATIGUE_PENALTY: z.number(),
+  ANCESTORS_EYE: z.strictObject({ FAVOURED: eyeLevelSchema, WEIGHED: eyeLevelSchema, JUDGED: eyeLevelSchema }),
+  DEFAULT_ANCESTORS_EYE: ancestorsEyeSchema,
   MUTINY_DIFFICULTY: difficulty,
   MUTINY_BRIBE_ORE: z.number(),
   MUTINY_RESET_HEARTHFIRE: z.number(),

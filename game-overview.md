@@ -127,7 +127,7 @@ Base kit: **Fuel 10, Ore 100, Supplies 20, Hearthfire 50, Hull 20, cargo capacit
 - All values `[TUNABLE]`.
 
 ### 4.4.1 Fatigue `[DECIDED]`
-- A Kin player becomes **Fatigued** after more than `FATIGUE_DAYS = 6` days in a row without docking at a port.
+- A Kin player becomes **Fatigued** after more than `FATIGUE_DAYS = 6` days in a row without docking at a port (9 on Favoured, 5 on Judged; see section 5.3.1).
 - Fatigued: `-1` to all rolls (`FATIGUE_PENALTY`). Docking at any port clears it.
 - Ironkin are immune (Tireless, see `character-creation.md`). Crew members are not tracked separately.
 - All values `[TUNABLE]`.
@@ -201,6 +201,19 @@ Encounters should author text and effects for **all four tiers** where a roll is
 
 ### 5.3 Modifiers
 Sources of modifiers: Hearthfire band, Wear state (Ironkin), ship modules, crew traits, relics, subclass traits, and situational bonuses. Show the player the active modifiers when relevant (a simple "+2 from Scanner module" line is enough).
+
+### 5.3.1 The Ancestors' Eye (difficulty) `[DECIDED]` (1.0.1)
+Three difficulty levels. The player picks one in character creation (Weighed by default) and can change it at any time from the System menu. It is saved with the game. All values `[TUNABLE]` in `config.json` (`ANCESTORS_EYE`).
+
+| Level | Every player roll | Reading an enemy | Fatigue | Supplies eaten |
+|---|---|---|---|---|
+| **Favoured** (easy) | +2 | +2 | 3 days later | x0.5 |
+| **Weighed** (normal, default) | 0 | 0 | as normal | x1 |
+| **Judged** (hard) | -2 | -4 | 1 day sooner | x1 |
+
+- The roll modifier shows in every roll and modifier list as "The Ancestors' Eye (Favoured)" or "(Judged)", so the player can see it working.
+- Saves made before 1.0.1 load as Weighed.
+- Automated runs of the whole campaign finish on every level for every class and kin type. The Hold is saved far more often on Favoured and never on Judged.
 
 ### 5.4 Death and incapacitation
 `[DECIDED]` A defeat does not end the game outright. The player is **incapacitated**, suffers a cost (lost cargo, Ore, crew, or a grudge), and is rescued or recovers. A true game over occurs only in narrow authored cases. Implement behind a flag `PERMADEATH` (default `false`).
@@ -321,6 +334,7 @@ Keep the engine data-driven so story content can be added later without code cha
 - **Input:** **numbered menus only.** Every prompt is a numbered list; the player picks by number key or click. Locked options are shown with their requirement and cannot be picked. No text parser.
 - **Saving:** **autosave + 3 manual slots.** Autosave whenever the player returns to the console hub and after each story beat. Manual saves to 3 slots from the console. Saves live in browser storage (localStorage or IndexedDB), carry a `save_version` for migrations, and can be exported/imported as a JSON file. The state model still supports mid-combat saves (used by autosave on tab close).
 - **Long menus `[DECIDED]` (Milestone 4):** a list with more than 10 options pages. Each page shows up to 8 options, then **Previous page** (9) and **Next page** (0) where they apply. The market avoids most paging with sections (section 4.5). Paging is handled in the UI from the View's option list, so the engine stays unchanged.
+- **System menu layout `[DECIDED]` (1.0.1):** 1 Resume, 2 Save game (opens the 3 slots), 3 Load game (opens the 3 slots; empty slots are locked), 4 The Ancestors' Eye (opens the three levels), then Export, How to play, Settings, About and Quit to title. Esc on a slot or difficulty page goes back to the main menu.
 - **System menu additions `[DECIDED]` (Milestone 4):**
   - **How to play:** keys, rolls and outcome tiers, the two combat modes, Hearthfire, Wear, injuries, the Waaagh! meter, oaths and grudges. Short pages, written for a first-time player.
   - **Settings:** text size (small, medium, large), graphics (on, off), dice animation (normal, fast, off), and reduced motion. Saved per browser in localStorage, never in the save file.

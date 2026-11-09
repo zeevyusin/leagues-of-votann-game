@@ -69,7 +69,9 @@ Linear, six steps. Each step validates before advancing. The player may go back 
 | 3 | Kin type | `KIN` or `IRONKIN` | show perks and drawbacks (section 3) before confirming |
 | 4 | Base class | one of 4 | show stat bonuses and the passive **for the chosen kin type** (section 4) |
 | 5 | Subclass | one of the subclasses under the chosen base class | must belong to chosen base class |
-| 6 | Bonus points (see below) then Confirmation | allocation, then confirm | all points spent; show full summary |
+| 6 | Bonus points (see below) | allocation | all points spent |
+| 7 | The Ancestors' Eye (difficulty) | Favoured, Weighed or Judged | defaults to Weighed; can be changed later from the System menu (`game-overview.md` 5.3.1) |
+| 8 | Confirmation | confirm | show full summary, including the difficulty |
 
 **Class and subclass are both chosen at creation.** There is no later unlock.
 

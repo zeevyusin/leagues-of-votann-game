@@ -13,7 +13,11 @@ export type HubTab = 'comms' | 'nav' | 'ship' | 'logbook' | 'market';
 export type RangeBand = 'close' | 'medium' | 'long';
 export type ShipTarget = 'hull' | 'weapons' | 'shields' | 'engines';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
+
+/** The difficulty setting. */
+export type AncestorsEye = 'FAVOURED' | 'WEIGHED' | 'JUDGED';
+export const ANCESTORS_EYE_LEVELS: AncestorsEye[] = ['FAVOURED', 'WEIGHED', 'JUDGED'];
 
 export interface Character {
   name: string;
@@ -214,6 +218,8 @@ export type Scene =
 
 export interface GameState {
   version: number;
+  /** The difficulty, which the player can change at any time from the System menu. */
+  ancestors_eye: AncestorsEye;
   rng: number;
   day: number;
   location: string;
@@ -304,6 +310,11 @@ export function migrateState(raw: GameState): GameState {
       c.buffs.hit_resolve_bonus ??= 0;
     }
     s.version = 4;
+  }
+  if (s.version < 5) {
+    // Saves from before difficulty levels play as they always did.
+    s.ancestors_eye ??= 'WEIGHED';
+    s.version = 5;
   }
   return s;
 }

@@ -138,7 +138,17 @@ export function hasPassive(d: GameData, c: Character, key: string): boolean {
   return passiveFor(d, c).key === key;
 }
 
-/** Modifiers that apply to almost every roll: Hearthfire band, fatigue, Wear, and crew traits. */
+/** The current difficulty level's numbers. */
+export function eyeLevel(d: GameData, state: GameState) {
+  return d.config.ANCESTORS_EYE[state.ancestors_eye ?? d.config.DEFAULT_ANCESTORS_EYE];
+}
+
+/** The difficulty's modifier, if it has one. Every player roll gets it. */
+export function eyeModifiers(d: GameData, state: GameState, value = eyeLevel(d, state).roll): Modifier[] {
+  return value ? [{ label: `The Ancestors' Eye (${eyeLevel(d, state).name})`, value }] : [];
+}
+
+/** Modifiers that apply to almost every roll: difficulty, Hearthfire band, fatigue, Wear, and crew traits. */
 export function generalModifiers(
   state: GameState,
   d: GameData,
@@ -146,7 +156,7 @@ export function generalModifiers(
   context: 'story' | 'personal' | 'ship',
 ): Modifier[] {
   const cfg = d.config;
-  const mods: Modifier[] = [];
+  const mods: Modifier[] = [...eyeModifiers(d, state)];
   const band = hearthfireBand(cfg, state.resources.hearthfire);
   if (band.modifier !== 0) mods.push({ label: `Hearthfire ${titleWord(band.band)}`, value: band.modifier });
   if (state.character.fatigued) mods.push({ label: 'Fatigued', value: cfg.FATIGUE_PENALTY });

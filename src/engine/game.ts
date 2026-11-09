@@ -102,6 +102,7 @@ import { commitCrew, commitLock, commitments, oathLock, swearBattleOath } from '
 import { equipLock, equipRelic, equippedCount, identifyRelic, relicLabel, unequipRelic } from './relics';
 import { lockedReason } from './conditions';
 import type {
+  AncestorsEye,
   GameState,
   HubTab,
   Line,
@@ -485,6 +486,11 @@ function combatChoice(state: GameState, ctx: Ctx, combat: PersonalCombat | ShipC
 }
 
 // ======================= buildView =======================
+
+/** Changes the difficulty. Allowed at any time, from the System menu. */
+export function setAncestorsEye(state: GameState, eye: AncestorsEye): GameState {
+  return { ...structuredClone(state), ancestors_eye: eye };
+}
 
 export function buildView(state: GameState, data: GameData): View {
   const ctx: Ctx = { data, rng: new SeededRng(state.rng) };

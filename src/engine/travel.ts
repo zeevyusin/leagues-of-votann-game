@@ -3,7 +3,7 @@ import { applyDefeat } from './defeat';
 import { allMet } from './conditions';
 import { applyEffects, checkOathDeadlines, createOath, grantXp, receiveMessage, resolveOath } from './effects';
 import { weightedPick } from './rng';
-import { isPort, relicProduct, relicSum, clamp, inAct3, liveWaaagh, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
+import { isPort, relicProduct, relicSum, clamp, eyeLevel, inAct3, liveWaaagh, maxHealth, oathOf, portOpen, systemOf, waaaghBand, type Ctx } from './rules';
 import type { GameState, Line } from './types';
 
 export function routeTo(state: GameState, ctx: Ctx, to: string) {
@@ -122,7 +122,8 @@ export function passDay(state: GameState, ctx: Ctx): Line[] {
   state.day++;
 
   const mouths = 1 + state.crew.length;
-  const need = Math.ceil(mouths * cfg.SUPPLIES_PER_CREW_PER_DAY);
+  const eye = eyeLevel(ctx.data, state);
+  const need = Math.ceil(mouths * cfg.SUPPLIES_PER_CREW_PER_DAY * eye.supplies_multiplier);
   if (state.resources.supplies >= need) {
     state.resources.supplies -= need;
   } else {
@@ -138,7 +139,7 @@ export function passDay(state: GameState, ctx: Ctx): Line[] {
   if (c.wear !== null && cfg.WEAR_MODE === 'CONSTANT') c.wear = Math.min(cfg.WEAR_MAX, c.wear + cfg.WEAR_CONSTANT_PER_DAY);
 
   c.days_since_dock++;
-  if (c.kin_type === 'KIN' && !c.fatigued && c.days_since_dock > cfg.FATIGUE_DAYS) {
+  if (c.kin_type === 'KIN' && !c.fatigued && c.days_since_dock > cfg.FATIGUE_DAYS + eye.fatigue_days) {
     c.fatigued = true;
     lines.push({ text: `Too long without a port. You are Fatigued (${cfg.FATIGUE_PENALTY} to all rolls until you dock).`, tone: 'bad' });
   }
